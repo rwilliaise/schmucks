@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:beacon_payment_items",
+    "#minecraft:wool",
+    "#minecraft:piglin_loved",
+    "#minecraft:mineable/pickaxe",
+    "#minecraft:mineable/axe",
+    "#minecraft:mineable/shovel"
+  ]
+}

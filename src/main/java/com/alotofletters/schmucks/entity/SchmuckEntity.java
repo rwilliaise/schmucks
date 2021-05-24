@@ -1,0 +1,436 @@
+package com.alotofletters.schmucks.entity;
+
+import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.entity.ai.SchmuckPutUnneeded;
+import com.alotofletters.schmucks.entity.ai.SchmuckSmeltFood;
+import com.alotofletters.schmucks.entity.ai.SchmuckTargetMinions;
+import com.mojang.authlib.GameProfile;
+import net.minecraft.entity.*;
+import net.minecraft.entity.ai.Durations;
+import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandler;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.Angerable;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.BowItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.IntRange;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.function.Predicate;
+
+public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
+	/**
+	 * Tracked data handler for a replicated game profile. Primarily used for the skins.
+	 */
+	public static final TrackedDataHandler<Optional<GameProfile>> OPTIONAL_PROFILE = new TrackedDataHandler<Optional<GameProfile>>() {
+		public void write(PacketByteBuf data, Optional<GameProfile> object) {
+			data.writeBoolean(object.isPresent() && object.get().getId() != null);
+
+			object.ifPresent(gameProfile -> data.writeUuid(gameProfile.getId()));
+		}
+
+		public Optional<GameProfile> read(PacketByteBuf packetByteBuf) {
+			return !packetByteBuf.readBoolean() ? Optional.empty() : Optional.of(new GameProfile(packetByteBuf.readUuid(), null));
+		}
+
+		public Optional<GameProfile> copy(Optional<GameProfile> object) {
+			return object;
+		}
+	};
+
+	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
+
+	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<Optional<GameProfile>> OWNER_PROFILE = DataTracker.registerData(SchmuckEntity.class, OPTIONAL_PROFILE);
+
+	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
+
+	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
+	private final MeleeAttackGoal meleeAttackGoal = new MeleeAttackGoal(this, 1.2D, false);
+	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
+
+	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
+	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
+
+	private UUID targetUuid;
+	private boolean shortTempered;
+
+	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
+		super(entityType, world);
+		this.updateAttackType();
+		this.setCanPickUpLoot(true);
+	}
+
+	@Override
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
+		if (random.nextFloat() < 0.1f) {
+			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+		}
+		shortTempered = random.nextFloat() < 0.05f; // will attack teammates if damaged
+		this.updateAttackType();
+		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
+	}
+
+	@Override
+	protected void initGoals() {
+		super.initGoals();
+		this.goalSelector.add(1, new SwimGoal(this));
+		this.goalSelector.add(4, new FollowOwnerGoal(this, 1.0D, 15.0F, 4.0F, false));
+		this.goalSelector.add(5, new AnimalMateGoal(this, 1.0D));
+		this.goalSelector.add(6, new SchmuckSmeltFood(this, 1.0D));
+		this.goalSelector.add(7, new SchmuckPutUnneeded(this, 1.0D));
+		this.goalSelector.add(8, new PickUpItemGoal());
+		this.goalSelector.add(9, new WanderAroundFarGoal(this, 1.0D));
+		this.goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(10, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
+		this.goalSelector.add(10, new LookAroundGoal(this));
+		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
+		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
+		this.targetSelector.add(4, new SchmuckTargetMinions(this));
+		this.targetSelector.add(5, new UniversalAngerGoal<>(this, true));
+	}
+
+	@Override
+	public void tickMovement() {
+		super.tickMovement();
+
+		if (!this.world.isClient) {
+			this.tickAngerLogic((ServerWorld)this.world, true);
+		}
+	}
+
+	@Override
+	public void writeCustomDataToTag(CompoundTag tag) {
+		super.writeCustomDataToTag(tag);
+		tag.putBoolean("ShortTemper", this.shortTempered);
+		this.angerToTag(tag);
+	}
+
+	@Override
+	public void readCustomDataFromTag(CompoundTag tag) {
+		super.readCustomDataFromTag(tag);
+		this.angerFromTag((ServerWorld) this.world, tag);
+
+		if (this.getOwnerUuid() != null) {
+			this.setOwnerProfile(new GameProfile(this.getOwnerUuid(), null));
+		}
+		this.shortTempered = tag.getBoolean("ShortTemper");
+		this.updateAttackType();
+	}
+
+	@Nullable
+	@Override
+	public SchmuckEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
+		SchmuckEntity child = Schmucks.SCHMUCK.create(serverWorld);
+		if (child != null) {
+			child.setOwnerUuid(this.getOwnerUuid());
+		}
+		return child;
+	}
+
+	protected void initDataTracker() {
+		super.initDataTracker();
+		this.dataTracker.startTracking(ANGER_TIME, 0);
+		this.dataTracker.startTracking(OWNER_PROFILE, Optional.empty());
+	}
+
+	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
+		return MobEntity.createMobAttributes()
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 8.0)
+				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
+	}
+
+	@Override
+	public int getAngerTime() {
+		return this.dataTracker.get(ANGER_TIME);
+	}
+
+	@Override
+	public void setAngerTime(int ticks) {
+		this.dataTracker.set(ANGER_TIME, ticks);
+	}
+
+	@Override
+	public void chooseRandomAngerTime() {
+		this.setAngerTime(ANGER_TIME_RANGE.choose(this.random));
+	}
+
+	@Override
+	@Nullable
+	public UUID getAngryAt() {
+		return this.targetUuid;
+	}
+
+	@Override
+	public void setAngryAt(@Nullable UUID uuid) {
+		this.targetUuid = uuid;
+	}
+
+	@Override
+	public void setOwner(PlayerEntity player) {
+		super.setOwner(player);
+		this.setOwnerProfile(player.getGameProfile());
+	}
+
+	@Override
+	public void setAttacking(@Nullable PlayerEntity attacking) {
+		super.setAttacking(attacking);
+	}
+
+	public void setOwnerProfile(GameProfile profile) {
+		this.dataTracker.set(OWNER_PROFILE, Optional.of(profile));
+	}
+
+	@Override
+	public void equipStack(EquipmentSlot slot, ItemStack stack) {
+		super.equipStack(slot, stack);
+		if (!this.world.isClient) {
+			this.updateAttackType();
+		}
+	}
+
+	@Override
+	public void onDeath(DamageSource source) {
+		super.onDeath(source);
+	}
+
+	public void equipNoUpdate(EquipmentSlot slot, ItemStack stack) {
+		super.equipStack(slot, stack);
+	}
+
+	@Nullable
+	public GameProfile getOwnerProfile() {
+		return this.dataTracker.get(OWNER_PROFILE).orElse(null);
+	}
+
+	public void updateAttackType() {
+		if (this.world != null && !this.world.isClient) {
+			this.goalSelector.remove(this.meleeAttackGoal);
+			this.goalSelector.remove(this.bowAttackGoal);
+			this.goalSelector.remove(this.pounceGoal);
+			this.targetSelector.remove(this.shortTemperRevengeGoal);
+			this.targetSelector.remove(this.revengeGoal);
+			ItemStack itemStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
+			if (itemStack.getItem() == Items.BOW) {
+				this.bowAttackGoal.setAttackInterval(30);
+				this.goalSelector.add(3, this.bowAttackGoal);
+			} else {
+				this.goalSelector.add(2, this.pounceGoal);
+				this.goalSelector.add(3, this.meleeAttackGoal);
+			}
+			if (this.shortTempered) {
+				this.targetSelector.add(3, this.shortTemperRevengeGoal);
+			} else {
+				this.targetSelector.add(3, this.revengeGoal);
+			}
+		}
+	}
+
+	public boolean canUseRangedWeapon(RangedWeaponItem weapon) {
+		return weapon == Items.BOW;
+	}
+
+	public void attack(LivingEntity target, float pullProgress) {
+		ItemStack itemStack = this.getArrowType(this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW)));
+		PersistentProjectileEntity persistentProjectileEntity = this.createArrowProjectile(itemStack, pullProgress);
+		double d = target.getX() - this.getX();
+		double e = target.getBodyY(0.3333333333333333D) - persistentProjectileEntity.getY();
+		double f = target.getZ() - this.getZ();
+		double g = MathHelper.sqrt(d * d + f * f);
+		persistentProjectileEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
+		this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+		this.world.spawnEntity(persistentProjectileEntity);
+	}
+
+	protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier) {
+		return ProjectileUtil.createArrowProjectile(this, arrow, damageModifier);
+	}
+
+	static {
+		TrackedDataHandlerRegistry.register(OPTIONAL_PROFILE);
+	}
+
+	class PickUpItemGoal extends Goal {
+
+		public PickUpItemGoal() {
+			this.setControls(EnumSet.of(Control.MOVE));
+		}
+
+		@Override
+		public boolean canStart() {
+			if (!SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) {
+				return false;
+			} else if (SchmuckEntity.this.getAttacker() == null) {
+				if (SchmuckEntity.this.getRandom().nextInt(10) != 0) {
+					return false;
+				} else {
+					List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
+							SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
+							SchmuckEntity.PICKABLE_DROP_FILTER);
+					return !list.isEmpty() && SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
+				}
+			} else {
+				return false;
+			}
+		}
+
+		public void tick() {
+			List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
+					SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
+					SchmuckEntity.PICKABLE_DROP_FILTER);
+			ItemStack itemStack = SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND);
+			if (itemStack.isEmpty() && !list.isEmpty()) {
+				SchmuckEntity.this.getNavigation().startMovingTo(list.get(0), 1.2D);
+			}
+		}
+
+		public void start() {
+			List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
+					SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
+					SchmuckEntity.PICKABLE_DROP_FILTER);
+			if (!list.isEmpty()) {
+				SchmuckEntity.this.getNavigation().startMovingTo(list.get(0), 1.2D);
+			}
+		}
+	}
+
+	class SchmuckBowAttackGoal extends Goal {
+		private final SchmuckEntity actor;
+		private final double speed;
+		private int attackInterval;
+		private final float squaredRange;
+		private int cooldown = -1;
+		private int targetSeeingTicker;
+		private boolean movingToLeft;
+		private boolean backward;
+		private int combatTicks = -1;
+
+		public SchmuckBowAttackGoal(double speed, int attackInterval, float range) {
+			this.actor = SchmuckEntity.this;
+			this.speed = speed;
+			this.attackInterval = attackInterval;
+			this.squaredRange = range * range;
+			this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+		}
+
+		public void setAttackInterval(int attackInterval) {
+			this.attackInterval = attackInterval;
+		}
+
+		public boolean canStart() {
+			return this.actor.getTarget() != null && this.isHoldingBow();
+		}
+
+		protected boolean isHoldingBow() {
+			return this.actor.isHolding(Items.BOW);
+		}
+
+		public boolean shouldContinue() {
+			return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingBow();
+		}
+
+		public void start() {
+			super.start();
+			this.actor.setAttacking(true);
+		}
+
+		public void stop() {
+			super.stop();
+			this.actor.setAttacking(false);
+			this.targetSeeingTicker = 0;
+			this.cooldown = -1;
+			this.actor.clearActiveItem();
+		}
+
+		public void tick() {
+			LivingEntity livingEntity = this.actor.getTarget();
+			if (livingEntity != null) {
+				double d = this.actor.squaredDistanceTo(livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
+				boolean bl = this.actor.getVisibilityCache().canSee(livingEntity);
+				boolean bl2 = this.targetSeeingTicker > 0;
+				if (bl != bl2) {
+					this.targetSeeingTicker = 0;
+				}
+
+				if (bl) {
+					++this.targetSeeingTicker;
+				} else {
+					--this.targetSeeingTicker;
+				}
+
+				if (!(d > (double)this.squaredRange) && this.targetSeeingTicker >= 20) {
+					this.actor.getNavigation().stop();
+					++this.combatTicks;
+				} else {
+					this.actor.getNavigation().startMovingTo(livingEntity, this.speed);
+					this.combatTicks = -1;
+				}
+
+				if (this.combatTicks >= 20) {
+					if ((double)this.actor.getRandom().nextFloat() < 0.3D) {
+						this.movingToLeft = !this.movingToLeft;
+					}
+
+					if ((double)this.actor.getRandom().nextFloat() < 0.3D) {
+						this.backward = !this.backward;
+					}
+
+					this.combatTicks = 0;
+				}
+
+				if (this.combatTicks > -1) {
+					if (d > (double)(this.squaredRange * 0.75F)) {
+						this.backward = false;
+					} else if (d < (double)(this.squaredRange * 0.25F)) {
+						this.backward = true;
+					}
+
+					this.actor.getMoveControl().strafeTo(this.backward ? -0.5F : 0.5F, this.movingToLeft ? 0.5F : -0.5F);
+					this.actor.lookAtEntity(livingEntity, 30.0F, 30.0F);
+				} else {
+					this.actor.getLookControl().lookAt(livingEntity, 30.0F, 30.0F);
+				}
+
+				if (this.actor.isUsingItem()) {
+					if (!bl && this.targetSeeingTicker < -60) {
+						this.actor.clearActiveItem();
+					} else if (bl) {
+						int i = this.actor.getItemUseTime();
+						if (i >= 20) {
+							this.actor.clearActiveItem();
+							((RangedAttackMob)this.actor).attack(livingEntity, BowItem.getPullProgress(i));
+							this.cooldown = this.attackInterval;
+						}
+					}
+				} else if (--this.cooldown <= 0 && this.targetSeeingTicker >= -60) {
+					this.actor.setCurrentHand(ProjectileUtil.getHandPossiblyHolding(this.actor, Items.BOW));
+				}
+
+			}
+		}
+	}
+}

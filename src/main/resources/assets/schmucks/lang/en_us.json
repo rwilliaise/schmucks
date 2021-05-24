@@ -1,0 +1,11 @@
+{
+  "item.schmucks.magic": "Pure Magic",
+  "item.schmucks.magic.tooltip": "Holy crap! I-it's pure freakin' magic!",
+  "item.schmucks.fiery_magic": "Fiery Magic",
+  "item.schmucks.fiery_magic.tooltip": "Ouch! My hands! And feet!",
+  "item.schmucks.schmuck": "Schmuck",
+  "item.schmucks.schmuck.tooltip": "It looks hyperactive.",
+  "item.schmucks.dead_schmuck": "Dead Schmuck",
+  "item.schmucks.dead_schmuck.tooltip": "Doesn't look like it's coming back anytime soon.",
+  "entity.schmucks.schmuck": "Schmuck"
+}

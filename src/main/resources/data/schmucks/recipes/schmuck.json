@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "SMS",
+    "S S"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "M": {
+      "item": "schmucks:magic"
+    }
+  },
+  "result": {
+    "item": "schmucks:schmuck",
+    "count": 1
+  }
+}
