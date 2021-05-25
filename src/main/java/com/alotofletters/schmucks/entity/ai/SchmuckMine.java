@@ -1,6 +1,8 @@
 package com.alotofletters.schmucks.entity.ai;
 
+import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
@@ -17,7 +19,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	private int breakProgress;
 
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
-		super(schmuck, speed, schmuck.config.jobRange);
+		super(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange);
 		this.schmuck = schmuck;
 		this.maxProgress = maxProgress;
 	}
