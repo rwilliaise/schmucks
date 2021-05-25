@@ -1,0 +1,6 @@
+{
+  "parent": "schmucks:item/schmuck",
+  "textures": {
+    "0": "schmucks:item/dead_schmuck"
+  }
+}
