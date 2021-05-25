@@ -56,16 +56,25 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	}
 
 	@Override
+	public double getDesiredSquaredDistanceToTarget() {
+		return 2.0D;
+	}
+
+	@Override
 	public void start() {
 		super.start();
 		breakProgress = 0;
+	}
+
+	public boolean isExposed(WorldView world, BlockPos pos) {
+		return world.isAir(pos.up());
 	}
 
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState state = world.getBlockState(pos);
 		ItemStack pickaxe = this.schmuck.getMainHandStack();
-		return state.getBlock() instanceof OreBlock && pickaxe.isEffectiveOn(state);
+		return this.isExposed(world, pos) && state.getBlock() instanceof OreBlock && pickaxe.isEffectiveOn(state);
 	}
 
 	public int getMaxProgress() {

@@ -1,10 +1,7 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
-import com.alotofletters.schmucks.entity.ai.SchmuckMine;
-import com.alotofletters.schmucks.entity.ai.SchmuckPutUnneeded;
-import com.alotofletters.schmucks.entity.ai.SchmuckSmeltGoal;
-import com.alotofletters.schmucks.entity.ai.SchmuckTargetMinions;
+import com.alotofletters.schmucks.entity.ai.*;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.entity.*;
@@ -30,6 +27,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.IntRange;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.LocalDifficulty;
@@ -102,14 +101,25 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.goalSelector.add(6, new SchmuckSmeltGoal(this, 1.0D));
 		this.goalSelector.add(7, new SchmuckPutUnneeded(this, 1.0D));
 		this.goalSelector.add(8, new PickUpItemGoal());
-		this.goalSelector.add(9, new WanderAroundFarGoal(this, 1.0D));
-		this.goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(10, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
-		this.goalSelector.add(10, new LookAroundGoal(this));
+		this.goalSelector.add(9, new SchmuckFleeAllJobs(this, 1.0D));
+		this.goalSelector.add(10, new WanderAroundFarGoal(this, 1.0D));
+		this.goalSelector.add(11, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(11, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
+		this.goalSelector.add(11, new LookAroundGoal(this));
 		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
 		this.targetSelector.add(4, new SchmuckTargetMinions(this));
 		this.targetSelector.add(5, new UniversalAngerGoal<>(this, true));
+	}
+
+	@Override
+	public ActionResult interactMob(PlayerEntity player, Hand hand) {
+		if (player.getStackInHand(hand).isEmpty()) {
+			player.giveItemStack(this.getMainHandStack());
+			this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+		}
+
+		return super.interactMob(player, hand);
 	}
 
 	@Override

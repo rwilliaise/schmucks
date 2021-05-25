@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#schmucks:food_smelters",
+    "#schmucks:ore_smelters",
+    "minecraft:chest"
+  ]
+}

@@ -18,7 +18,7 @@ public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 	private int timer;
 
 	public SchmuckSmeltGoal(SchmuckEntity schmuck, double speed) {
-		super(schmuck, speed, 8);
+		super(schmuck, speed, 8, 2);
 		this.schmuck = schmuck;
 	}
 
@@ -73,6 +73,11 @@ public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 	public void start() {
 		this.timer = 0;
 		super.start();
+	}
+
+	@Override
+	public double getDesiredSquaredDistanceToTarget() {
+		return 2.0D;
 	}
 
 	@Override
