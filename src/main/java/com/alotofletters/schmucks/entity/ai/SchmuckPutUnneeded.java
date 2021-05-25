@@ -21,7 +21,7 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 	private int empty;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
-		super(mob, speed, 8);
+		super(mob, speed, 8, 2);
 		this.schmuck = mob;
 	}
 
@@ -47,6 +47,11 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 		super.tick();
 	}
 
+	@Override
+	public boolean shouldContinue() {
+		return this.isStorable(this.schmuck.getMainHandStack()) ;
+	}
+
 	/**
 	 * See if an item is worth storing.
 	 * @param itemStack ItemStack to test
@@ -58,6 +63,11 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 			return false;
 		}
 		return !(item instanceof ToolItem || item instanceof ArmorItem || item instanceof BowItem);
+	}
+
+	@Override
+	public double getDesiredSquaredDistanceToTarget() {
+		return 2.0D;
 	}
 
 	@Override

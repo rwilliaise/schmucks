@@ -30,6 +30,7 @@ public class Schmucks implements ModInitializer {
 	public final static Tag<Item> RAW_MEAT_TAG = TagRegistry.item(id("raw_food"));
 	public final static Tag<Item> RAW_MINERAL_TAG = TagRegistry.item(id("raw_mineral"));
 
+	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs"));
 	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(id("food_smelters"));
 	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(id("ore_smelters"));
 
