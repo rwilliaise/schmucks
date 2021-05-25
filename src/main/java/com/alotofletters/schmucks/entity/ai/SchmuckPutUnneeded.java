@@ -1,6 +1,8 @@
 package com.alotofletters.schmucks.entity.ai;
 
+import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.ChestBlockEntity;
@@ -21,7 +23,7 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 	private int empty;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
-		super(mob, speed, mob.config.jobRange, 2);
+		super(mob, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 2);
 		this.schmuck = mob;
 	}
 

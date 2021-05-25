@@ -81,8 +81,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private boolean shortTempered;
 	private int eggUsageTime;
 
-	public SchmucksConfig config = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig();
-
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.setCanPickUpLoot(true);
@@ -90,10 +88,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
-		if (random.nextFloat() < this.config.leatherHelmetChance) {
+		if (random.nextFloat() < AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = this.config.chaosMode || random.nextFloat() < this.config.shortTemperChance; // will attack teammates if damaged
+		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().shortTemperChance; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
