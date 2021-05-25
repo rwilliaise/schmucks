@@ -1,8 +1,10 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.mojang.authlib.GameProfile;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
@@ -22,6 +24,7 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
@@ -76,6 +79,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private UUID targetUuid;
 	private boolean shortTempered;
+	private int eggUsageTime;
+
+	public SchmucksConfig config = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig();
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
@@ -84,10 +90,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
-		if (random.nextFloat() < 0.1f) {
+		if (random.nextFloat() < this.config.leatherHelmetChance) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = random.nextFloat() < 0.05f; // will attack teammates if damaged
+		shortTempered = this.config.chaosMode || random.nextFloat() < this.config.shortTemperChance; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -169,7 +175,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 8.0)
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
 				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
 	}
 
@@ -245,8 +251,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.targetSelector.remove(this.shortTemperRevengeGoal);
 			this.targetSelector.remove(this.revengeGoal);
 			ItemStack itemStack = this.getMainHandStack();
-			if (itemStack.getItem() == Items.BOW) {
-				this.bowAttackGoal.setAttackInterval(30);
+			if (itemStack.getItem() == Items.BOW || itemStack.getItem() == Items.EGG) {
+				this.bowAttackGoal.setAttackInterval(itemStack.getItem() == Items.EGG ? 5 : 30);
 				this.goalSelector.add(3, this.bowAttackGoal);
 			} else if (FabricToolTags.PICKAXES.contains(itemStack.getItem())) {
 				this.goalSelector.add(3, this.mineGoal);
@@ -267,6 +273,19 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	public void attack(LivingEntity target, float pullProgress) {
+		if (this.isHolding(Items.EGG)) {
+			ItemStack itemStack = this.getMainHandStack();
+			EggEntity eggEntity = new EggEntity(world, this);
+			eggEntity.setItem(itemStack);
+			double d = target.getX() - this.getX();
+			double e = target.getBodyY(0.3333333333333333D) - eggEntity.getY();
+			double f = target.getZ() - this.getZ();
+			double g = MathHelper.sqrt(d * d + f * f);
+			eggEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
+			world.spawnEntity(eggEntity);
+			this.playSound(SoundEvents.ENTITY_EGG_THROW, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
+			return;
+		}
 		ItemStack itemStack = this.getArrowType(this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW)));
 		PersistentProjectileEntity persistentProjectileEntity = this.createArrowProjectile(itemStack, pullProgress);
 		double d = target.getX() - this.getX();
@@ -330,6 +349,19 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
+	@Override
+	public int getItemUseTime() {
+		if (++this.eggUsageTime == 6) {
+			this.eggUsageTime = 0;
+		}
+		return this.getMainHandStack().getItem() == Items.EGG ? 15 + this.eggUsageTime : super.getItemUseTime();
+	}
+
+	@Override
+	public boolean isUsingItem() {
+		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
+	}
+
 	class SchmuckBowAttackGoal extends Goal {
 		private final SchmuckEntity actor;
 		private final double speed;
@@ -358,7 +390,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 
 		protected boolean isHoldingBow() {
-			return this.actor.isHolding(Items.BOW);
+			return this.actor.isHolding(Items.BOW) || this.actor.isHolding(Items.EGG);
 		}
 
 		public boolean shouldContinue() {
@@ -439,7 +471,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 						}
 					}
 				} else if (--this.cooldown <= 0 && this.targetSeeingTicker >= -60) {
-					this.actor.setCurrentHand(ProjectileUtil.getHandPossiblyHolding(this.actor, Items.BOW));
+					Hand hand = ProjectileUtil.getHandPossiblyHolding(this.actor, Items.BOW);
+					if (hand == null) {
+						hand = ProjectileUtil.getHandPossiblyHolding(this.actor, Items.EGG);
+					}
+					this.actor.setCurrentHand(hand);
 				}
 
 			}

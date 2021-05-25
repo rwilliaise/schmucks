@@ -7,5 +7,15 @@
   "item.schmucks.schmuck.tooltip": "It looks hyperactive.",
   "item.schmucks.dead_schmuck": "Dead Schmuck",
   "item.schmucks.dead_schmuck.tooltip": "Doesn't look like it's coming back anytime soon.",
-  "entity.schmucks.schmuck": "Schmuck"
+  "entity.schmucks.schmuck": "Schmuck",
+
+  "text.autoconfig.schmucks.title": "Schmucks",
+  "text.autoconfig.schmucks.option.chaosMode": "Chaos Mode",
+  "text.autoconfig.schmucks.option.chaosMode.@Tooltip": "All Schmucks will be incredibly short tempered - attacking teammates when provoked.",
+  "text.autoconfig.schmucks.option.shortTemperChance": "Short Temper Chance",
+  "text.autoconfig.schmucks.option.shortTemperChance.@Tooltip": "The chance for a Schmuck to be short tempered, [0-1]",
+  "text.autoconfig.schmucks.option.leatherHelmetChance": "Leather Helmet Chance",
+  "text.autoconfig.schmucks.option.leatherHelmetChance.@Tooltip": "The chance for a Schmuck to have a leather helmet equipped, [0-1]",
+  "text.autoconfig.schmucks.option.jobRange": "Job Range",
+  "text.autoconfig.schmucks.option.jobRange.@Tooltip": "How far away a Schmuck can look for a job; reduce if you get frequent lag spikes or low TPS.\nThis can and will destroy any server/your computer at >16. Be aware."
 }

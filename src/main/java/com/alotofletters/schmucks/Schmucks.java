@@ -1,8 +1,11 @@
 package com.alotofletters.schmucks;
 
+import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.item.PureMagicItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -42,6 +45,7 @@ public class Schmucks implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		AutoConfig.register(SchmucksConfig.class, JanksonConfigSerializer::new);
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
 		Registry.register(Registry.ITEM, id("fiery_magic"), Schmucks.FIERY_MAGIC);
 		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);
