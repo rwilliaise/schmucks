@@ -1,10 +1,12 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.entity.ai.SchmuckMine;
 import com.alotofletters.schmucks.entity.ai.SchmuckPutUnneeded;
-import com.alotofletters.schmucks.entity.ai.SchmuckSmeltFood;
+import com.alotofletters.schmucks.entity.ai.SchmuckSmeltGoal;
 import com.alotofletters.schmucks.entity.ai.SchmuckTargetMinions;
 import com.mojang.authlib.GameProfile;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -23,10 +25,7 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
@@ -70,6 +69,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
 	private final MeleeAttackGoal meleeAttackGoal = new MeleeAttackGoal(this, 1.2D, false);
+	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
 	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
 
 	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
@@ -80,7 +80,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
-		this.updateAttackType();
 		this.setCanPickUpLoot(true);
 	}
 
@@ -100,7 +99,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.goalSelector.add(1, new SwimGoal(this));
 		this.goalSelector.add(4, new FollowOwnerGoal(this, 1.0D, 15.0F, 4.0F, false));
 		this.goalSelector.add(5, new AnimalMateGoal(this, 1.0D));
-		this.goalSelector.add(6, new SchmuckSmeltFood(this, 1.0D));
+		this.goalSelector.add(6, new SchmuckSmeltGoal(this, 1.0D));
 		this.goalSelector.add(7, new SchmuckPutUnneeded(this, 1.0D));
 		this.goalSelector.add(8, new PickUpItemGoal());
 		this.goalSelector.add(9, new WanderAroundFarGoal(this, 1.0D));
@@ -231,13 +230,16 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		if (this.world != null && !this.world.isClient) {
 			this.goalSelector.remove(this.meleeAttackGoal);
 			this.goalSelector.remove(this.bowAttackGoal);
+			this.goalSelector.remove(this.mineGoal);
 			this.goalSelector.remove(this.pounceGoal);
 			this.targetSelector.remove(this.shortTemperRevengeGoal);
 			this.targetSelector.remove(this.revengeGoal);
-			ItemStack itemStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
+			ItemStack itemStack = this.getMainHandStack();
 			if (itemStack.getItem() == Items.BOW) {
 				this.bowAttackGoal.setAttackInterval(30);
 				this.goalSelector.add(3, this.bowAttackGoal);
+			} else if (FabricToolTags.PICKAXES.contains(itemStack.getItem())) {
+				this.goalSelector.add(3, this.mineGoal);
 			} else {
 				this.goalSelector.add(2, this.pounceGoal);
 				this.goalSelector.add(3, this.meleeAttackGoal);

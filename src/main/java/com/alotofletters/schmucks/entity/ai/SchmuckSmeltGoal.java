@@ -13,11 +13,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldView;
 
-public class SchmuckSmeltFood extends MoveToTargetPosGoal {
+public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 	private final SchmuckEntity schmuck;
 	private int timer;
 
-	public SchmuckSmeltFood(SchmuckEntity schmuck, double speed) {
+	public SchmuckSmeltGoal(SchmuckEntity schmuck, double speed) {
 		super(schmuck, speed, 8);
 		this.schmuck = schmuck;
 	}
@@ -29,7 +29,19 @@ public class SchmuckSmeltFood extends MoveToTargetPosGoal {
 			return false;
 		}
 		Item item = this.schmuck.getMainHandStack().getItem();
-		return schmuck.isTamed() && Schmucks.RAW_MEAT_TAG.contains(item) && super.canStart();
+		return schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
+	}
+
+	public boolean isSmeltable(Item item) {
+		return Schmucks.RAW_MINERAL_TAG.contains(item) || Schmucks.RAW_MEAT_TAG.contains(item);
+	}
+
+	public boolean isGoodSmelter(BlockState state) {
+		Item item = this.schmuck.getMainHandStack().getItem();
+		if (Schmucks.RAW_MINERAL_TAG.contains(item) && state.isIn(Schmucks.ORE_SMELTERS_TAG)) {
+			return true;
+		}
+		return Schmucks.RAW_MEAT_TAG.contains(item) && state.isIn(Schmucks.FOOD_SMELTERS_TAG);
 	}
 
 	@Override
@@ -47,7 +59,7 @@ public class SchmuckSmeltFood extends MoveToTargetPosGoal {
 
 	private void putIntoFurnace() {
 		BlockState blockState = this.schmuck.world.getBlockState(this.targetPos);
-		if (blockState.isIn(Schmucks.FOOD_SMELTERS_TAG)) {
+		if (this.isGoodSmelter(blockState)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) this.schmuck.world.getBlockEntity(this.targetPos);
 			if (blockEntity != null) {
 				ItemStack itemStack = this.schmuck.getMainHandStack();
@@ -66,7 +78,7 @@ public class SchmuckSmeltFood extends MoveToTargetPosGoal {
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState blockState = world.getBlockState(pos);
-		if (blockState.isIn(Schmucks.FOOD_SMELTERS_TAG)) {
+		if (this.isGoodSmelter(blockState)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) world.getBlockEntity(pos);
 			if (blockEntity != null) {
 				ItemStack currentStack = blockEntity.getStack(0);
