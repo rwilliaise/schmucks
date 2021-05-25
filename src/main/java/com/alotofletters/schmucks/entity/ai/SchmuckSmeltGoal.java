@@ -1,7 +1,9 @@
 package com.alotofletters.schmucks.entity.ai;
 
 import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
@@ -18,7 +20,7 @@ public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 	private int timer;
 
 	public SchmuckSmeltGoal(SchmuckEntity schmuck, double speed) {
-		super(schmuck, speed, 8, 2);
+		super(schmuck, speed, schmuck.config.jobRange, 2);
 		this.schmuck = schmuck;
 	}
 

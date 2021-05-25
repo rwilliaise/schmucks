@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 public class SchmuckMine extends MoveToTargetPosGoal {
@@ -16,7 +17,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	private int breakProgress;
 
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
-		super(schmuck, speed, 8);
+		super(schmuck, speed, schmuck.config.jobRange);
 		this.schmuck = schmuck;
 		this.maxProgress = maxProgress;
 	}
@@ -51,6 +52,25 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		return this.isOrePresent();
 	}
 
+	@Override
+	protected BlockPos getTargetPos() {
+		World world = this.schmuck.world;
+		BlockPos pos = this.targetPos;
+		if (world.isAir(pos.up())) {
+			return pos.up();
+		} else if (world.isAir(pos.down())) {
+			return pos.down();
+		} else if (world.isAir(pos.north())) {
+			return pos.north();
+		} else if (world.isAir(pos.south())) {
+			return pos.south();
+		} else if (world.isAir(pos.west())) {
+			return pos.west();
+		} else { // east
+			return pos.east();
+		}
+	}
+
 	public boolean isOrePresent() {
 		return !this.schmuck.world.getBlockState(this.targetPos).isAir();
 	}
@@ -67,7 +87,12 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	}
 
 	public boolean isExposed(WorldView world, BlockPos pos) {
-		return world.isAir(pos.up());
+		return world.isAir(pos.up()) ||
+				world.isAir(pos.down()) ||
+				world.isAir(pos.north()) ||
+				world.isAir(pos.south()) ||
+				world.isAir(pos.west()) ||
+				world.isAir(pos.east());
 	}
 
 	@Override

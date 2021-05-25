@@ -4,7 +4,7 @@
   "version": "${version}",
   "name": "Schmucks",
   "description": "Adds a whole lotta \"schmucks!\"",
-  "authors": [],
+  "authors": [ "ALotOfLetters" ],
   "contact": {},
   "license": "MIT",
   "icon": "assets/schmucks/icon.png",
@@ -15,6 +15,9 @@
     ],
     "main": [
       "com.alotofletters.schmucks.Schmucks"
+    ],
+    "modmenu": [
+      "com.alotofletters.schmucks.config.SchmucksModMenuIntegration"
     ]
   },
   "mixins": [
@@ -24,5 +27,8 @@
     "fabricloader": ">=0.11.3",
     "fabric": "*",
     "minecraft": "1.16.5"
+  },
+  "suggests": {
+    "modmenu": ">=1.16.9"
   }
 }

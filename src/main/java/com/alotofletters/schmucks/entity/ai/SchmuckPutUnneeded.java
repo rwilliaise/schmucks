@@ -21,7 +21,7 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 	private int empty;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
-		super(mob, speed, 8, 2);
+		super(mob, speed, mob.config.jobRange, 2);
 		this.schmuck = mob;
 	}
 
