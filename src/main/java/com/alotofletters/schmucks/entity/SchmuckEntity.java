@@ -108,7 +108,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.goalSelector.add(6, new AnimalMateGoal(this, 1.0D));
 		this.goalSelector.add(7, new SchmuckSmeltGoal(this, 1.0D));
 		this.goalSelector.add(8 , new SchmuckPutUnneeded(this, 1.0D));
-		this.goalSelector.add(9, new PickUpItemGoal());
+		this.goalSelector.add(9, new SchmuckPickUpItemGoal());
 		this.goalSelector.add(10, new SchmuckFleeAllJobs(this, 1.0D));
 		this.goalSelector.add(11, new SchmuckFleeGoal<>(PlayerEntity.class));
 		this.goalSelector.add(12, new WanderAroundFarGoal(this, 1.0D));
@@ -331,9 +331,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		TrackedDataHandlerRegistry.register(OPTIONAL_PROFILE);
 	}
 
-	class PickUpItemGoal extends Goal {
+	class SchmuckPickUpItemGoal extends Goal {
 
-		public PickUpItemGoal() {
+		public SchmuckPickUpItemGoal() {
 			this.setControls(EnumSet.of(Control.MOVE));
 		}
 
@@ -412,15 +412,15 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 
 		public boolean canStart() {
-			return this.actor.getTarget() != null && this.isHoldingBow();
+			return !this.actor.isSitting() && this.actor.getTarget() != null && this.isHoldingRangedWeapon();
 		}
 
-		protected boolean isHoldingBow() {
+		protected boolean isHoldingRangedWeapon() {
 			return this.actor.isHolding(Items.BOW) || this.actor.isHolding(Items.EGG);
 		}
 
 		public boolean shouldContinue() {
-			return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingBow();
+			return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingRangedWeapon();
 		}
 
 		public void start() {

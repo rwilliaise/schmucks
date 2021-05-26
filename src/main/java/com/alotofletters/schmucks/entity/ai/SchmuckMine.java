@@ -32,7 +32,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		if (!super.canStart()) {
 			return false;
 		} else {
-			return this.schmuck.getMainHandStack().getItem() instanceof PickaxeItem;
+			return this.schmuck.getMainHandStack().getItem() instanceof PickaxeItem && !this.schmuck.isSitting();
 		}
 	}
 
@@ -54,7 +54,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	}
 
 	public boolean shouldContinue() {
-		return this.isOrePresent();
+		return super.shouldContinue() && !this.schmuck.isSitting() && this.isOrePresent();
 	}
 
 	@Override

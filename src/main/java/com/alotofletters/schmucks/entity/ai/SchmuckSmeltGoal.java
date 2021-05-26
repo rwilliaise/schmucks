@@ -31,7 +31,7 @@ public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 			return false;
 		}
 		Item item = this.schmuck.getMainHandStack().getItem();
-		return schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
+		return !this.schmuck.isSitting() && this.schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
 	}
 
 	public boolean isSmeltable(Item item) {
