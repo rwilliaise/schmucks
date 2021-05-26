@@ -79,6 +79,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private UUID targetUuid;
 	private boolean shortTempered;
+	private boolean canTeleport;
 	private int eggUsageTime;
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
@@ -100,16 +101,18 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	protected void initGoals() {
 		super.initGoals();
 		this.goalSelector.add(1, new SwimGoal(this));
-		this.goalSelector.add(4, new FollowOwnerGoal(this, 1.0D, 15.0F, 4.0F, false));
-		this.goalSelector.add(5, new AnimalMateGoal(this, 1.0D));
-		this.goalSelector.add(6, new SchmuckSmeltGoal(this, 1.0D));
-		this.goalSelector.add(7, new SchmuckPutUnneeded(this, 1.0D));
-		this.goalSelector.add(8, new PickUpItemGoal());
-		this.goalSelector.add(9, new SchmuckFleeAllJobs(this, 1.0D));
-		this.goalSelector.add(10, new WanderAroundFarGoal(this, 1.0D));
-		this.goalSelector.add(11, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(11, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
-		this.goalSelector.add(11, new LookAroundGoal(this));
+		this.goalSelector.add(2, new SitGoal(this));
+		this.goalSelector.add(5, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
+		this.goalSelector.add(6, new AnimalMateGoal(this, 1.0D));
+		this.goalSelector.add(7, new SchmuckSmeltGoal(this, 1.0D));
+		this.goalSelector.add(8 , new SchmuckPutUnneeded(this, 1.0D));
+		this.goalSelector.add(9, new PickUpItemGoal());
+		this.goalSelector.add(10, new SchmuckFleeAllJobs(this, 1.0D));
+		this.goalSelector.add(11, new SchmuckFleeGoal<>(PlayerEntity.class));
+		this.goalSelector.add(12, new WanderAroundFarGoal(this, 1.0D));
+		this.goalSelector.add(13, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(13, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
+		this.goalSelector.add(13, new LookAroundGoal(this));
 		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
 		this.targetSelector.add(4, new SchmuckTargetMinions(this));
@@ -121,9 +124,22 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		if (player.getStackInHand(hand).isEmpty()) {
 			player.giveItemStack(this.getMainHandStack());
 			this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+			return ActionResult.SUCCESS;
+		}
+
+		if (player.getStackInHand(hand).getItem() == Schmucks.CONTROL_WAND) {
+			this.toggleSit();
+			return ActionResult.SUCCESS;
 		}
 
 		return super.interactMob(player, hand);
+	}
+
+	public void toggleSit() {
+		this.setSitting(!this.isSitting());
+		this.jumping = false;
+		this.navigation.stop();
+		this.setTarget(null);
 	}
 
 	@Override
@@ -139,6 +155,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public void writeCustomDataToTag(CompoundTag tag) {
 		super.writeCustomDataToTag(tag);
 		tag.putBoolean("ShortTemper", this.shortTempered);
+		tag.putBoolean("CanTeleport", this.canTeleport);
 		this.angerToTag(tag);
 	}
 
@@ -151,6 +168,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.setOwnerProfile(new GameProfile(this.getOwnerUuid(), null));
 		}
 		this.shortTempered = tag.getBoolean("ShortTemper");
+		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.updateAttackType();
 	}
 
@@ -224,6 +242,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		if (!this.world.isClient) {
 			this.updateAttackType();
 		}
+	}
+
+	public boolean getCanTeleport() {
+		return canTeleport;
+	}
+
+	public void setCanTeleport(boolean canTeleport) {
+		this.canTeleport = canTeleport;
 	}
 
 	@Override
@@ -477,6 +503,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 				}
 
 			}
+		}
+	}
+
+	class SchmuckFleeGoal<T extends LivingEntity> extends FleeEntityGoal<T> {
+
+		public SchmuckFleeGoal(Class<T> fleeFromType) {
+			super(SchmuckEntity.this, fleeFromType, 2, 1.0D, 1.0D, (entity) -> !(entity instanceof PlayerEntity));
 		}
 	}
 }
