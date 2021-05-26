@@ -78,6 +78,11 @@ public class ControlWandScreen extends Screen {
 		this.client.openScreen(null);
 	}
 
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	@Environment(EnvType.CLIENT)
 	class CancelButtonWidget extends ControlWandScreen.IconButtonWidget {
 		public CancelButtonWidget(int x, int y) {

@@ -78,8 +78,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
 
 	private UUID targetUuid;
+
 	private boolean shortTempered;
-	private boolean canTeleport;
+	private boolean canTeleport = true;
+
 	private int eggUsageTime;
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
