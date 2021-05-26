@@ -4,6 +4,7 @@
   "package": "com.alotofletters.schmucks.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ClientWorldMixin",
     "FireBlockMixin"
   ],
   "client": [
