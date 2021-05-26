@@ -29,7 +29,7 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 
 	@Override
 	public boolean canStart() {
-		return this.schmuck.isTamed() && this.isStorable(this.schmuck.getMainHandStack()) && super.canStart();
+		return !this.schmuck.isSitting() && this.schmuck.isTamed() && this.isStorable(this.schmuck.getMainHandStack()) && super.canStart();
 	}
 
 	@Override
