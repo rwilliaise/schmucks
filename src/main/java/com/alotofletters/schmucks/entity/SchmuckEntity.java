@@ -129,6 +129,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public void tickMovement() {
+		super.tickHandSwing();
 		super.tickMovement();
 
 		if (!this.world.isClient) {

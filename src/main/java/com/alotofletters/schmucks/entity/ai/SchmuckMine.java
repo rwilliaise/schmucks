@@ -20,6 +20,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	private final SchmuckEntity schmuck;
 	private final int maxProgress;
 	private int breakProgress;
+	private int lastProgress;
 
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
 		super(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange);
@@ -39,11 +40,12 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	@Override
 	public void tick() {
 		if (this.hasReached()) {
-			if (this.schmuck.getRandom().nextInt(20) == 0) {
-				this.schmuck.swingHand(Hand.MAIN_HAND);
-			}
-			breakProgress++;
+			this.breakProgress++;
 			int newProgress = (int) Math.floor((float) this.breakProgress / this.getMaxProgress() * 10.0F);
+			if (this.lastProgress != newProgress) {
+				this.schmuck.swingHand(Hand.MAIN_HAND);
+				this.lastProgress = newProgress;
+			}
 			this.schmuck.world.setBlockBreakingInfo(this.schmuck.getEntityId(), this.targetPos, newProgress);
 			if (this.breakProgress >= this.getMaxProgress()) {
 				this.schmuck.world.breakBlock(this.targetPos, true);
