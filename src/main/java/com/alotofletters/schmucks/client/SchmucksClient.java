@@ -12,6 +12,6 @@ import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 public class SchmucksClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
-		EntityRendererRegistry.INSTANCE.register(Schmucks.SCHMUCK, (dispatcher, context) -> new SchmuckEntityRenderer(dispatcher));
+		EntityRendererRegistry.INSTANCE.register(Schmucks.SCHMUCK, (dispatcher, context) -> new SchmuckEntityRenderer(dispatcher, false));
 	}
 }

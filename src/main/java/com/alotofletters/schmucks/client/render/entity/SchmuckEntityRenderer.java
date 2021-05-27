@@ -12,7 +12,6 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
-import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -22,18 +21,26 @@ import java.util.UUID;
 
 @Environment(EnvType.CLIENT)
 public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, SchmuckEntityModel> {
-	public static final Map<UUID, Identifier> CACHED_TEXTURES = new HashMap<>();
+	private final Map<UUID, Identifier> CACHED_TEXTURES = new HashMap<>();
+	private final Map<UUID, Boolean> loadedTexture = new HashMap<>();
 
-	private Identifier textureCached = Schmucks.id("textures/entity/schmuck.png");
-	private boolean slim = false;
-	private boolean loadedTexture = false;
+	private final Identifier defaultTexture = Schmucks.id("textures/entity/schmuck.png");
 
-	public SchmuckEntityRenderer(EntityRenderDispatcher dispatcher) {
+	public SchmuckEntityRenderer(EntityRenderDispatcher dispatcher, boolean slim) {
 		super(dispatcher, new SchmuckEntityModel(0f, false), 0.5f);
 		this.addFeature(
 			new ArmorFeatureRenderer<>(this,
 				new SchmuckEntityModel(0.5f, true),
 				new SchmuckEntityModel(1f, true)));
+		if (slim) {
+			SchmuckEntityModel model = this.getModel();
+			model.leftArm = new ModelPart(model, 32, 48);
+			model.leftArm.addCuboid(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, 0.0F);
+			model.leftArm.setPivot(5.0F, 2.5F, 0.0F);
+			model.rightArm = new ModelPart(model, 40, 16);
+			model.rightArm.addCuboid(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, 0.0F);
+			model.rightArm.setPivot(-5.0F, 2.5F, 0.0F);
+		}
 	}
 
 	@Override
@@ -42,53 +49,28 @@ public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, Sc
 		super.scale(entity, matrices, amount);
 	}
 
-	private void updateSlim() {
-		if (this.slim) {
-			SchmuckEntityModel model = this.getModel();
-			model.leftArm = new ModelPart(model, 32, 48);
-			model.leftArm.addCuboid(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, 0.0F);
-			model.leftArm.setPivot(5.0F, 2.5F, 0.0F);
-			model.rightArm = new ModelPart(model, 40, 16);
-			model.rightArm.addCuboid(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, 0.0F);
-			model.rightArm.setPivot(-5.0F, 2.5F, 0.0F);
-		} else {
-			SchmuckEntityModel model = this.getModel();
-			model.leftArm = new ModelPart(model, 32, 48);
-			model.leftArm.addCuboid(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, 0.0F);
-			model.leftArm.setPivot(5.0F, 2.0F, 0.0F);
-			model.rightArm = new ModelPart(model, 40, 16);
-			model.rightArm.addCuboid(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, 0.0F);
-			model.rightArm.setPivot(-5.0F, 2.0F, 0.0F);
-		}
-	}
-
 	@Override
 	public Identifier getTexture(SchmuckEntity mobEntity) {
-		if (mobEntity.getOwnerProfile() != null) {
-			return this.getTexturePrecached(mobEntity.getOwnerProfile());
+		if (mobEntity.getOwnerUuid() != null) {
+			return this.getTexturePrecached(mobEntity.getOwnerUuid());
 		}
 		return super.getTexture(mobEntity);
 	}
 
-	public Identifier getTexturePrecached(GameProfile profile) {
-		if (!this.loadedTexture) {
-			this.loadedTexture = true;
-			if (CACHED_TEXTURES.containsKey(profile.getId())) {
-				this.textureCached = CACHED_TEXTURES.get(profile.getId());
-				return this.textureCached;
+	public Identifier getTexturePrecached(UUID uuid) {
+		if (!this.loadedTexture.containsKey(uuid)) {
+			this.loadedTexture.put(uuid, true);
+			if (CACHED_TEXTURES.containsKey(uuid)) {
+				return CACHED_TEXTURES.get(uuid);
 			}
-			synchronized (this) { // super duper dangerous but who cares! haha.... ha....
-				MinecraftClient.getInstance().getSkinProvider().loadSkin(profile, (type, identifier, minecraftProfileTexture) -> {
+			synchronized (this) {
+				MinecraftClient.getInstance().getSkinProvider().loadSkin(new GameProfile(uuid, null), (type, identifier, minecraftProfileTexture) -> {
 					if (type == MinecraftProfileTexture.Type.SKIN) {
-						String model = minecraftProfileTexture.getMetadata("model");
-						this.slim = "slim".equals(model); // just assume its slim because i dont know metadata values
-						this.updateSlim();
-						CACHED_TEXTURES.put(profile.getId(), identifier);
-						this.textureCached = identifier;
+						CACHED_TEXTURES.put(uuid, identifier);
 					}
 				}, true);
 			}
 		}
-		return this.textureCached;
+		return CACHED_TEXTURES.getOrDefault(uuid, defaultTexture);
 	}
 }

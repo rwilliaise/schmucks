@@ -50,7 +50,9 @@ public class SchmuckTargetMinions extends Goal {
 		List<TameableEntity> nearby = this.mob.world.getEntitiesByClass(TameableEntity.class,
 				box,
 				tameableEntity -> tameableEntity.getOwner() == this.mob.getAttacker());
-		this.mob.setTarget(nearby.get(this.mob.getRandom().nextInt(nearby.size())));
+		if (nearby.size() > 0) {
+			this.mob.setTarget(nearby.get(this.mob.getRandom().nextInt(nearby.size())));
+		}
 		super.start();
 	}
 }
