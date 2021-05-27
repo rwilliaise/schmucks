@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 
 public class ControlWandItem extends Item {
 	public ControlWandItem(Settings settings) {
-		super(settings);
+		super(settings.maxCount(1));
 	}
 
 	@Override

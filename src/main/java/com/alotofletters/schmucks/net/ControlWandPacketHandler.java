@@ -21,9 +21,6 @@ public class ControlWandPacketHandler implements ServerPlayNetworking.PlayChanne
 		if (!player.isHolding(Schmucks.CONTROL_WAND)) {
 			return;
 		}
-		if (player.getItemCooldownManager().getCooldownProgress(Schmucks.CONTROL_WAND, 0) != 0) {
-			return;
-		}
 		ControlAction action = buf.readEnumConstant(ControlWandItem.ControlAction.class);
 		switch (action) {
 			case STOP_ALL:
