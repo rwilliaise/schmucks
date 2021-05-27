@@ -17,6 +17,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.Angerable;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
@@ -74,10 +75,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
-		if (random.nextFloat() < AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance) {
+		if (random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance)).floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().shortTemperChance; // will attack teammates if damaged
+		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance)).floatValue() / 100; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -86,22 +87,22 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	protected void initGoals() {
 		super.initGoals();
 		this.goalSelector.add(1, new SwimGoal(this));
-		this.goalSelector.add(2, new SitGoal(this));
-		this.goalSelector.add(5, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
-		this.goalSelector.add(6, new AnimalMateGoal(this, 1.0D));
-		this.goalSelector.add(7, new SchmuckSmeltGoal(this, 1.0D));
-		this.goalSelector.add(8 , new SchmuckPutUnneeded(this, 1.0D));
-		this.goalSelector.add(9, new SchmuckPickUpItemGoal());
-		this.goalSelector.add(10, new SchmuckFleeAllJobs(this, 1.0D));
-		this.goalSelector.add(11, new SchmuckFleeGoal<>(PlayerEntity.class));
-		this.goalSelector.add(12, new WanderAroundFarGoal(this, 1.0D));
-		this.goalSelector.add(13, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(13, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
-		this.goalSelector.add(13, new LookAroundGoal(this));
+		this.goalSelector.add(2, new FleeEntityGoal<>(this, CreeperEntity.class, 16, 1.0D, 1.2D));
+		this.goalSelector.add(3, new SitGoal(this));
+		this.goalSelector.add(6, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
+		this.goalSelector.add(7, new AnimalMateGoal(this, 1.0D));
+		this.goalSelector.add(8, new SchmuckSmeltGoal(this, 1.0D));
+		this.goalSelector.add(9 , new SchmuckPutUnneeded(this, 1.0D));
+		this.goalSelector.add(10, new SchmuckPickUpItemGoal());
+		this.goalSelector.add(11, new SchmuckFleeAllJobs(this, 1.0D));
+		this.goalSelector.add(12, new SchmuckFleeGoal<>(PlayerEntity.class));
+		this.goalSelector.add(13, new WanderAroundFarGoal(this, 1.0D));
+		this.goalSelector.add(14, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+		this.goalSelector.add(14, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
+		this.goalSelector.add(14, new LookAroundGoal(this));
 		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
 		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
-		this.targetSelector.add(4, new SchmuckTargetMinions(this));
-		this.targetSelector.add(5, new UniversalAngerGoal<>(this, true));
+		this.targetSelector.add(4, new UniversalAngerGoal<>(this, true));
 	}
 
 	@Override
@@ -248,12 +249,12 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			ItemStack itemStack = this.getMainHandStack();
 			if (itemStack.getItem() == Items.BOW || itemStack.getItem() == Items.EGG) {
 				this.bowAttackGoal.setAttackInterval(itemStack.getItem() == Items.EGG ? 5 : 30);
-				this.goalSelector.add(3, this.bowAttackGoal);
+				this.goalSelector.add(5, this.bowAttackGoal);
 			} else if (FabricToolTags.PICKAXES.contains(itemStack.getItem())) {
-				this.goalSelector.add(3, this.mineGoal);
+				this.goalSelector.add(5, this.mineGoal);
 			} else {
-				this.goalSelector.add(2, this.pounceGoal);
-				this.goalSelector.add(3, this.meleeAttackGoal);
+				this.goalSelector.add(4, this.pounceGoal);
+				this.goalSelector.add(5, this.meleeAttackGoal);
 			}
 			if (this.shortTempered) {
 				this.targetSelector.add(3, this.shortTemperRevengeGoal);

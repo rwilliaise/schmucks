@@ -22,6 +22,11 @@ public abstract class FleeBlockGoal extends MoveToTargetPosGoal {
 	}
 
 	@Override
+	protected int getInterval(PathAwareEntity mob) {
+		return 160;
+	}
+
+	@Override
 	protected BlockPos getTargetPos() {
 		return this.targetPos;
 	}
