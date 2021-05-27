@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 import static com.alotofletters.schmucks.item.ControlWandItem.*;
 
-public class ControlWandPacketHandler implements ServerPlayNetworking.PlayChannelHandler {
+public class ControlWandServerChannelHandler implements ServerPlayNetworking.PlayChannelHandler {
 	@Override
 	public void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
 		if (!player.isHolding(Schmucks.CONTROL_WAND)) {

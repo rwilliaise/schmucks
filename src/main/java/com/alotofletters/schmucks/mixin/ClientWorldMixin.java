@@ -1,6 +1,8 @@
 package com.alotofletters.schmucks.mixin;
 
 import com.alotofletters.schmucks.client.render.entity.SchmuckEntityRenderer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
