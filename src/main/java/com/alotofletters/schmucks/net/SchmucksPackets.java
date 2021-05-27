@@ -6,6 +6,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 public class SchmucksPackets {
 
 	public static void init() {
-		ServerPlayNetworking.registerGlobalReceiver(Schmucks.CONTROL_WAND_PACKET_ID, new ControlWandPacketHandler());
+		ServerPlayNetworking.registerGlobalReceiver(Schmucks.CONTROL_WAND_PACKET_ID, new ControlWandServerChannelHandler());
 	}
 }
