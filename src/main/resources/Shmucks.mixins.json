@@ -7,7 +7,7 @@
     "FireBlockMixin"
   ],
   "client": [
-    "ClientWorldMixin"
+    "EntityRenderDispatcherMixin"
   ],
   "injectors": {
     "defaultRequire": 1

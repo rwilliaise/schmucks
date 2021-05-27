@@ -3,9 +3,9 @@ package com.alotofletters.schmucks.entity;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
-import com.mojang.authlib.GameProfile;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
+import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -15,7 +15,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.Angerable;
 import net.minecraft.entity.mob.MobEntity;
@@ -25,9 +24,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.BowItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
@@ -39,33 +40,15 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
-	/**
-	 * Tracked data handler for a replicated game profile. Primarily used for the skins.
-	 */
-	public static final TrackedDataHandler<Optional<GameProfile>> OPTIONAL_PROFILE = new TrackedDataHandler<Optional<GameProfile>>() {
-		public void write(PacketByteBuf data, Optional<GameProfile> object) {
-			data.writeBoolean(object.isPresent() && object.get().getId() != null);
-
-			object.ifPresent(gameProfile -> data.writeUuid(gameProfile.getId()));
-		}
-
-		public Optional<GameProfile> read(PacketByteBuf packetByteBuf) {
-			return !packetByteBuf.readBoolean() ? Optional.empty() : Optional.of(new GameProfile(packetByteBuf.readUuid(), null));
-		}
-
-		public Optional<GameProfile> copy(Optional<GameProfile> object) {
-			return object;
-		}
-	};
-
 	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
 
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
-	private static final TrackedData<Optional<GameProfile>> OWNER_PROFILE = DataTracker.registerData(SchmuckEntity.class, OPTIONAL_PROFILE);
 
 	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
@@ -165,10 +148,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public void readCustomDataFromTag(CompoundTag tag) {
 		super.readCustomDataFromTag(tag);
 		this.angerFromTag((ServerWorld) this.world, tag);
-
-		if (this.getOwnerUuid() != null) {
-			this.setOwnerProfile(new GameProfile(this.getOwnerUuid(), null));
-		}
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.updateAttackType();
@@ -187,7 +166,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	protected void initDataTracker() {
 		super.initDataTracker();
 		this.dataTracker.startTracking(ANGER_TIME, 0);
-		this.dataTracker.startTracking(OWNER_PROFILE, Optional.empty());
 	}
 
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
@@ -226,16 +204,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	@Override
 	public void setOwner(PlayerEntity player) {
 		super.setOwner(player);
-		this.setOwnerProfile(player.getGameProfile());
 	}
 
 	@Override
 	public void setAttacking(@Nullable PlayerEntity attacking) {
 		super.setAttacking(attacking);
-	}
-
-	public void setOwnerProfile(GameProfile profile) {
-		this.dataTracker.set(OWNER_PROFILE, Optional.of(profile));
 	}
 
 	@Override
@@ -261,11 +234,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public void equipNoUpdate(EquipmentSlot slot, ItemStack stack) {
 		super.equipStack(slot, stack);
-	}
-
-	@Nullable
-	public GameProfile getOwnerProfile() {
-		return this.dataTracker.get(OWNER_PROFILE).orElse(null);
 	}
 
 	public void updateAttackType() {
@@ -327,8 +295,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return ProjectileUtil.createArrowProjectile(this, arrow, damageModifier);
 	}
 
-	static {
-		TrackedDataHandlerRegistry.register(OPTIONAL_PROFILE);
+	public String getModel() {
+		return this.getOwnerUuid() != null ? DefaultSkinHelper.getModel(this.getOwnerUuid()) : "default";
 	}
 
 	class SchmuckPickUpItemGoal extends Goal {
