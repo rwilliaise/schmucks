@@ -18,9 +18,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldView;
 
-public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
-	private SchmuckEntity schmuck;
-	private int empty;
+public class SchmuckPutUnneeded extends SchmuckJobGoal {
+	private final SchmuckEntity schmuck;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
 		super(mob, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 2);
@@ -79,12 +78,12 @@ public class SchmuckPutUnneeded extends MoveToTargetPosGoal {
 			if (blockState.isOf(Blocks.CHEST)) {
 				ChestBlockEntity blockEntity = (ChestBlockEntity) world.getBlockEntity(pos);
 				if (blockEntity != null) {
-					this.empty = -1;
+					int empty = -1;
 					ItemStack mainHandStack = this.schmuck.getMainHandStack();
 					for (int i = 0; i < 27; i++) {
 						ItemStack stack = blockEntity.getStack(i);
 						if (stack.isEmpty() || mainHandStack.isItemEqual(stack)) {
-							this.empty = i;
+							empty = i;
 							break;
 						}
 					}

@@ -15,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldView;
 
-public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
+public class SchmuckSmeltGoal extends SchmuckJobGoal {
 	private final SchmuckEntity schmuck;
 	private int timer;
 
@@ -31,7 +31,7 @@ public class SchmuckSmeltGoal extends MoveToTargetPosGoal {
 			return false;
 		}
 		Item item = this.schmuck.getMainHandStack().getItem();
-		return !this.schmuck.isSitting() && this.schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
+		return this.schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
 	}
 
 	public boolean isSmeltable(Item item) {

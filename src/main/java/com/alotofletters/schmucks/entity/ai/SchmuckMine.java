@@ -6,7 +6,9 @@ import com.alotofletters.schmucks.entity.SchmuckEntity;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
+import net.minecraft.entity.ai.TargetFinder;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
 import net.minecraft.particle.ParticleTypes;
@@ -38,6 +40,11 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	}
 
 	@Override
+	protected int getInterval(PathAwareEntity mob) {
+		return 40;
+	}
+
+	@Override
 	public void tick() {
 		if (this.hasReached()) {
 			this.breakProgress++;
@@ -52,6 +59,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 			}
 		}
 
+		this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
 		super.tick();
 	}
 
@@ -63,19 +71,24 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	protected BlockPos getTargetPos() {
 		World world = this.schmuck.world;
 		BlockPos pos = this.targetPos;
-		if (world.isAir(pos.up())) {
+		if (isStandable(pos.up())) {
 			return pos.up();
-		} else if (world.isAir(pos.down())) {
+		} else if (isStandable(pos.down())) {
 			return pos.down();
-		} else if (world.isAir(pos.north())) {
+		} else if (isStandable(pos.north())) {
 			return pos.north();
-		} else if (world.isAir(pos.south())) {
+		} else if (isStandable(pos.south())) {
 			return pos.south();
-		} else if (world.isAir(pos.west())) {
+		} else if (isStandable(pos.west())) {
 			return pos.west();
-		} else { // east
+		} else {
 			return pos.east();
 		}
+	}
+
+	private boolean isStandable(BlockPos pos) {
+		World world = this.schmuck.world;
+		return world.isAir(pos) && world.getBlockState(pos.down()).hasSolidTopSurface(world, pos, this.schmuck);
 	}
 
 	public boolean isOrePresent() {
