@@ -21,6 +21,8 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 	private final DropdownListEntry[] buttons;
 	private int selected;
 
+	private boolean isVisible = false;
+
 	public ControlWandDropdown(ControlWandScreen parent, int x, int y, boolean storeFlag, StringIdentifiable ...options) {
 		super(x, y, 162, 20, null);
 		this.storeFlag = storeFlag;
@@ -36,6 +38,18 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 			buttons[i].visible = false;
 			parent.addButton(buttons[i]);
 		}
+		this.recalculatePositions();
+	}
+
+	public void recalculatePositions() {
+		int j = 0;
+		for (int i = 0; i < buttons.length; i++) {
+			if (i != selected) {
+				buttons[i].y = this.y + (j + 1) * this.height;
+				j++;
+			}
+			buttons[i].visible = false;
+		}
 	}
 
 	public StringIdentifiable getSelected() {
@@ -44,8 +58,11 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 
 	@Override
 	public void onPress() {
-		for (DropdownListEntry button : buttons) {
-			button.visible = !button.visible;
+		isVisible = !isVisible;
+		for (int i = 0; i < buttons.length; i++) {
+			if (i != selected) {
+				buttons[i].visible = isVisible;
+			}
 		}
 	}
 
@@ -110,9 +127,13 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 
 		@Override
 		public void onPress() {
-			for (DropdownListEntry button : buttons) {
-				button.visible = !button.visible;
+			isVisible = false;
+			for (int i = 0; i < buttons.length; i++) {
+				if (i != selected) {
+					buttons[i].visible = !buttons[i].visible;
+				}
 				selected = this.index;
+				recalculatePositions();
 
 				if (storeFlag) {
 					Schmucks.CONFIG.wandIndexRange = this.index;
