@@ -23,15 +23,18 @@ public class ControlWandItem extends Item {
 		super(settings.maxCount(1));
 	}
 
-//	@Override
-//	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-//		user.getItemCooldownManager().set(this, 20);
-//		if (world.isClient) {
-//			this.openScreen(null);
-//			return TypedActionResult.success(user.getStackInHand(hand));
-//		}
-//		return super.use(world, user, hand);
-//	}
+	@Override
+	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+		if (!user.isSneaking()) {
+			return super.use(world, user, hand);
+		}
+		user.getItemCooldownManager().set(this, 20);
+		if (world.isClient) {
+			this.openScreen(null);
+			return TypedActionResult.success(user.getStackInHand(hand));
+		}
+		return super.use(world, user, hand);
+	}
 
 	@Override
 	public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
@@ -63,6 +66,8 @@ public class ControlWandItem extends Item {
 	}
 
 	public enum ControlGroup implements StringIdentifiable {
+		ALL("all"),
+		ALL_NO_TOOL("all_no_tool"),
 		THIS("apply_this"),
 		ALL_BUT_THIS("all_but_this"),
 		SAME_TOOL("apply_same_tool"),

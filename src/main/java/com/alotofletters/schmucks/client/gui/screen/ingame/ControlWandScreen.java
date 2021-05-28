@@ -29,6 +29,8 @@ public class ControlWandScreen extends Screen {
 
 	private final SchmuckEntity schmuck;
 
+	private ControlWandDropdown dropdown;
+
 	public ControlWandScreen(SchmuckEntity schmuck) {
 		super(new TranslatableText("gui.schmucks.control_wand.title"));
 		this.schmuck = schmuck;
@@ -60,6 +62,9 @@ public class ControlWandScreen extends Screen {
 
 	@Override
 	protected void init() {
+		int x, y;
+		boolean storeFlag = false;
+		ControlWandItem.ControlGroup[] options;
 		if (this.schmuck == null) {
 			this.createButton(STOP_ALL,
 					"stop_all",
@@ -84,10 +89,17 @@ public class ControlWandScreen extends Screen {
 			this.createButton(STOP_ATTACKING,
 					"stop_attacking",
 					this.height / 4 + 96 + -16);
+			x = this.width / 2 - 81;
+			y = this.height / 4 + 120 + -16;
+			storeFlag = true;
+			options = new ControlWandItem.ControlGroup[] { ALL, ALL_NO_TOOL };
 			this.addButton(new ControlWandButtonWidget.CancelButtonWidget(this.width / 2 + 80, this.height / 4 + 24 + -17, this));
 		} else {
 			int i = (this.width - this.backgroundWidth) / 2;
 			int j = (this.height - this.backgroundHeight) / 2;
+			x = i + 7;
+			y = j + 65;
+			options = new ControlWandItem.ControlGroup[] { THIS, ALL_BUT_THIS, SAME_TOOL, ALL_BUT_SAME_TOOL };
 			this.createButton(STOP_ALL,
 					"stop_all",
 					i + 7,
@@ -98,8 +110,9 @@ public class ControlWandScreen extends Screen {
 					i + 7,
 					j + 38,
 					104);
-			this.addButton(new ControlWandDropdown(this, i + 7, j + 65, THIS, ALL_BUT_THIS, SAME_TOOL, ALL_BUT_SAME_TOOL));
 		}
+		this.dropdown = new ControlWandDropdown(this, x, y, storeFlag, options);
+		this.addButton(dropdown);
 	}
 
 	private void createButton(ControlWandItem.ControlAction action, String key, int y) {
@@ -112,12 +125,13 @@ public class ControlWandScreen extends Screen {
 				width,
 				20,
 				new TranslatableText(String.format("gui.schmucks.control_wand.%s", key)),
-				(button) -> this.sendControlPacket(action)));
+				(button) -> this.sendControlPacket(action, (ControlWandItem.ControlGroup) this.dropdown.getSelected())));
 	}
 
-	private void sendControlPacket(ControlWandItem.ControlAction action) {
+	private void sendControlPacket(ControlWandItem.ControlAction action, ControlWandItem.ControlGroup group) {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeEnumConstant(action);
+		buf.writeEnumConstant(group);
 		ClientPlayNetworking.send(Schmucks.CONTROL_WAND_PACKET_ID, buf);
 		this.client.openScreen(null);
 	}
