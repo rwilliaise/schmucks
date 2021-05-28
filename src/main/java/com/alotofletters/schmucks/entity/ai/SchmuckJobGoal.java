@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks.entity.ai;
 
+import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -10,7 +11,7 @@ public abstract class SchmuckJobGoal extends MoveToTargetPosGoal {
 	protected SchmuckEntity schmuck;
 
 	public SchmuckJobGoal(SchmuckEntity schmuck, double speed) {
-		this(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange);
+		this(schmuck, speed, Schmucks.CONFIG.jobRange);
 	}
 
 	public SchmuckJobGoal(SchmuckEntity schmuck, double speed, int range) {
