@@ -1,6 +1,5 @@
 package com.alotofletters.schmucks.net;
 
-
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.item.ControlWandItem;
@@ -12,6 +11,7 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static com.alotofletters.schmucks.item.ControlWandItem.*;
 
@@ -21,29 +21,63 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 		if (!player.isHolding(Schmucks.CONTROL_WAND)) {
 			return;
 		}
-		ControlAction action = buf.readEnumConstant(ControlWandItem.ControlAction.class);
+		ControlAction action = buf.readEnumConstant(ControlAction.class);
+		ControlGroup group = buf.readEnumConstant(ControlGroup.class);
+		SchmuckEntity schmuck = null;
+		if (buf.readBoolean()) {
+			schmuck = (SchmuckEntity) player.world.getEntityById(buf.readInt());
+		}
 		switch (action) {
 			case STOP_ALL:
-				this.setSittingNearby(player, true);
+				this.setSittingNearby(player, group, schmuck, true);
 				break;
 			case START_ALL:
-				this.setSittingNearby(player, false);
+				this.setSittingNearby(player, group, schmuck, false);
 				break;
 			case STOP_TELEPORT:
-				this.setAllowTeleport(player, false);
+				this.setAllowTeleport(player, group, schmuck, false);
 				break;
 			case START_TELEPORT:
-				this.setAllowTeleport(player, true);
+				this.setAllowTeleport(player, group, schmuck, true);
 				break;
 			case STOP_ATTACKING:
-				this.forEachSchmuckNearby(player, this::stopSchmuck);
+				this.forEachSchmuckNearby(player, group, schmuck, this::stopSchmuck);
 				break;
 		}
 	}
 
-	public void forEachSchmuckNearby(ServerPlayerEntity player, Consumer<SchmuckEntity> consumer) {
+	public void forEachSchmuckNearby(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, Consumer<SchmuckEntity> consumer) {
 		player.world.getEntitiesByClass(SchmuckEntity.class, player.getBoundingBox().expand(10.0d), entity -> entity.getOwner() == player)
+				.stream()
+				.filter(fromGroup(group, schmuck))
 				.forEach(consumer);
+	}
+
+	public Predicate<SchmuckEntity> fromGroup(ControlGroup group, SchmuckEntity entity) {
+		switch (group) {
+			case THIS:
+				return schmuckEntity -> schmuckEntity.equals(entity);
+			case SAME_TOOL:
+				return schmuckEntity -> {
+					if (entity == null) {
+						return false;
+					}
+					return schmuckEntity.isHolding(entity::isHolding);
+				};
+			case ALL_NO_TOOL:
+				return schmuckEntity -> schmuckEntity.getMainHandStack().isEmpty();
+			case ALL_BUT_THIS:
+				return schmuckEntity -> !schmuckEntity.equals(entity);
+			case ALL_BUT_SAME_TOOL:
+				return schmuckEntity -> {
+					if (entity == null) {
+						return false;
+					}
+					return !schmuckEntity.isHolding(entity::isHolding);
+				};
+			default:
+				return schmuckEntity -> true;
+		}
 	}
 
 	public void stopSchmuck(SchmuckEntity entity) {
@@ -52,12 +86,12 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 		entity.setTarget(null);
 	}
 
-	public void setAllowTeleport(ServerPlayerEntity player, boolean teleport) {
-		forEachSchmuckNearby(player, entity -> entity.setCanTeleport(teleport));
+	public void setAllowTeleport(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, boolean teleport) {
+		forEachSchmuckNearby(player, group, schmuck, entity -> entity.setCanTeleport(teleport));
 	}
 
-	public void setSittingNearby(ServerPlayerEntity player, boolean sitting) {
-		forEachSchmuckNearby(player, entity -> {
+	public void setSittingNearby(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, boolean sitting) {
+		forEachSchmuckNearby(player, group, schmuck, entity -> {
 				entity.setSitting(sitting);
 				this.stopSchmuck(entity);
 			});

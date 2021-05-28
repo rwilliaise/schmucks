@@ -32,6 +32,9 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 
 		this.drawTexture(matrices, this.x, this.y, j, 219, this.width, this.height);
 		this.renderExtra(matrices);
+		if (this.isHovered()) {
+			this.renderToolTip(matrices, mouseX, mouseY);
+		}
 	}
 
 	protected abstract void renderExtra(MatrixStack matrices);
