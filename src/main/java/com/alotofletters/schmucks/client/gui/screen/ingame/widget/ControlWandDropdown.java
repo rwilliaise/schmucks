@@ -5,7 +5,6 @@ import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
@@ -17,20 +16,30 @@ import net.minecraft.util.math.MathHelper;
 
 public class ControlWandDropdown extends AbstractPressableButtonWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
+	private final boolean storeFlag;
 	private final StringIdentifiable[] options;
 	private final DropdownListEntry[] buttons;
-	private int selected = 0;
+	private int selected;
 
-	public ControlWandDropdown(ControlWandScreen parent, int x, int y, StringIdentifiable ...options) {
+	public ControlWandDropdown(ControlWandScreen parent, int x, int y, boolean storeFlag, StringIdentifiable ...options) {
 		super(x, y, 162, 20, null);
+		this.storeFlag = storeFlag;
 		this.options = options;
 		this.buttons = new DropdownListEntry[options.length];
-		this.selected = Schmucks.CONFIG.controlWandSelectedIndex;
+		if (this.storeFlag) {
+			this.selected = Schmucks.CONFIG.wandIndexRange;
+		} else {
+			this.selected = Schmucks.CONFIG.wandIndexEntity;
+		}
 		for (int i = 0; i < options.length; i++) {
 			buttons[i] = new DropdownListEntry(x, y + (i + 1) * this.height, options[i], i);
 			buttons[i].visible = false;
 			parent.addButton(buttons[i]);
 		}
+	}
+
+	public StringIdentifiable getSelected() {
+		return this.options[this.selected];
 	}
 
 	@Override
@@ -104,7 +113,12 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 			for (DropdownListEntry button : buttons) {
 				button.visible = !button.visible;
 				selected = this.index;
-				Schmucks.CONFIG.controlWandSelectedIndex = this.index;
+
+				if (storeFlag) {
+					Schmucks.CONFIG.wandIndexRange = this.index;
+				} else {
+					Schmucks.CONFIG.wandIndexEntity = this.index;
+				}
 				SchmucksConfig.save();
 			}
 		}

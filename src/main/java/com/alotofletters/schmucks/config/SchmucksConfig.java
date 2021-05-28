@@ -31,8 +31,12 @@ public class SchmucksConfig implements ConfigData {
 	public int jobRange = 8;
 
 	@ConfigEntry.Gui.Excluded
-	@SerializedName("control_wand_index")
-	public int controlWandSelectedIndex = 0;
+	@SerializedName("wand_index_entity")
+	public int wandIndexEntity = 0;
+
+	@ConfigEntry.Gui.Excluded
+	@SerializedName("wand_index_range")
+	public int wandIndexRange = 0;
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)

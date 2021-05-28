@@ -16,6 +16,8 @@
   "gui.schmucks.control_wand.stop_teleport": "Stop Teleporting",
   "gui.schmucks.control_wand.start_teleport": "Start Teleporting",
   "gui.schmucks.control_wand.stop_attacking": "Stop Attacking",
+  "gui.schmucks.control_wand.all": "Apply to all",
+  "gui.schmucks.control_wand.all_no_tool": "Apply to all without a tool",
   "gui.schmucks.control_wand.apply_this": "Apply to this one",
   "gui.schmucks.control_wand.apply_same_tool": "Apply to all with this tool",
   "gui.schmucks.control_wand.all_but_this": "Apply to all but this one",
