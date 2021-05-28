@@ -104,7 +104,7 @@ public class ControlWandScreen extends Screen {
 					"stop_all",
 					i + 7,
 					j + 14,
-					104);
+					48);
 			this.createButton(START_TELEPORT,
 					"start_teleport",
 					i + 7,
@@ -132,6 +132,10 @@ public class ControlWandScreen extends Screen {
 		PacketByteBuf buf = PacketByteBufs.create();
 		buf.writeEnumConstant(action);
 		buf.writeEnumConstant(group);
+		buf.writeBoolean(this.schmuck != null);
+		if (this.schmuck != null) {
+			buf.writeInt(this.schmuck.getEntityId());
+		}
 		ClientPlayNetworking.send(Schmucks.CONTROL_WAND_PACKET_ID, buf);
 		this.client.openScreen(null);
 	}
