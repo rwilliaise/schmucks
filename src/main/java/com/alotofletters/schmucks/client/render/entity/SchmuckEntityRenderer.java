@@ -12,6 +12,7 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
+import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -32,6 +33,7 @@ public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, Sc
 			new ArmorFeatureRenderer<>(this,
 				new SchmuckEntityModel(0.5f, true),
 				new SchmuckEntityModel(1f, true)));
+		this.addFeature(new ElytraFeatureRenderer<>(this));
 		if (slim) {
 			SchmuckEntityModel model = this.getModel();
 			model.leftArm = new ModelPart(model, 32, 48);

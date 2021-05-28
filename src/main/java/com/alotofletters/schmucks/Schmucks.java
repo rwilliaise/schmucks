@@ -31,6 +31,8 @@ public class Schmucks implements ModInitializer {
 
 	public final static String MOD_ID = "schmucks";
 
+	public final static SchmucksConfig CONFIG = SchmucksConfig.init();
+
 	public final static Item PURE_MAGIC = new PureMagicItem("magic");
 	public final static Item FIERY_MAGIC = new PureMagicItem("fiery_magic");
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
@@ -55,7 +57,6 @@ public class Schmucks implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		SchmucksPackets.init();
-		AutoConfig.register(SchmucksConfig.class, GsonConfigSerializer::new);
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
 		Registry.register(Registry.ITEM, id("fiery_magic"), Schmucks.FIERY_MAGIC);
 		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);

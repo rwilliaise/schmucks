@@ -4,10 +4,11 @@
   "item.schmucks.fiery_magic": "Fiery Magic",
   "item.schmucks.fiery_magic.tooltip": "Ouch! My hands! And feet!",
   "item.schmucks.schmuck": "Schmuck",
-  "item.schmucks.schmuck.tooltip": "It looks hyperactive.",
+  "item.schmucks.schmuck.tooltip": "It looks hyperactive",
   "item.schmucks.dead_schmuck": "Dead Schmuck",
-  "item.schmucks.dead_schmuck.tooltip": "Doesn't look like it's coming back anytime soon.",
+  "item.schmucks.dead_schmuck.tooltip": "Doesn't look like it's coming back anytime soon",
   "item.schmucks.control_wand": "Wand of Control",
+  "item.schmucks.control_wand.tooltip": "It's covered in glitter",
 
   "gui.schmucks.control_wand.title": "Wand of Control",
   "gui.schmucks.control_wand.stop_all": "Stop all Nearby",
@@ -15,6 +16,10 @@
   "gui.schmucks.control_wand.stop_teleport": "Stop Teleporting",
   "gui.schmucks.control_wand.start_teleport": "Start Teleporting",
   "gui.schmucks.control_wand.stop_attacking": "Stop Attacking",
+  "gui.schmucks.control_wand.apply_this": "Apply to this one",
+  "gui.schmucks.control_wand.apply_same_tool": "Apply to all with this tool",
+  "gui.schmucks.control_wand.all_but_this": "Apply to all but this one",
+  "gui.schmucks.control_wand.all_but_same_tool": "Apply to all but this tool",
 
   "entity.schmucks.schmuck": "Schmuck",
 

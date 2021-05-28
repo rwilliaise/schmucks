@@ -78,7 +78,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		if (random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance)).floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance)).floatValue() / 100; // will attack teammates if damaged
+		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().shortTemperChance)).floatValue() / 100; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -107,6 +107,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public ActionResult interactMob(PlayerEntity player, Hand hand) {
+		if (!player.isSneaking()) {
+			return super.interactMob(player, hand);
+		}
+
 		if (player.getStackInHand(hand).isEmpty()) {
 			player.giveItemStack(this.getMainHandStack());
 			this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
