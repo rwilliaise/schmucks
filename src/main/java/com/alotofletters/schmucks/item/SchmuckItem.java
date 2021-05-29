@@ -5,7 +5,6 @@ import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
@@ -24,7 +23,7 @@ import java.util.Objects;
 /**
  * A schmuck in item form.
  */
-public class SchmuckItem extends Item {
+public class SchmuckItem extends TooltipItem {
 	public SchmuckItem(Settings settings) {
 		super(settings);
 	}

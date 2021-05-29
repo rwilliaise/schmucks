@@ -29,7 +29,6 @@ import static com.alotofletters.schmucks.item.ControlWandItem.ControlAction.*;
 import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
 
 public class ControlWandScreen extends Screen {
-	private static final Identifier MOB_EFFECTS_ATLAS = new Identifier("textures/atlas/mob_effects.png");
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	protected int backgroundWidth = 176;
 	protected int backgroundHeight = 88;
