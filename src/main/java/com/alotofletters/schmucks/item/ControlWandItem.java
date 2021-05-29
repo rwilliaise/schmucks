@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class ControlWandItem extends Item {
+public class ControlWandItem extends TooltipItem {
 	public ControlWandItem(Settings settings) {
 		super(settings.maxCount(1));
 	}
@@ -98,11 +98,6 @@ public class ControlWandItem extends Item {
 			}
 		}
 		return super.useOnEntity(stack, user, entity, hand);
-	}
-
-	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		tooltip.add(new TranslatableText("item.schmucks.control_wand.tooltip").formatted(Formatting.DARK_GRAY, Formatting.ITALIC));
 	}
 
 	@Environment(EnvType.CLIENT)

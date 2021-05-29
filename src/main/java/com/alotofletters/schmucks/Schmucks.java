@@ -3,17 +3,13 @@ package com.alotofletters.schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.item.ControlWandItem;
-import com.alotofletters.schmucks.item.PureMagicItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
+import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
-import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
@@ -21,10 +17,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.particle.DefaultParticleType;
-import net.minecraft.particle.ParticleType;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
 
 public class Schmucks implements ModInitializer {
@@ -33,10 +28,10 @@ public class Schmucks implements ModInitializer {
 
 	public final static SchmucksConfig CONFIG = SchmucksConfig.init();
 
-	public final static Item PURE_MAGIC = new PureMagicItem("magic");
-	public final static Item FIERY_MAGIC = new PureMagicItem("fiery_magic");
+	public final static Item PURE_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
+	public final static Item FIERY_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item DEAD_SCHMUCK = new Item(new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item DEAD_SCHMUCK = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
 
 	public final static Identifier CONTROL_WAND_PACKET_ID = id("control_wand");
