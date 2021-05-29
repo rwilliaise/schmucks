@@ -6,27 +6,23 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.texture.StatusEffectSpriteManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class ControlWandButtonWidget extends AbstractPressableButtonWidget {
-	private static final Identifier TEXTURE = new Identifier("textures/gui/container/beacon.png");
+	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	protected final ControlWandScreen screen;
 
 	protected ControlWandButtonWidget(int x, int y, ControlWandScreen screen) {
