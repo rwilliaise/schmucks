@@ -53,7 +53,7 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 	}
 
 	public void forEachSchmuckNearby(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, Consumer<SchmuckEntity> consumer) {
-		player.world.getEntitiesByClass(SchmuckEntity.class, player.getBoundingBox().expand(48.0d), entity -> entity.getOwner() == player)
+		player.world.getEntitiesByClass(SchmuckEntity.class, player.getBoundingBox().expand(Schmucks.CONFIG.wandRange), entity -> entity.getOwner() == player)
 				.stream()
 				.filter(fromGroup(group, schmuck))
 				.forEach(consumer);
