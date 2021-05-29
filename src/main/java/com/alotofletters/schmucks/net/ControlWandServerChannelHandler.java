@@ -40,6 +40,12 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 			case START_TELEPORT:
 				this.setAllowTeleport(player, group, schmuck, true);
 				break;
+			case STOP_FOLLOWING:
+				this.setAllowFollow(player, group, schmuck, false);
+				break;
+			case START_FOLLOWING:
+				this.setAllowFollow(player, group, schmuck, true);
+				break;
 			case STOP_ATTACKING:
 				this.forEachSchmuckNearby(player, group, schmuck, this::stopSchmuck);
 				break;
@@ -62,7 +68,7 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 					if (entity == null) {
 						return false;
 					}
-					return schmuckEntity.isHolding(entity::isHolding);
+					return schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
 				};
 			case ALL_NO_TOOL:
 				return schmuckEntity -> schmuckEntity.getMainHandStack().isEmpty();
@@ -73,8 +79,10 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 					if (entity == null) {
 						return false;
 					}
-					return !schmuckEntity.isHolding(entity::isHolding);
+					return !schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
 				};
+			case NOT_STOPPED:
+				return schmuckEntity -> !schmuckEntity.isSitting();
 			default:
 				return schmuckEntity -> true;
 		}
@@ -84,6 +92,10 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 		entity.setJumping(false);
 		entity.getNavigation().stop();
 		entity.setTarget(null);
+	}
+
+	public void setAllowFollow(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, boolean follow) {
+		forEachSchmuckNearby(player, group, schmuck, entity -> entity.setCanFollow(follow));
 	}
 
 	public void setAllowTeleport(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, boolean teleport) {

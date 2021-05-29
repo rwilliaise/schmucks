@@ -106,6 +106,7 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 		public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 			if (this.visible) {
 				this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+				boolean isBottom = selected != this.index && this.index == buttons.length - 1 || selected == buttons.length - 1 && this.index == buttons.length - 2;
 
 				MinecraftClient minecraftClient = MinecraftClient.getInstance();
 				minecraftClient.getTextureManager().bindTexture(TEXTURE);
@@ -115,7 +116,7 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 				RenderSystem.enableBlend();
 				RenderSystem.defaultBlendFunc();
 				RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-				drawTexture(matrices, x, y, 0, hovered ? 152 : 132, this.width, this.height);
+				drawTexture(matrices, x, y, 0, hovered ? 172 : (isBottom ? 152 : 132), this.width, this.height);
 				drawCenteredText(matrices,
 						textRenderer,
 						this.getMessage(),

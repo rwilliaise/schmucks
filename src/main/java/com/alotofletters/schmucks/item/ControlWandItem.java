@@ -38,8 +38,8 @@ public class ControlWandItem extends Item {
 
 	@Override
 	public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-		if (entity instanceof SchmuckEntity ) {
-			if (entity.world.isClient) {
+		if (entity instanceof SchmuckEntity) {
+			if (entity.world.isClient && ((SchmuckEntity) entity).getOwner() == user) {
 				this.openScreen((SchmuckEntity) entity);
 				return ActionResult.SUCCESS;
 			}
@@ -62,11 +62,14 @@ public class ControlWandItem extends Item {
 		START_ALL,
 		STOP_TELEPORT,
 		START_TELEPORT,
+		STOP_FOLLOWING,
+		START_FOLLOWING,
 		STOP_ATTACKING,
 	}
 
 	public enum ControlGroup implements StringIdentifiable {
 		ALL("all"),
+		NOT_STOPPED("not_stopped"),
 		ALL_NO_TOOL("all_no_tool"),
 		THIS("apply_this"),
 		ALL_BUT_THIS("all_but_this"),

@@ -66,6 +66,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private boolean shortTempered;
 	private boolean canTeleport = true;
 
+	private boolean canFollow = true;
+
 	private int eggUsageTime;
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
@@ -147,6 +149,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		super.writeCustomDataToTag(tag);
 		tag.putBoolean("ShortTemper", this.shortTempered);
 		tag.putBoolean("CanTeleport", this.canTeleport);
+		tag.putBoolean("CanFollow", this.canFollow);
 		this.angerToTag(tag);
 	}
 
@@ -156,6 +159,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.angerFromTag((ServerWorld) this.world, tag);
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
+		this.canFollow = tag.getBoolean("CanFollow");
 		this.updateAttackType();
 	}
 
@@ -231,6 +235,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public void setCanTeleport(boolean canTeleport) {
 		this.canTeleport = canTeleport;
+	}
+
+	public boolean getCanFollow() {
+		return canFollow;
+	}
+
+	public void setCanFollow(boolean canFollow) {
+		this.canFollow = canFollow;
 	}
 
 	@Override
