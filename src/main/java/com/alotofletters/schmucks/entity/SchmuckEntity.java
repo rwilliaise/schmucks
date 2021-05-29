@@ -5,11 +5,13 @@ import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
 import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -30,10 +32,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.IntRange;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.LocalDifficulty;
@@ -41,6 +46,7 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -70,9 +76,12 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private int eggUsageTime;
 
+	public List<BlockPos> whiteListed = new ArrayList<>();
+
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.setCanPickUpLoot(true);
+		((MobNavigation) this.getNavigation()).setCanPathThroughDoors(true);
 	}
 
 	@Override
@@ -150,6 +159,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		tag.putBoolean("ShortTemper", this.shortTempered);
 		tag.putBoolean("CanTeleport", this.canTeleport);
 		tag.putBoolean("CanFollow", this.canFollow);
+		ListTag list = new ListTag();
+		for (BlockPos blockPos : this.whiteListed) {
+			list.add(NbtHelper.fromBlockPos(blockPos));
+		}
+		tag.put("Whitelisted", list);
 		this.angerToTag(tag);
 	}
 
@@ -160,6 +174,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.canFollow = tag.getBoolean("CanFollow");
+		ListTag list = tag.getList("Whitelisted", 10);
+		list.forEach(blockPosTag -> {
+			this.whiteListed.add(NbtHelper.toBlockPos((CompoundTag) blockPosTag));
+		});
 		this.updateAttackType();
 	}
 

@@ -77,7 +77,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			BlockState blockState = world.getBlockState(pos);
 			if (blockState.isOf(Blocks.CHEST)) {
 				ChestBlockEntity blockEntity = (ChestBlockEntity) world.getBlockEntity(pos);
-				if (blockEntity != null) {
+				if (blockEntity != null && this.schmuck.whiteListed.contains(pos)) {
 					int empty = -1;
 					ItemStack mainHandStack = this.schmuck.getMainHandStack();
 					for (int i = 0; i < 27; i++) {

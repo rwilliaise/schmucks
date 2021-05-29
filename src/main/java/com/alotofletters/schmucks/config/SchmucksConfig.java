@@ -39,6 +39,11 @@ public class SchmucksConfig implements ConfigData {
 	public int wandIndexRange = 0;
 
 	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.BoundedDiscrete(min = 2, max = 64)
+	@SerializedName("wand_range")
+	public int wandRange = 32;
+
+	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	@ConfigEntry.Category("lag")
 	@SerializedName("job_interval")

@@ -8,6 +8,8 @@
   "item.schmucks.dead_schmuck": "Dead Schmuck",
   "item.schmucks.dead_schmuck.tooltip": "Doesn't look like it's coming back anytime soon",
   "item.schmucks.control_wand": "Wand of Control",
+  "item.schmucks.control_wand.added": "(%s, %s, %s) added to whitelist",
+  "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.tooltip": "It's covered in glitter",
 
   "gui.schmucks.control_wand.title": "Wand of Control",
@@ -38,6 +40,8 @@
   "text.autoconfig.schmucks.title": "Schmucks",
   "text.autoconfig.schmucks.option.chaosMode": "Chaos Mode",
   "text.autoconfig.schmucks.option.chaosMode.@Tooltip": "All Schmucks will be incredibly short tempered - attacking teammates when provoked.",
+  "text.autoconfig.schmucks.option.wandRange": "Wand Range",
+  "text.autoconfig.schmucks.option.wandRange.@Tooltip": "Range of the Wand of Control (in blocks)",
   "text.autoconfig.schmucks.option.shortTemperChance": "Short Temper Chance",
   "text.autoconfig.schmucks.option.shortTemperChance.@Tooltip": "The chance for a Schmuck to be short tempered, [0-1]",
   "text.autoconfig.schmucks.option.leatherHelmetChance": "Leather Helmet Chance",
