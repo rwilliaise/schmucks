@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks.client.gui.screen.ingame.widget;
 
+import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
@@ -8,11 +9,24 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.texture.StatusEffectSpriteManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class ControlWandButtonWidget extends AbstractPressableButtonWidget {
+	private static final Identifier TEXTURE = new Identifier("textures/gui/container/beacon.png");
 	protected final ControlWandScreen screen;
 
 	protected ControlWandButtonWidget(int x, int y, ControlWandScreen screen) {
@@ -21,7 +35,7 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 	}
 
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		MinecraftClient.getInstance().getTextureManager().bindTexture(new Identifier("textures/gui/container/beacon.png"));
+		MinecraftClient.getInstance().getTextureManager().bindTexture(TEXTURE);
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		int j = 0;
 		if (!this.active) {
@@ -32,9 +46,6 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 
 		this.drawTexture(matrices, this.x, this.y, j, 219, this.width, this.height);
 		this.renderExtra(matrices);
-		if (this.isHovered()) {
-			this.renderToolTip(matrices, mouseX, mouseY);
-		}
 	}
 
 	protected abstract void renderExtra(MatrixStack matrices);
@@ -54,6 +65,85 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 		}
 	}
 
+	public static class IconOverlayButtonWidget extends ControlWandButtonWidget.IconButtonWidget {
+		private final StatusEffect icon;
+		private final List<Text> message;
+		private final Consumer<IconOverlayButtonWidget> onPress;
+		private Sprite sprite;
+
+		public IconOverlayButtonWidget(int x, int y, boolean success, ControlWandScreen screen, StatusEffect icon, Consumer<IconOverlayButtonWidget> onPress) {
+			this(x, y, success, screen, icon, null, onPress);
+		}
+
+		public IconOverlayButtonWidget(int x, int y, boolean success, ControlWandScreen screen, StatusEffect icon, List<Text> message, Consumer<IconOverlayButtonWidget> onPress) {
+			super(x, y, success ? 90 : 112, 220, screen);
+			this.icon = icon;
+			this.message = message;
+			this.onPress = onPress;
+		}
+
+		@Override
+		protected void renderExtra(MatrixStack matrices) {
+			StatusEffectSpriteManager statusEffectSpriteManager = screen.getClient().getStatusEffectSpriteManager();
+			Sprite sprite = statusEffectSpriteManager.getSprite(this.icon);
+			screen.getClient().getTextureManager().bindTexture(sprite.getAtlas().getId());
+			drawSprite(matrices, this.x + 1, this.y + 1, this.getZOffset(), 18, 18, sprite);
+			screen.getClient().getTextureManager().bindTexture(TEXTURE);
+			super.renderExtra(matrices);
+		}
+
+		@Override
+		public void onPress() {
+			this.onPress.accept(this);
+		}
+
+		public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
+			if (this.message != null) {
+				this.screen.renderTooltip(matrices, this.message, mouseX, mouseY);
+			}
+		}
+	}
+
+	public static class ItemOverlayButtonWidget extends ControlWandButtonWidget.IconButtonWidget {
+		private final ItemStack item;
+		private final Consumer<ItemOverlayButtonWidget> onPress;
+		private final List<Text> tooltip;
+
+		public ItemOverlayButtonWidget(int x, int y, boolean success, ControlWandScreen screen, Item item, Consumer<ItemOverlayButtonWidget> onPress) {
+			this(x, y, success, screen, item, null, onPress);
+		}
+
+		public ItemOverlayButtonWidget(int x, int y, boolean success, ControlWandScreen screen, Item item, List<Text> message, Consumer<ItemOverlayButtonWidget> onPress) {
+			super(x, y, success ? 90 : 112, 220, screen);
+			this.item = new ItemStack(item);
+			this.onPress = onPress;
+			this.tooltip = message;
+		}
+
+		@Override
+		protected void renderExtra(MatrixStack matrices) {
+			RenderSystem.pushMatrix();
+			RenderSystem.translatef(0.5f, 0.5f, 0);
+			screen.getClient().getItemRenderer().renderInGuiWithOverrides(screen.schmuck, this.item, this.x + 3, this.y + 2);
+			screen.getClient().getTextureManager().bindTexture(TEXTURE);
+			RenderSystem.disableDepthTest();
+			super.renderExtra(matrices);
+			RenderSystem.enableDepthTest();
+			RenderSystem.popMatrix();
+		}
+
+		@Override
+		public void onPress() {
+			this.onPress.accept(this);
+		}
+
+		public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
+			if (this.tooltip != null) {
+				this.screen.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
+			}
+		}
+	}
+
 	@Environment(EnvType.CLIENT)
 	abstract static class IconButtonWidget extends ControlWandButtonWidget {
 		private final int u;
@@ -66,7 +156,7 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 		}
 
 		protected void renderExtra(MatrixStack matrices) {
-			this.drawTexture(matrices, this.x + 2, this.y + 2, this.u, this.v, 18, 18);
+			this.drawTexture(matrices, this.x + 2, this.y + 1, this.u, this.v, 18, 18);
 		}
 	}
 }
