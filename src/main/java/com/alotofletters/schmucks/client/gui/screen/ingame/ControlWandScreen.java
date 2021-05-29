@@ -9,7 +9,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -23,7 +22,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 
 import java.util.Arrays;
 
@@ -82,34 +80,52 @@ public class ControlWandScreen extends Screen {
 		boolean storeFlag = false;
 		ControlWandItem.ControlGroup[] options;
 		if (this.schmuck == null) {
-			this.createButton(STOP_ALL,
-					"stop_all",
-					this.width / 2 - 102,
-					this.height / 4 + 48 + -16,
-					98);
-			this.createButton(START_ALL,
-					"start_all",
-					this.width / 2 + 4,
-					this.height / 4 + 48 + -16,
-					98);
-			this.createButton(STOP_TELEPORT,
-					"stop_teleport",
-					this.width / 2 - 102,
-					this.height / 4 + 72 + -16,
-					98);
-			this.createButton(START_TELEPORT,
+			this.createGraphicalButton(this.width / 2 - 25,
+					this.height / 4 + 24 + -16,
+					START_TELEPORT,
+					true,
 					"start_teleport",
-					this.width / 2 + 4,
-					this.height / 4 + 72 + -16,
-					98);
-			this.createButton(STOP_ATTACKING,
+					Items.ENDER_PEARL);
+			this.createGraphicalButton(this.width / 2 + 1,
+					this.height / 4 + 24 + -16,
+					STOP_TELEPORT,
+					false,
+					"stop_teleport",
+					Items.ENDER_PEARL);
+			this.createGraphicalButton(this.width / 2 - 25,
+					this.height / 4 + 50 + -16,
+					START_ALL,
+					true,
+					"start_all",
+					StatusEffects.SLOWNESS);
+			this.createGraphicalButton(this.width / 2 + 1,
+					this.height / 4 + 50 + -16,
+					STOP_ALL,
+					false,
+					"stop_all",
+					StatusEffects.SLOWNESS);
+			this.createGraphicalButton(this.width / 2 - 25,
+					this.height / 4 + 76 + -16,
+					START_FOLLOWING,
+					true,
+					"start_follow",
+					StatusEffects.SPEED);
+			this.createGraphicalButton(this.width / 2 + 1,
+					this.height / 4 + 76 + -16,
+					STOP_FOLLOWING,
+					false,
+					"stop_follow",
+					StatusEffects.SPEED);
+			this.createGraphicalButton(this.width / 2 - 12,
+					this.height / 4 + 102 + -16,
+					STOP_ATTACKING,
+					false,
 					"stop_attacking",
-					this.height / 4 + 96 + -16);
+					Items.IRON_SWORD);
 			x = this.width / 2 - 81;
-			y = this.height / 4 + 120 + -16;
+			y = this.height / 4 + 128 + -16;
 			storeFlag = true;
 			options = new ControlWandItem.ControlGroup[] { ALL, NOT_STOPPED, ALL_NO_TOOL };
-			this.addButton(new ControlWandButtonWidget.CancelButtonWidget(this.width / 2 + 80, this.height / 4 + 24 + -17, this));
 		} else {
 			int i = (this.width - this.backgroundWidth) / 2;
 			int j = (this.height - this.backgroundHeight) / 2;
@@ -132,14 +148,20 @@ public class ControlWandScreen extends Screen {
 					j + 7,
 					START_ALL,
 					true,
-					"start_all.short",
-					Items.LEATHER_BOOTS);
+					"start_all",
+					StatusEffects.SLOWNESS);
 			this.createGraphicalButton(i + 89,
 					j + 7,
 					STOP_ALL,
 					false,
-					"stop_all.short",
-					Items.LEATHER_BOOTS);
+					"stop_all",
+					StatusEffects.SLOWNESS);
+			this.createGraphicalButton(i + 37,
+					j + 33,
+					STOP_ATTACKING,
+					false,
+					"stop_attacking",
+					Items.IRON_SWORD);
 			this.createGraphicalButton(i + 63,
 					j + 33,
 					START_FOLLOWING,
