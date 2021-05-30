@@ -21,11 +21,11 @@ public class TooltipItem extends Item {
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (this.getTooltipCount() == 1) {
             tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip")
-                    .formatted(Formatting.GRAY, Formatting.ITALIC));
+                    .formatted(Formatting.GRAY));
         } else if (this.getTooltipCount() > 1) {
             for (int i = 0; i < this.getTooltipCount(); i++) {
                 tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip[" + i + "]")
-                        .formatted(Formatting.GRAY, Formatting.ITALIC));
+                        .formatted(Formatting.GRAY));
             }
         }
     }

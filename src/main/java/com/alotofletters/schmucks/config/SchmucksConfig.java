@@ -11,7 +11,6 @@ import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.S
 @Config(name = Schmucks.MOD_ID)
 public class SchmucksConfig implements ConfigData {
 	@ConfigEntry.Gui.Tooltip
-	@ConfigEntry.Category("schmucks")
 	@SerializedName("chaos_mode")
 	public boolean chaosMode = false;
 
@@ -30,10 +29,12 @@ public class SchmucksConfig implements ConfigData {
 	@SerializedName("job_range")
 	public int jobRange = 8;
 
+	/** The index of the option selected in the entity control wand screen */
 	@ConfigEntry.Gui.Excluded
 	@SerializedName("wand_index_entity")
 	public int wandIndexEntity = 0;
 
+	/** The index of the option selected in the ranged control wand screen */
 	@ConfigEntry.Gui.Excluded
 	@SerializedName("wand_index_range")
 	public int wandIndexRange = 0;
@@ -45,13 +46,11 @@ public class SchmucksConfig implements ConfigData {
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
-	@ConfigEntry.Category("lag")
 	@SerializedName("job_interval")
 	public IntervalRange jobInterval = new IntervalRange();
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
-	@ConfigEntry.Category("lag")
 	@SerializedName("mining_interval")
 	public IntervalRange miningInterval = new IntervalRange(40, 40);
 

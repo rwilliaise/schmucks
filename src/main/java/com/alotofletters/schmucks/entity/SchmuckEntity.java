@@ -41,6 +41,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.IntRange;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -69,10 +70,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private UUID targetUuid;
 
-	private boolean shortTempered;
+	private boolean shortTempered = false;
 	private boolean canTeleport = true;
-
 	private boolean canFollow = true;
+	private boolean hasElytra = false;
 
 	private int eggUsageTime;
 
@@ -147,6 +148,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public void tickMovement() {
 		super.tickHandSwing();
 		super.tickMovement();
+
+		Vec3d velocity = this.getVelocity();
+		if (this.hasElytra && velocity.y < -2.0) {
+			velocity.multiply(1.2, 0.6, 1.2);
+		}
 
 		if (!this.world.isClient) {
 			this.tickAngerLogic((ServerWorld)this.world, true);
@@ -281,6 +287,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.targetSelector.remove(this.shortTemperRevengeGoal);
 			this.targetSelector.remove(this.revengeGoal);
 			ItemStack itemStack = this.getMainHandStack();
+			if (this.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
+				this.hasElytra = true;
+			}
 			if (itemStack.getItem() == Items.BOW || itemStack.getItem() == Items.EGG) {
 				this.bowAttackGoal.setAttackInterval(itemStack.getItem() == Items.EGG ? 5 : 30);
 				this.goalSelector.add(5, this.bowAttackGoal);
