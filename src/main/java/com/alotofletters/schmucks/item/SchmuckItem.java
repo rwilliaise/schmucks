@@ -61,9 +61,4 @@ public class SchmuckItem extends TooltipItem {
 			return ActionResult.CONSUME;
 		}
 	}
-
-	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		tooltip.add(new TranslatableText("item.schmucks.schmuck.tooltip").formatted(Formatting.DARK_GRAY, Formatting.ITALIC));
-	}
 }

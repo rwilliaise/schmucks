@@ -7,7 +7,7 @@
   "item.schmucks.schmuck.tooltip": "It looks hyperactive.",
   "item.schmucks.dead_schmuck": "Dead Schmuck",
   "item.schmucks.dead_schmuck.tooltip": "It looks not hyperactive at all.",
-  "item.schmucks.control_wand": "Wand of Control",
+  "item.schmucks.control_wand": "Schmuck Staff",
   "item.schmucks.control_wand.added": "(%s, %s, %s) added to whitelist",
   "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.tooltip": "It's covered in purple glitter.",

@@ -199,7 +199,7 @@ public class ControlWandScreen extends Screen {
 				item,
 				Arrays.asList(new TranslatableText(String.format("gui.schmucks.control_wand.%s", key)),
 							  new TranslatableText(String.format("gui.schmucks.control_wand.%s.tooltip", key))
-									  .formatted(Formatting.GRAY, Formatting.ITALIC)),
+									  .formatted(Formatting.GRAY)),
 				(button) -> this.sendControlPacket(action, (ControlWandItem.ControlGroup) this.dropdown.getSelected())));
 	}
 
@@ -211,7 +211,7 @@ public class ControlWandScreen extends Screen {
 				icon,
 				Arrays.asList(new TranslatableText(String.format("gui.schmucks.control_wand.%s", key)),
 						new TranslatableText(String.format("gui.schmucks.control_wand.%s.tooltip", key))
-								.formatted(Formatting.GRAY, Formatting.ITALIC)),
+								.formatted(Formatting.GRAY)),
 				(button) -> this.sendControlPacket(action, (ControlWandItem.ControlGroup) this.dropdown.getSelected())));
 	}
 
