@@ -3,6 +3,7 @@ package com.alotofletters.schmucks.entity;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
+import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
@@ -91,6 +92,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
+		this.lookControl = new SchmuckLookControl(this);
 		this.setCanPickUpLoot(true);
 		((MobNavigation) this.getNavigation()).setCanPathThroughDoors(true);
 	}
