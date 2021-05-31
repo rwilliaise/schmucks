@@ -12,7 +12,7 @@
   "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.tooltip": "It's covered in purple glitter.",
 
-  "gui.schmucks.control_wand.title": "Wand of Control",
+  "gui.schmucks.control_wand.title": "Schmuck Staff",
   "gui.schmucks.control_wand.start_all": "Start",
   "gui.schmucks.control_wand.start_all.tooltip": "Allows Schmucks to move, and do tasks.",
   "gui.schmucks.control_wand.stop_all": "Stop",
