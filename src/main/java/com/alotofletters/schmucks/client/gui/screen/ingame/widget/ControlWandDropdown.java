@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 
+/** Used for choosing a control group for the Schmuck Staff. */
 public class ControlWandDropdown extends AbstractPressableButtonWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	private final boolean storeFlag;

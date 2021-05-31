@@ -5,12 +5,15 @@ import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
 import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.ai.control.FlightMoveControl;
+import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.BirdNavigation;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -18,6 +21,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.Angerable;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -27,10 +31,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
@@ -41,7 +42,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.IntRange;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -55,15 +55,18 @@ import java.util.function.Predicate;
 
 public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
 	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
-
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
+	/** Used for when the Schmuck obtains a bow or egg. */
 	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
+	/** Used for when the Schmuck obtains any item other than a pickaxe, bow, or egg. */
 	private final MeleeAttackGoal meleeAttackGoal = new MeleeAttackGoal(this, 1.2D, false);
-	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
+	/** Used for melee. */
 	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
+	/** Used for when the Schmuck obtains a pickaxe. */
+	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
 
 	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
 	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
@@ -73,9 +76,16 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
 	private boolean canFollow = true;
-	private boolean hasElytra = false;
 
 	private int eggUsageTime;
+	private int flyCheckCooldown;
+
+	/* Used to replace the flight control back with the old one (before starting flight control). */
+	private MoveControl oldMoveControl;
+	private EntityNavigation oldNavigation;
+	/* Used for mid-elytra flight. */
+	private final FlightMoveControl flightMoveControl = new FlightMoveControl(this, 20, false);
+	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 
 	public List<BlockPos> whiteListed = new ArrayList<>();
 
@@ -137,6 +147,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return super.interactMob(player, hand);
 	}
 
+	/**
+	 * Used to make thw Schmuck easily toggle between sitting and standing. As there is no animation for sitting, it's
+	 * more appropriately called stopped.
+	 */
 	public void toggleSit() {
 		this.setSitting(!this.isSitting());
 		this.jumping = false;
@@ -149,14 +163,17 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		super.tickHandSwing();
 		super.tickMovement();
 
-		Vec3d velocity = this.getVelocity();
-		if (this.hasElytra && velocity.y < -2.0) {
-			velocity.multiply(1.2, 0.6, 1.2);
-		}
+		this.checkFallFlying();
 
 		if (!this.world.isClient) {
 			this.tickAngerLogic((ServerWorld)this.world, true);
 		}
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		this.updateAnimation();
 	}
 
 	@Override
@@ -187,6 +204,69 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.updateAttackType();
 	}
 
+	public BirdNavigation createFlightNavigation() {
+		BirdNavigation birdNavigation = new BirdNavigation(this, this.world);
+		birdNavigation.setCanPathThroughDoors(false);
+		birdNavigation.setCanSwim(true);
+		birdNavigation.setCanEnterOpenDoors(true);
+		return birdNavigation;
+	}
+
+	/** Replaces the current MoveControl with a FlightMoveControl. This allows the Schmuck to fly in a sensible way */
+	public void startFlightControl() {
+		this.oldMoveControl = this.moveControl;
+		this.oldNavigation = this.navigation;
+		this.navigation = this.flightNavigation;
+		this.moveControl = this.flightMoveControl;
+	}
+
+	/** Replaces the FlightMoveControl with the old default MoveControl. */
+	public void stopFlightControl() {
+		if (this.oldMoveControl == null || this.oldNavigation == null) {
+			return;
+		}
+		this.moveControl = this.oldMoveControl;
+		this.navigation = this.oldNavigation;
+	}
+
+	/** Checks if the Schmuck is currently flying. */
+	public void checkFallFlying() {
+		if (this.flyCheckCooldown-- > 0) {
+			return;
+		}
+		if (!this.onGround &&
+			!this.isFallFlying() &&
+			!this.isTouchingWater() &&
+			!this.hasStatusEffect(StatusEffects.LEVITATION) &&
+			this.fallDistance > 2) {
+			ItemStack itemStack = this.getEquippedStack(EquipmentSlot.CHEST);
+			if (itemStack.getItem() == Items.ELYTRA && ElytraItem.isUsable(itemStack)) {
+				this.startFallFlying();
+			}
+		} else if (this.onGround || this.isTouchingWater() || this.hasStatusEffect(StatusEffects.LEVITATION)) {
+			this.stopFallFlying();
+//			ItemStack itemStack = this.getEquippedStack(EquipmentSlot.CHEST);
+//			if (itemStack.getItem() == Items.ELYTRA && ElytraItem.isUsable(itemStack)) {
+//				this.addVelocity(0, 1, 0);
+//			}
+		}
+		this.flyCheckCooldown = 1;
+	}
+
+	/** Sets the internal flags for the Schmuck to start doing the fly animation. */
+	public void startFallFlying() {
+		System.out.println("Test");
+		this.setFlag(7, true);
+		this.startFlightControl();
+	}
+
+	/** Sets the internal flags for the Schmuck to stop doing the fly animation. */
+	public void stopFallFlying() {
+//		this.setFlag(7, true);
+		this.stopFlightControl();
+		this.setFlag(7, false);
+	}
+
 	@Nullable
 	@Override
 	public SchmuckEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
@@ -205,8 +285,42 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
 		return MobEntity.createMobAttributes()
 				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
 				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
 				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
+	}
+
+	/** This sets the current pose of the Schmuck, based on several variables. */
+	protected void updateAnimation() {
+		if (this.wouldPoseNotCollide(EntityPose.SWIMMING)) {
+			EntityPose entityPose6;
+			if (this.isFallFlying()) {
+				entityPose6 = EntityPose.FALL_FLYING;
+			} else if (this.isSleeping()) {
+				entityPose6 = EntityPose.SLEEPING;
+			} else if (this.isSwimming()) {
+				entityPose6 = EntityPose.SWIMMING;
+			} else if (this.isUsingRiptide()) {
+				entityPose6 = EntityPose.SPIN_ATTACK;
+			} else if (this.isSneaking()) {
+				entityPose6 = EntityPose.CROUCHING;
+			} else {
+				entityPose6 = EntityPose.STANDING;
+			}
+
+			EntityPose entityPose9;
+			if (!this.isSpectator() && !this.hasVehicle() && !this.wouldPoseNotCollide(entityPose6)) {
+				if (this.wouldPoseNotCollide(EntityPose.CROUCHING)) {
+					entityPose9 = EntityPose.CROUCHING;
+				} else {
+					entityPose9 = EntityPose.SWIMMING;
+				}
+			} else {
+				entityPose9 = entityPose6;
+			}
+
+			this.setPose(entityPose9);
+		}
 	}
 
 	@Override
@@ -287,9 +401,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.targetSelector.remove(this.shortTemperRevengeGoal);
 			this.targetSelector.remove(this.revengeGoal);
 			ItemStack itemStack = this.getMainHandStack();
-			if (this.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA) {
-				this.hasElytra = true;
-			}
 			if (itemStack.getItem() == Items.BOW || itemStack.getItem() == Items.EGG) {
 				this.bowAttackGoal.setAttackInterval(itemStack.getItem() == Items.EGG ? 5 : 30);
 				this.goalSelector.add(5, this.bowAttackGoal);
@@ -336,14 +447,17 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.world.spawnEntity(persistentProjectileEntity);
 	}
 
+	/** Creates an arrow projectile from an ItemStack. Borrowed from the Skeleton code. */
 	protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier) {
 		return ProjectileUtil.createArrowProjectile(this, arrow, damageModifier);
 	}
 
+	/** Get the model ("default" or "slim") of the owners model. If an owner is not available, "default" is returned. */
 	public String getModel() {
 		return this.getOwnerUuid() != null ? DefaultSkinHelper.getModel(this.getOwnerUuid()) : "default";
 	}
 
+	/** Picks up items in a radius. Incredibly similar to the foxes pickup item goal. */
 	class SchmuckPickUpItemGoal extends Goal {
 
 		public SchmuckPickUpItemGoal() {
@@ -396,11 +510,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return this.getMainHandStack().getItem() == Items.EGG ? 15 + this.eggUsageTime : super.getItemUseTime();
 	}
 
+	/** Overridden to ensure that eggs work for the SchmuckBowAttackGoal. */
 	@Override
 	public boolean isUsingItem() {
 		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
 	}
 
+	/** Moves and shoots a target tactically. Borrowed from the Skeleton code. */
 	class SchmuckBowAttackGoal extends Goal {
 		private final SchmuckEntity actor;
 		private final double speed;
@@ -521,6 +637,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
+	/** Used for fleeing the player (albeit a small radius) so space is given for the player to roam around. */
 	class SchmuckFleeGoal<T extends LivingEntity> extends FleeEntityGoal<T> {
 
 		public SchmuckFleeGoal(Class<T> fleeFromType) {
