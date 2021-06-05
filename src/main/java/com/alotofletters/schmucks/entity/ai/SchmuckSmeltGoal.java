@@ -90,7 +90,7 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 		BlockState blockState = world.getBlockState(pos);
 		if (this.isGoodSmelter(blockState)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) world.getBlockEntity(pos);
-			if (blockEntity != null && schmuck.whiteListed.contains(pos)) {
+			if (blockEntity != null && schmuck.getWhitelist().contains(pos)) {
 				ItemStack currentStack = blockEntity.getStack(0);
 				return (currentStack.isEmpty() || currentStack.isItemEqual(this.schmuck.getMainHandStack()));
 			}

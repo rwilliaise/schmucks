@@ -12,7 +12,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static com.alotofletters.schmucks.item.ControlWandItem.*;
+import static com.alotofletters.schmucks.item.ControlWandItem.ControlAction;
+import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup;
 
 public class ControlWandServerChannelHandler implements ServerPlayNetworking.PlayChannelHandler {
 	@Override

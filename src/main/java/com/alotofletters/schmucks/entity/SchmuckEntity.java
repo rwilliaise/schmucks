@@ -1,10 +1,9 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
-import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
-import me.shedaniel.autoconfig.AutoConfig;
+import com.alotofletters.schmucks.mixin.DataTrackerAccessor;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
@@ -57,6 +56,7 @@ import java.util.function.Predicate;
 public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
 	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<List<BlockPos>> WHITELISTED = DataTracker.registerData(SchmuckEntity.class, Schmucks.BLOCK_POS_LIST);
 
 	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
@@ -68,6 +68,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
 	/** Used for when the Schmuck obtains a pickaxe. */
 	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
+	/** Used for when the Schmuck obtains a hoe. */
+	private final SchmuckTill tillGoal = new SchmuckTill(this, 1.0D, 10);
 
 	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
 	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
@@ -90,8 +92,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	/** Used for mid-elytra flight, more specifically how the Schmuck will path. */
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 
-	public final List<BlockPos> whiteListed = new ArrayList<>();
-
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.lookControl = new SchmuckLookControl(this);
@@ -104,7 +104,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		if (random.nextFloat() < Schmucks.CONFIG.leatherHelmetChance.floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
+		shortTempered = Schmucks.CONFIG.chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -194,7 +194,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		tag.putBoolean("CanTeleport", this.canTeleport);
 		tag.putBoolean("CanFollow", this.canFollow);
 		ListTag list = new ListTag();
-		for (BlockPos blockPos : this.whiteListed) {
+		for (BlockPos blockPos : this.getWhitelist()) {
 			list.add(NbtHelper.fromBlockPos(blockPos));
 		}
 		tag.put("Whitelisted", list);
@@ -209,7 +209,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.canFollow = tag.getBoolean("CanFollow");
 		ListTag list = tag.getList("Whitelisted", 10);
-		list.forEach(blockPosTag -> this.whiteListed.add(NbtHelper.toBlockPos((CompoundTag) blockPosTag)));
+		list.forEach(blockPosTag -> this.getWhitelist().add(NbtHelper.toBlockPos((CompoundTag) blockPosTag)));
 		this.updateAttackType();
 	}
 
@@ -290,6 +290,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	protected void initDataTracker() {
 		super.initDataTracker();
 		this.dataTracker.startTracking(ANGER_TIME, 0);
+		this.dataTracker.startTracking(WHITELISTED, new ArrayList<>());
 	}
 
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
@@ -393,6 +394,17 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.canFollow = canFollow;
 	}
 
+	public List<BlockPos> getWhitelist() {
+		return this.dataTracker.get(WHITELISTED);
+	}
+
+	public void updateWhitelist() {
+		DataTrackerAccessor accessor = (DataTrackerAccessor) this.dataTracker;
+		DataTracker.Entry<List<BlockPos>> entry = accessor.invokeGetEntry(WHITELISTED);
+		entry.setDirty(true);
+		accessor.setDirty(true);
+	}
+
 	@Override
 	public void onDeath(DamageSource source) {
 		super.onDeath(source);
@@ -416,6 +428,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 				this.goalSelector.add(5, this.bowAttackGoal);
 			} else if (FabricToolTags.PICKAXES.contains(itemStack.getItem())) {
 				this.goalSelector.add(5, this.mineGoal);
+			} else if (FabricToolTags.HOES.contains(itemStack.getItem())) {
+				this.goalSelector.add(4, this.meleeAttackGoal);
+				this.goalSelector.add(5, this.tillGoal);
 			} else {
 				this.goalSelector.add(4, this.pounceGoal);
 				this.goalSelector.add(5, this.meleeAttackGoal);
