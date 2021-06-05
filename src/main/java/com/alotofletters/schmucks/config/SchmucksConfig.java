@@ -8,6 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.SerializedName;
 
+@SuppressWarnings("CanBeFinal") // this is invalid, at least for config
 @Config(name = Schmucks.MOD_ID)
 public class SchmucksConfig implements ConfigData {
 	@ConfigEntry.Gui.Tooltip

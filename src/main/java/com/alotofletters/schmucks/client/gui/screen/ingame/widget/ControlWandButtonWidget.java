@@ -21,7 +21,7 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** An widget used for the labelled buttons on the Schmuck Staff screen. */
+/** Used for the labelled buttons on the Schmuck Staff screen. */
 public abstract class ControlWandButtonWidget extends AbstractPressableButtonWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	protected final ControlWandScreen screen;

@@ -3,16 +3,12 @@ package com.alotofletters.schmucks.entity.ai;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
-import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
-import net.minecraft.entity.ai.TargetFinder;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PickaxeItem;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -41,7 +37,12 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 
 	@Override
 	protected int getInterval(PathAwareEntity mob) {
-		return 40;
+		SchmucksConfig config = Schmucks.CONFIG;
+		int min = config.miningInterval.min;
+		if (min < config.miningInterval.max) {
+			min += mob.getRandom().nextInt(config.miningInterval.max - min);
+		}
+		return min;
 	}
 
 	@Override

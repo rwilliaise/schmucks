@@ -88,7 +88,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private final FlightMoveControl flightMoveControl = new FlightMoveControl(this, 20, false);
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 
-	public List<BlockPos> whiteListed = new ArrayList<>();
+	public final List<BlockPos> whiteListed = new ArrayList<>();
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
@@ -211,6 +211,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.updateAttackType();
 	}
 
+	/**
+	 * Used to create the flight navigation for mid-elytra flight. Without it, they would take unsatisfactory twists and
+	 * turns.
+	 * @return BirdNavigation that the SchmuckEntity uses during flight.
+	 * */
 	public BirdNavigation createFlightNavigation() {
 		BirdNavigation birdNavigation = new BirdNavigation(this, this.world);
 		birdNavigation.setCanPathThroughDoors(false);
@@ -236,7 +241,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.navigation = this.oldNavigation;
 	}
 
-	/** Checks if the Schmuck is currently flying. */
+	/** Checks if the Schmuck is currently flying with an elytra. */
 	public void checkFallFlying() {
 		if (this.flyCheckCooldown-- > 0) {
 			return;
@@ -252,12 +257,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			}
 		} else if (this.onGround || this.isTouchingWater() || this.hasStatusEffect(StatusEffects.LEVITATION)) {
 			this.stopFallFlying();
-//			ItemStack itemStack = this.getEquippedStack(EquipmentSlot.CHEST);
-//			if (itemStack.getItem() == Items.ELYTRA && ElytraItem.isUsable(itemStack)) {
-//				this.addVelocity(0, 1, 0);
-//			}
 		}
-		this.flyCheckCooldown = 1;
+		this.flyCheckCooldown = 3;
 	}
 
 	/** Sets the internal flags for the Schmuck to start doing the fly animation. */
@@ -454,12 +455,20 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.world.spawnEntity(persistentProjectileEntity);
 	}
 
-	/** Creates an arrow projectile from an ItemStack. Borrowed from the Skeleton code. */
+	/**
+	 * Creates an arrow projectile from an ItemStack. Borrowed from the Skeleton code.
+	 * @param arrow ItemStack of arrow to recreate
+	 * @param damageModifier Multiplier for how much damage the arrow should do
+	 * @return Arrow entity created from given stack and modifier.
+	 */
 	protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier) {
 		return ProjectileUtil.createArrowProjectile(this, arrow, damageModifier);
 	}
 
-	/** Get the model ("default" or "slim") of the owners model. If an owner is not available, "default" is returned. */
+	/**
+	 * Get the model ("default" or "slim") of the owners model. If an owner is not available, "default" is returned.
+	 * @return "default" or "slim"
+	 */
 	public String getModel() {
 		return this.getOwnerUuid() != null ? DefaultSkinHelper.getModel(this.getOwnerUuid()) : "default";
 	}

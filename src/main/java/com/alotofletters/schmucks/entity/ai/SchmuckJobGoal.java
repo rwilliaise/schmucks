@@ -11,7 +11,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
  * Used as a base class for all jobs.
  */
 public abstract class SchmuckJobGoal extends MoveToTargetPosGoal {
-	protected SchmuckEntity schmuck;
+	protected final SchmuckEntity schmuck;
 
 	public SchmuckJobGoal(SchmuckEntity schmuck, double speed) {
 		this(schmuck, speed, Schmucks.CONFIG.jobRange);

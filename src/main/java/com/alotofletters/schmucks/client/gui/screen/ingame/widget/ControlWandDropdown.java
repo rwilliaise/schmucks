@@ -94,12 +94,10 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 	}
 
 	class DropdownListEntry extends AbstractPressableButtonWidget {
-		private final StringIdentifiable option;
 		private final int index;
 
 		public DropdownListEntry(int x, int y, StringIdentifiable option, int index) {
 			super(x, y, 162, 20, new TranslatableText(String.format("gui.schmucks.control_wand.%s", option.asString())));
-			this.option = option;
 			this.index = index;
 		}
 
