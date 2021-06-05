@@ -3,7 +3,7 @@
   "values": [
     "minecraft:dirt",
     "minecraft:coarse_dirt",
-    "minecraft:grass",
+    "minecraft:grass_block",
     "minecraft:grass_path"
   ]
 }

@@ -3,6 +3,7 @@ package com.alotofletters.schmucks.entity.ai;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
@@ -14,16 +15,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
-public class SchmuckMine extends MoveToTargetPosGoal {
+public class SchmuckMine extends SchmuckUseToolGoal {
 	private final SchmuckEntity schmuck;
-	private final int maxProgress;
-	private int breakProgress;
-	private int lastProgress;
 
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
-		super(schmuck, speed, Schmucks.CONFIG.jobRange);
+		super(schmuck, speed, maxProgress);
 		this.schmuck = schmuck;
-		this.maxProgress = maxProgress;
 	}
 
 	@Override
@@ -31,34 +28,16 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		if (!super.canStart()) {
 			return false;
 		} else {
-			return this.schmuck.getMainHandStack().getItem() instanceof PickaxeItem && !this.schmuck.isSitting();
+			ItemStack itemStack = this.schmuck.getMainHandStack();
+			return FabricToolTags.PICKAXES.contains(itemStack.getItem()) && !this.schmuck.isSitting();
 		}
-	}
-
-	@Override
-	protected int getInterval(PathAwareEntity mob) {
-		SchmucksConfig config = Schmucks.CONFIG;
-		int min = config.toolInterval.min;
-		if (min < config.toolInterval.max) {
-			min += mob.getRandom().nextInt(config.toolInterval.max - min);
-		}
-		return min;
 	}
 
 	@Override
 	public void tick() {
 		super.tick();
-		if (this.hasReached()) {
-			this.breakProgress++;
-			int newProgress = (int) Math.floor((float) this.breakProgress / this.getMaxProgress() * 10.0F);
-			if (this.lastProgress != newProgress) {
-				this.schmuck.swingHand(Hand.MAIN_HAND);
-				this.lastProgress = newProgress;
-			}
-			this.schmuck.world.setBlockBreakingInfo(this.schmuck.getEntityId(), this.targetPos, newProgress);
-			if (this.breakProgress >= this.getMaxProgress()) {
-				this.schmuck.world.breakBlock(this.targetPos, true);
-			}
+		if (this.hasReached() && this.use()) {
+			this.schmuck.world.breakBlock(this.targetPos, true);
 		}
 
 		this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
@@ -100,12 +79,6 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		return 2.0D;
 	}
 
-	@Override
-	public void start() {
-		super.start();
-		breakProgress = 0;
-	}
-
 	public boolean isExposed(WorldView world, BlockPos pos) {
 		return world.isAir(pos.up()) ||
 				world.isAir(pos.down()) ||
@@ -120,9 +93,5 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		BlockState state = world.getBlockState(pos);
 		ItemStack pickaxe = this.schmuck.getMainHandStack();
 		return this.isExposed(world, pos) && state.getBlock() instanceof OreBlock && pickaxe.isEffectiveOn(state);
-	}
-
-	public int getMaxProgress() {
-		return maxProgress;
 	}
 }

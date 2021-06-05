@@ -8,9 +8,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.*;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldView;
@@ -18,6 +20,7 @@ import net.minecraft.world.WorldView;
 /** Makes Schmucks put unneeded items inside of whitelisted storage containers, or if possible, on farmland. */
 public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	private final SchmuckEntity schmuck;
+	private boolean placed;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
 		super(mob, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 2);
@@ -30,20 +33,27 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	}
 
 	@Override
+	protected int getInterval(PathAwareEntity mob) {
+		return 60;
+	}
+
+	@Override
 	public void tick() {
 		super.tick();
 		if (this.hasReached()) {
-			if (this.isStorable(this.schmuck.getMainHandStack())) {
-				this.putChest();
-			} else if (this.isPlantable(this.schmuck.getMainHandStack())) {
+			BlockState state = this.schmuck.world.getBlockState(this.targetPos);
+			if (this.isPlantable(this.schmuck.getMainHandStack()) && state.isOf(Blocks.FARMLAND)) {
 				this.putFarmland();
+			} else if (this.isStorable(this.schmuck.getMainHandStack())) {
+				this.putChest();
 			}
+			this.schmuck.swingHand(Hand.MAIN_HAND);
 		}
 	}
 
 	@Override
 	public boolean shouldContinue() {
-		return this.isStorable(this.schmuck.getMainHandStack()) || this.isPlantable(this.schmuck.getMainHandStack());
+		return !placed && (this.isStorable(this.schmuck.getMainHandStack()) || this.isPlantable(this.schmuck.getMainHandStack()));
 	}
 
 	/**
@@ -66,7 +76,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	 */
 	public boolean isPlantable(ItemStack itemStack) {
 		Item item = itemStack.getItem();
-		if (itemStack.isEmpty()) { // we dont need to go anywhere
+		if (itemStack.isEmpty()) {
 			return false;
 		}
 		return Schmucks.PLANTABLE_TAG.contains(item);
@@ -84,16 +94,22 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			if (world.getBlockEntity(pos) instanceof Inventory && this.isNotFurnace(blockState)) {
 				return isValidContainer(world, pos);
 			}
-			return blockState.isOf(Blocks.FARMLAND);
+			return blockState.isOf(Blocks.FARMLAND) && this.isPlantable(this.schmuck.getMainHandStack());
 		}
 		return false;
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		this.placed = false;
 	}
 
 	/** Puts the current held item onto farmland. */
 	private void putFarmland() {
 		BlockState blockState = this.schmuck.world.getBlockState(this.targetPos);
 		BlockState blockStateUp = this.schmuck.world.getBlockState(this.targetPos.up());
-		if (blockState.isOf(Blocks.FARMLAND) && blockStateUp.isAir()) {
+		if (blockState.isOf(Blocks.FARMLAND) && blockStateUp.isAir() && !placed) {
 			ItemStack mainHandStack = this.schmuck.getMainHandStack();
 			Item item = mainHandStack.getItem();
 			if (item instanceof BlockItem) {
@@ -106,8 +122,10 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			} else if (Blocks.WHEAT.canPlaceAt(blockStateUp, this.schmuck.world, this.targetPos.up())) {
 				this.schmuck.world.setBlockState(this.targetPos.up(),
 						Blocks.WHEAT.getDefaultState());
+				mainHandStack.decrement(1);
 			}
-			this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+			placed = true;
+			this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, mainHandStack);
 		}
 	}
 
@@ -140,7 +158,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	 */
 	private boolean isValidContainer(WorldView world, BlockPos pos) {
 		Inventory blockEntity = (Inventory) world.getBlockEntity(pos);
-		if (blockEntity != null && this.schmuck.whiteListed.contains(pos)) {
+		if (blockEntity != null && this.schmuck.getWhitelist().contains(pos)) {
 			int empty = -1;
 			ItemStack mainHandStack = this.schmuck.getMainHandStack();
 			for (int i = 0; i < 27; i++) {

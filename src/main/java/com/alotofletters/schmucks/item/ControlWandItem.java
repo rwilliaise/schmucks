@@ -2,6 +2,7 @@ package com.alotofletters.schmucks.item;
 
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
+import com.alotofletters.schmucks.client.render.ControlWandWhitelistRenderer;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,7 +16,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
@@ -50,6 +54,7 @@ public class ControlWandItem extends TooltipItem {
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		World world = context.getWorld();
 		if (world.isClient) {
+			ControlWandWhitelistRenderer.HAS_RECALCULATED = false;
 			return ActionResult.PASS;
 		}
 		PlayerEntity player = context.getPlayer();
@@ -59,7 +64,7 @@ public class ControlWandItem extends TooltipItem {
 		AtomicBoolean removed = new AtomicBoolean(false);
 		AtomicBoolean added = new AtomicBoolean(false);
 		if (player != null && player.isSneaking() && blockEntity != null) {
-			removeFromSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
+			updateSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
 			if (removed.get()) {
 				player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
 			} else if (added.get()) {
@@ -68,7 +73,7 @@ public class ControlWandItem extends TooltipItem {
 			return ActionResult.SUCCESS;
 		} else if (player != null && player.isSneaking()) {
 			if (blockState.isOf(Blocks.FARMLAND) || blockState.isIn(Schmucks.TILLABLE_TAG)) {
-				removeFromSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
+				updateSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
 				if (removed.get()) {
 					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
 					return ActionResult.SUCCESS;
@@ -78,8 +83,9 @@ public class ControlWandItem extends TooltipItem {
 				}
 			} else {
 				forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
-					if (schmuckEntity.whiteListed.contains(blockPos)) {
-						schmuckEntity.whiteListed.remove(context.getBlockPos());
+					if (schmuckEntity.getWhitelist().contains(blockPos)) {
+						schmuckEntity.getWhitelist().remove(context.getBlockPos());
+						schmuckEntity.updateWhitelist();
 						removed.set(true);
 					}
 				});
@@ -92,13 +98,15 @@ public class ControlWandItem extends TooltipItem {
 		return super.useOnBlock(context);
 	}
 
-	private void removeFromSchmucks(ItemUsageContext context, ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
+	private void updateSchmucks(ItemUsageContext context, ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
 		forEachSchmuckNearby(player, schmuckEntity -> {
-			if (schmuckEntity.whiteListed.contains(blockPos)) {
-				schmuckEntity.whiteListed.remove(context.getBlockPos());
+			if (schmuckEntity.getWhitelist().contains(blockPos)) {
+				schmuckEntity.getWhitelist().remove(context.getBlockPos());
+				schmuckEntity.updateWhitelist();
 				removed.set(true);
 			} else if (!removed.get()) {
-				schmuckEntity.whiteListed.add(context.getBlockPos());
+				schmuckEntity.getWhitelist().add(context.getBlockPos());
+				schmuckEntity.updateWhitelist();
 				added.set(true);
 			}
 		});

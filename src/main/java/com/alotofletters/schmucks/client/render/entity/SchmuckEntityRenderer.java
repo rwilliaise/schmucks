@@ -32,7 +32,7 @@ public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, Sc
 	private final Identifier defaultTexture = Schmucks.id("textures/entity/schmuck.png");
 
 	public SchmuckEntityRenderer(EntityRenderDispatcher dispatcher, boolean slim) {
-		super(dispatcher, new SchmuckEntityModel(0f, false), 0.5f);
+		super(dispatcher, new SchmuckEntityModel(0f, false), 0.25f);
 		this.addFeature(
 			new ArmorFeatureRenderer<>(this,
 				new SchmuckEntityModel(0.5f, true),
