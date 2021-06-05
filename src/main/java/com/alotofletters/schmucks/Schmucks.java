@@ -38,10 +38,12 @@ public class Schmucks implements ModInitializer {
 
 	public final static Tag<Item> RAW_MEAT_TAG = TagRegistry.item(commonId("raw_food"));
 	public final static Tag<Item> RAW_MINERAL_TAG = TagRegistry.item(commonId("raw_mineral"));
+	public final static Tag<Item> PLANTABLE_TAG = TagRegistry.item(commonId("plantable"));
 
 	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs")); // schmucks specific
 	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(commonId("food_smelters"));
 	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(commonId("ore_smelters"));
+	public final static Tag<Block> TILLABLE_TAG = TagRegistry.block(commonId("tillable"));
 
 	public final static EntityType<SchmuckEntity> SCHMUCK = Registry.register(Registry.ENTITY_TYPE,
 			id("schmuck"),

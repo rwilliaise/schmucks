@@ -52,8 +52,8 @@ public class SchmucksConfig implements ConfigData {
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
-	@SerializedName("mining_interval")
-	public IntervalRange miningInterval = new IntervalRange(40, 40);
+	@SerializedName("tool_interval")
+	public IntervalRange toolInterval = new IntervalRange(40, 40);
 
 	public static SchmucksConfig init() {
 		return AutoConfig.register(SchmucksConfig.class, GsonConfigSerializer::new)

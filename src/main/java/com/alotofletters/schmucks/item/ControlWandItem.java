@@ -5,6 +5,8 @@ import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
@@ -52,31 +54,54 @@ public class ControlWandItem extends TooltipItem {
 		}
 		PlayerEntity player = context.getPlayer();
 		BlockPos blockPos = context.getBlockPos();
+		BlockState blockState = world.getBlockState(blockPos);
 		BlockEntity blockEntity = world.getBlockEntity(blockPos);
+		AtomicBoolean removed = new AtomicBoolean(false);
+		AtomicBoolean added = new AtomicBoolean(false);
 		if (player != null && player.isSneaking() && blockEntity != null) {
-			AtomicBoolean removed = new AtomicBoolean(false);
-			forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
-				if (schmuckEntity.whiteListed.contains(context.getBlockPos())) {
-					schmuckEntity.whiteListed.remove(context.getBlockPos());
-					removed.set(true);
-				} else if (!removed.get()) {
-					schmuckEntity.whiteListed.add(context.getBlockPos());
-				}
-			});
+			removeFromSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
 			if (removed.get()) {
 				player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-			} else {
+			} else if (added.get()) {
 				player.sendMessage(new TranslatableText("item.schmucks.control_wand.added", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
 			}
 			return ActionResult.SUCCESS;
 		} else if (player != null && player.isSneaking()) {
-			forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
-				if (schmuckEntity.whiteListed.contains(blockPos)) {
-					schmuckEntity.whiteListed.remove(context.getBlockPos());
+			if (blockState.isOf(Blocks.FARMLAND) || blockState.isIn(Schmucks.TILLABLE_TAG)) {
+				removeFromSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
+				if (removed.get()) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+					return ActionResult.SUCCESS;
+				} else if (added.get()) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.added_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+					return ActionResult.SUCCESS;
 				}
-			});
+			} else {
+				forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
+					if (schmuckEntity.whiteListed.contains(blockPos)) {
+						schmuckEntity.whiteListed.remove(context.getBlockPos());
+						removed.set(true);
+					}
+				});
+				if (removed.get()) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+					return ActionResult.SUCCESS;
+				}
+			}
 		}
 		return super.useOnBlock(context);
+	}
+
+	private void removeFromSchmucks(ItemUsageContext context, ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
+		forEachSchmuckNearby(player, schmuckEntity -> {
+			if (schmuckEntity.whiteListed.contains(blockPos)) {
+				schmuckEntity.whiteListed.remove(context.getBlockPos());
+				removed.set(true);
+			} else if (!removed.get()) {
+				schmuckEntity.whiteListed.add(context.getBlockPos());
+				added.set(true);
+			}
+		});
 	}
 
 	private void forEachSchmuckNearby(ServerPlayerEntity player, Consumer<SchmuckEntity> consumer) {

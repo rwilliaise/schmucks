@@ -38,15 +38,16 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	@Override
 	protected int getInterval(PathAwareEntity mob) {
 		SchmucksConfig config = Schmucks.CONFIG;
-		int min = config.miningInterval.min;
-		if (min < config.miningInterval.max) {
-			min += mob.getRandom().nextInt(config.miningInterval.max - min);
+		int min = config.toolInterval.min;
+		if (min < config.toolInterval.max) {
+			min += mob.getRandom().nextInt(config.toolInterval.max - min);
 		}
 		return min;
 	}
 
 	@Override
 	public void tick() {
+		super.tick();
 		if (this.hasReached()) {
 			this.breakProgress++;
 			int newProgress = (int) Math.floor((float) this.breakProgress / this.getMaxProgress() * 10.0F);
@@ -61,7 +62,6 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 		}
 
 		this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
-		super.tick();
 	}
 
 	public boolean shouldContinue() {

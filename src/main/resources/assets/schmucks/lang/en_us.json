@@ -9,6 +9,7 @@
   "item.schmucks.dead_schmuck.tooltip": "It looks not hyperactive at all.",
   "item.schmucks.control_wand": "Schmuck Staff",
   "item.schmucks.control_wand.added": "(%s, %s, %s) added to whitelist",
+  "item.schmucks.control_wand.added_farmland": "(%s, %s, %s) added to available farmland",
   "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.tooltip": "It's covered in purple glitter.",
 
@@ -55,10 +56,10 @@
   "text.autoconfig.schmucks.option.jobInterval.min.@Tooltip": "Minimum amount of ticks before a Schmuck can look for a job.",
   "text.autoconfig.schmucks.option.jobInterval.max": "Maximum",
   "text.autoconfig.schmucks.option.jobInterval.max.@Tooltip": "Maximum amount of ticks before a Schmuck can look for a job.",
-  "text.autoconfig.schmucks.option.miningInterval": "Mining Interval",
-  "text.autoconfig.schmucks.option.miningInterval.@Tooltip": "How often a Schmuck looks for an ore to mine.",
-  "text.autoconfig.schmucks.option.miningInterval.min": "Minimum",
-  "text.autoconfig.schmucks.option.miningInterval.min.@Tooltip": "Minimum amount of ticks before a Schmuck can look for an ore.",
-  "text.autoconfig.schmucks.option.miningInterval.max": "Maximum",
-  "text.autoconfig.schmucks.option.miningInterval.max.@Tooltip": "Maximum amount of ticks before a Schmuck can look for an ore."
+  "text.autoconfig.schmucks.option.toolInterval": "Tool Interval",
+  "text.autoconfig.schmucks.option.toolInterval.@Tooltip": "How often a Schmuck looks for a job that uses a tool (ore mining, tilling, lumberjack).",
+  "text.autoconfig.schmucks.option.toolInterval.min": "Minimum",
+  "text.autoconfig.schmucks.option.toolInterval.min.@Tooltip": "Minimum amount of ticks before a Schmuck can look for a tool block.",
+  "text.autoconfig.schmucks.option.toolInterval.max": "Maximum",
+  "text.autoconfig.schmucks.option.toolInterval.max.@Tooltip": "Maximum amount of ticks before a Schmuck can look for an tool block."
 }

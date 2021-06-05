@@ -81,11 +81,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private int eggUsageTime;
 	private int flyCheckCooldown;
 
-	/* Used to replace the flight control back with the old one (before starting flight control). */
+	/** Used to replace the flight control back with the old one (before starting flight control). */
 	private MoveControl oldMoveControl;
+	/** Used to replace the flight nav with the old one (before starting flight navigation) */
 	private EntityNavigation oldNavigation;
-	/* Used for mid-elytra flight. */
+	/** Used for mid-elytra flight. */
 	private final FlightMoveControl flightMoveControl = new FlightMoveControl(this, 20, false);
+	/** Used for mid-elytra flight, more specifically how the Schmuck will path. */
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 
 	public final List<BlockPos> whiteListed = new ArrayList<>();
