@@ -10,8 +10,10 @@
   "item.schmucks.control_wand": "Schmuck Staff",
   "item.schmucks.control_wand.added": "(%s, %s, %s) added to whitelist",
   "item.schmucks.control_wand.added_farmland": "(%s, %s, %s) added to available farmland",
+  "item.schmucks.control_wand.added_lumber": "(%s, %s, %s) added to lumberyard",
   "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.removed_farmland": "(%s, %s, %s) removed from available farmland",
+  "item.schmucks.control_wand.removed_lumber": "(%s, %s, %s) removed from lumberyard",
   "item.schmucks.control_wand.tooltip": "It's covered in purple glitter.",
 
   "gui.schmucks.control_wand.title": "Schmuck Staff",

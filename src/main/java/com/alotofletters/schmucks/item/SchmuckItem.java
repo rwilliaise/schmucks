@@ -25,7 +25,7 @@ public class SchmuckItem extends TooltipItem {
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		World world = context.getWorld();
-		if (!(world instanceof ServerWorld)) {
+		if (world.isClient) {
 			return ActionResult.SUCCESS;
 		} else {
 			ItemStack itemStack = context.getStack();

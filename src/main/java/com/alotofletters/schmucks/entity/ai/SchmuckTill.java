@@ -10,11 +10,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 
 public class SchmuckTill extends SchmuckUseToolGoal {
-    private final SchmuckEntity schmuck;
-
     public SchmuckTill(SchmuckEntity mob, double speed, int maxProgress) {
         super(mob, speed, maxProgress);
-        this.schmuck = mob;
     }
 
     @Override
@@ -24,6 +21,12 @@ public class SchmuckTill extends SchmuckUseToolGoal {
             this.schmuck.world.setBlockState(this.targetPos, Blocks.FARMLAND.getDefaultState(), 11);
             this.schmuck.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
         }
+        this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
+    }
+
+    @Override
+    public double getDesiredSquaredDistanceToTarget() {
+        return 2.0d;
     }
 
     @Override

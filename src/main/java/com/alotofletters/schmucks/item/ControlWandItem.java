@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -24,6 +25,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -58,30 +60,22 @@ public class ControlWandItem extends TooltipItem {
 			return ActionResult.PASS;
 		}
 		PlayerEntity player = context.getPlayer();
+		if (player == null) {
+			return ActionResult.PASS;
+		}
 		BlockPos blockPos = context.getBlockPos();
 		BlockState blockState = world.getBlockState(blockPos);
 		BlockEntity blockEntity = world.getBlockEntity(blockPos);
-		AtomicBoolean removed = new AtomicBoolean(false);
-		AtomicBoolean added = new AtomicBoolean(false);
-		if (player != null && player.isSneaking() && blockEntity != null) {
-			updateSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
-			if (removed.get()) {
-				player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-			} else if (added.get()) {
-				player.sendMessage(new TranslatableText("item.schmucks.control_wand.added", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-			}
-			return ActionResult.SUCCESS;
-		} else if (player != null && player.isSneaking()) {
+		// TODO: less convoluted way for checking if applicable to whitelist, and what its text should be
+		if (player.isSneaking() && blockEntity != null) {
+			return updateFromContext(context, "%s");
+		} else if (player.isSneaking()) {
 			if (blockState.isOf(Blocks.FARMLAND) || blockState.isIn(Schmucks.TILLABLE_TAG)) {
-				updateSchmucks(context, (ServerPlayerEntity) player, blockPos, removed, added);
-				if (removed.get()) {
-					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-					return ActionResult.SUCCESS;
-				} else if (added.get()) {
-					player.sendMessage(new TranslatableText("item.schmucks.control_wand.added_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-					return ActionResult.SUCCESS;
-				}
+				return updateFromContext(context, "%s_farmland");
+			} else if (blockState.isIn(BlockTags.LOGS)) {
+				return updateFromContext(context, "%s_lumber");
 			} else {
+				AtomicBoolean removed = new AtomicBoolean(false);
 				forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
 					if (schmuckEntity.getWhitelist().contains(blockPos)) {
 						schmuckEntity.getWhitelist().remove(context.getBlockPos());
@@ -98,20 +92,51 @@ public class ControlWandItem extends TooltipItem {
 		return super.useOnBlock(context);
 	}
 
-	private void updateSchmucks(ItemUsageContext context, ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
+	private ActionResult updateFromContext(ItemUsageContext context, String fmt) {
+		PlayerEntity player = context.getPlayer();
+		if (player == null) {
+			return ActionResult.PASS;
+		}
+		BlockPos blockPos = context.getBlockPos();
+		AtomicBoolean removed = new AtomicBoolean(false);
+		AtomicBoolean added = new AtomicBoolean(false);
+		updateSchmucks((ServerPlayerEntity) player, blockPos, removed, added);
+		if (removed.get()) {
+			player.sendMessage(new TranslatableText(String.format("item.schmucks.control_wand." + fmt, "removed"), blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+			return ActionResult.SUCCESS;
+		} else if (added.get()) {
+			player.sendMessage(new TranslatableText(String.format("item.schmucks.control_wand." + fmt, "added"), blockPos.getY(), blockPos.getZ()), true);
+			return ActionResult.SUCCESS;
+		}
+		return ActionResult.PASS;
+	}
+
+	/**
+	 * Updates the whitelist for Schmucks nearby from a BlockPos.
+	 * @param player Player that used the item
+	 * @param blockPos Block position to update nearby Schmucks with
+	 * @param removed Atomic flag for the little actionbar message
+	 * @param added Atomic flag also for the little actionbar message
+	 */
+	private void updateSchmucks(ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
 		forEachSchmuckNearby(player, schmuckEntity -> {
 			if (schmuckEntity.getWhitelist().contains(blockPos)) {
-				schmuckEntity.getWhitelist().remove(context.getBlockPos());
+				schmuckEntity.getWhitelist().remove(blockPos);
 				schmuckEntity.updateWhitelist();
 				removed.set(true);
 			} else if (!removed.get()) {
-				schmuckEntity.getWhitelist().add(context.getBlockPos());
+				schmuckEntity.getWhitelist().add(blockPos);
 				schmuckEntity.updateWhitelist();
 				added.set(true);
 			}
 		});
 	}
 
+	/**
+	 * Does an action to all Schmucks owned by <code>player</code> nearby.
+	 * @param player Player to test with
+	 * @param consumer Ran on every Schmuck nearby.
+	 */
 	private void forEachSchmuckNearby(ServerPlayerEntity player, Consumer<SchmuckEntity> consumer) {
 		player.world.getEntitiesByClass(SchmuckEntity.class, player.getBoundingBox().expand(Schmucks.CONFIG.wandRange), entity -> entity.getOwner() == player)
 				.forEach(consumer);
