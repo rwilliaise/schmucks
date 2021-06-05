@@ -1,9 +1,7 @@
 package com.alotofletters.schmucks.mixin;
 
-import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.render.entity.SchmuckEntityRenderer;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;

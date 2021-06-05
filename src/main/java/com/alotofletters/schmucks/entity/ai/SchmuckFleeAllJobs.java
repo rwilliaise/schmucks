@@ -4,7 +4,6 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 

@@ -31,8 +31,8 @@ import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
 /** The Schmuck Staff GUI */
 public class ControlWandScreen extends Screen {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
-	protected int backgroundWidth = 176;
-	protected int backgroundHeight = 88;
+	protected final int backgroundWidth = 176;
+	protected final int backgroundHeight = 88;
 
 	public final SchmuckEntity schmuck;
 

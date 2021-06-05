@@ -2,7 +2,6 @@ package com.alotofletters.schmucks.net;
 
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
-import com.alotofletters.schmucks.item.ControlWandItem;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;

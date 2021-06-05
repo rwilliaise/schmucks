@@ -5,7 +5,6 @@ import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldView;
 
 public abstract class FleeBlockGoal extends MoveToTargetPosGoal {
 	private final int range;
