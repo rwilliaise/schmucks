@@ -7,6 +7,9 @@ import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 
+/**
+ * Used as a base class for all jobs.
+ */
 public abstract class SchmuckJobGoal extends MoveToTargetPosGoal {
 	protected SchmuckEntity schmuck;
 

@@ -4,6 +4,7 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import me.shedaniel.autoconfig.AutoConfig;
+import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
@@ -40,6 +41,9 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 
 	public boolean isGoodSmelter(BlockState state) {
 		Item item = this.schmuck.getMainHandStack().getItem();
+		if (!state.isIn(Schmucks.ORE_SMELTERS_TAG) && !state.isIn(Schmucks.FOOD_SMELTERS_TAG)) {
+			return state.getBlock() instanceof AbstractFurnaceBlock;
+		}
 		if (Schmucks.RAW_MINERAL_TAG.contains(item) && state.isIn(Schmucks.ORE_SMELTERS_TAG)) {
 			return true;
 		}

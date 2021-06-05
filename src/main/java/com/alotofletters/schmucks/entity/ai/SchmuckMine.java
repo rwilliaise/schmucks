@@ -25,7 +25,7 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 	private int lastProgress;
 
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
-		super(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange);
+		super(schmuck, speed, Schmucks.CONFIG.jobRange);
 		this.schmuck = schmuck;
 		this.maxProgress = maxProgress;
 	}
@@ -69,7 +69,6 @@ public class SchmuckMine extends MoveToTargetPosGoal {
 
 	@Override
 	protected BlockPos getTargetPos() {
-		World world = this.schmuck.world;
 		BlockPos pos = this.targetPos;
 		if (isStandable(pos.up())) {
 			return pos.up();

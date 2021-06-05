@@ -36,12 +36,12 @@ public class Schmucks implements ModInitializer {
 
 	public final static Identifier CONTROL_WAND_PACKET_ID = id("control_wand");
 
-	public final static Tag<Item> RAW_MEAT_TAG = TagRegistry.item(id("raw_food"));
-	public final static Tag<Item> RAW_MINERAL_TAG = TagRegistry.item(id("raw_mineral"));
+	public final static Tag<Item> RAW_MEAT_TAG = TagRegistry.item(commonId("raw_food"));
+	public final static Tag<Item> RAW_MINERAL_TAG = TagRegistry.item(commonId("raw_mineral"));
 
-	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs"));
-	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(id("food_smelters"));
-	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(id("ore_smelters"));
+	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs")); // schmucks specific
+	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(commonId("food_smelters"));
+	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(commonId("ore_smelters"));
 
 	public final static EntityType<SchmuckEntity> SCHMUCK = Registry.register(Registry.ENTITY_TYPE,
 			id("schmuck"),
@@ -62,5 +62,8 @@ public class Schmucks implements ModInitializer {
 
 	public static Identifier id(String name) {
 		return new Identifier(Schmucks.MOD_ID, name);
+	}
+	public static Identifier commonId(String name) {
+		return new Identifier("c", name);
 	}
 }

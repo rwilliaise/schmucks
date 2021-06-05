@@ -99,10 +99,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
-		if (random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().leatherHelmetChance)).floatValue() / 100) {
+		if (random.nextFloat() < Schmucks.CONFIG.leatherHelmetChance.floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
-		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < (((Integer) AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().shortTemperChance)).floatValue() / 100; // will attack teammates if damaged
+		shortTempered = AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
 		this.updateAttackType();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -169,6 +169,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 		if (!this.world.isClient) {
 			this.tickAngerLogic((ServerWorld)this.world, true);
+
+			if (this.getTarget() != null && this.getTarget().getType() == EntityType.PLAYER) {
+				List<SchmuckEntity> entities = this.world.getEntitiesIncludingUngeneratedChunks(SchmuckEntity.class,
+						this.getBoundingBox().expand(10),
+						schmuck -> schmuck.getOwnerUuid() != this.getOwnerUuid());
+				this.setTarget(entities.get(this.random.nextInt(entities.size() - 1)));
+			}
 		}
 	}
 
@@ -200,9 +207,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.canFollow = tag.getBoolean("CanFollow");
 		ListTag list = tag.getList("Whitelisted", 10);
-		list.forEach(blockPosTag -> {
-			this.whiteListed.add(NbtHelper.toBlockPos((CompoundTag) blockPosTag));
-		});
+		list.forEach(blockPosTag -> this.whiteListed.add(NbtHelper.toBlockPos((CompoundTag) blockPosTag)));
 		this.updateAttackType();
 	}
 
