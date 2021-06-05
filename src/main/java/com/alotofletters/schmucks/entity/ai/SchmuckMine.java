@@ -1,26 +1,17 @@
 package com.alotofletters.schmucks.entity.ai;
 
-import com.alotofletters.schmucks.Schmucks;
-import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
-import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.PickaxeItem;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 public class SchmuckMine extends SchmuckUseToolGoal {
-	private final SchmuckEntity schmuck;
-
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
 		super(schmuck, speed, maxProgress);
-		this.schmuck = schmuck;
 	}
 
 	@Override
@@ -49,25 +40,7 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 
 	@Override
 	protected BlockPos getTargetPos() {
-		BlockPos pos = this.targetPos;
-		if (isStandable(pos.up())) {
-			return pos.up();
-		} else if (isStandable(pos.down())) {
-			return pos.down();
-		} else if (isStandable(pos.north())) {
-			return pos.north();
-		} else if (isStandable(pos.south())) {
-			return pos.south();
-		} else if (isStandable(pos.west())) {
-			return pos.west();
-		} else {
-			return pos.east();
-		}
-	}
-
-	private boolean isStandable(BlockPos pos) {
-		World world = this.schmuck.world;
-		return world.isAir(pos) && world.getBlockState(pos.down()).hasSolidTopSurface(world, pos, this.schmuck);
+		return this.getStandablePosition();
 	}
 
 	public boolean isOrePresent() {

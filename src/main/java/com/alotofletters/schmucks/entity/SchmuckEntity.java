@@ -70,6 +70,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
 	/** Used for when the Schmuck obtains a hoe. */
 	private final SchmuckTill tillGoal = new SchmuckTill(this, 1.0D, 10);
+	/** Used for when the Schmuck obtains an axe. */
+	private final SchmuckFellTree fellGoal = new SchmuckFellTree(this, 1.0D, 40);
 
 	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
 	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
@@ -420,6 +422,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.goalSelector.remove(this.bowAttackGoal);
 			this.goalSelector.remove(this.mineGoal);
 			this.goalSelector.remove(this.pounceGoal);
+			this.goalSelector.remove(this.tillGoal);
+			this.goalSelector.remove(this.fellGoal);
 			this.targetSelector.remove(this.shortTemperRevengeGoal);
 			this.targetSelector.remove(this.revengeGoal);
 			ItemStack itemStack = this.getMainHandStack();
@@ -431,6 +435,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			} else if (FabricToolTags.HOES.contains(itemStack.getItem())) {
 				this.goalSelector.add(4, this.meleeAttackGoal);
 				this.goalSelector.add(5, this.tillGoal);
+			} else if (FabricToolTags.AXES.contains(itemStack.getItem())) {
+				this.goalSelector.add(4, this.meleeAttackGoal);
+				this.goalSelector.add(5, this.fellGoal);
 			} else {
 				this.goalSelector.add(4, this.pounceGoal);
 				this.goalSelector.add(5, this.meleeAttackGoal);

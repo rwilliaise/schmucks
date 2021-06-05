@@ -6,9 +6,11 @@ import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
-    private final SchmuckEntity schmuck;
+    public final SchmuckEntity schmuck;
     private final int maxProgress;
     private int breakProgress;
     private int lastProgress;
@@ -45,6 +47,28 @@ public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
         super.start();
         this.breakProgress = 0;
         this.lastProgress = 0;
+    }
+
+    protected boolean isStandable(BlockPos pos) {
+        World world = this.schmuck.world;
+        return world.isAir(pos) && world.getBlockState(pos.down()).hasSolidTopSurface(world, pos, this.schmuck);
+    }
+
+    protected BlockPos getStandablePosition() {
+        BlockPos pos = this.targetPos;
+        if (isStandable(pos.up())) {
+            return pos.up();
+        } else if (isStandable(pos.down())) {
+            return pos.down();
+        } else if (isStandable(pos.north())) {
+            return pos.north();
+        } else if (isStandable(pos.south())) {
+            return pos.south();
+        } else if (isStandable(pos.west())) {
+            return pos.west();
+        } else {
+            return pos.east();
+        }
     }
 
     public int getMaxProgress() {
