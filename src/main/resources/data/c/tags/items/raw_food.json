@@ -5,6 +5,8 @@
     "minecraft:porkchop",
     "minecraft:chicken",
     "minecraft:rabbit",
-    "minecraft:mutton"
+    "minecraft:mutton",
+    "minecraft:cod",
+    "minecraft:salmon"
   ]
 }

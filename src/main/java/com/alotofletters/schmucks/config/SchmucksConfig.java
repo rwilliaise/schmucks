@@ -17,12 +17,12 @@ public class SchmucksConfig implements ConfigData {
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.BoundedDiscrete(min = 0, max = 100)
 	@SerializedName("short_temper_chance")
-	public int shortTemperChance = 5;
+	public Integer shortTemperChance = 5;
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.BoundedDiscrete(min = 0, max = 100)
 	@SerializedName("leather_helmet_chance")
-	public int leatherHelmetChance = 10;
+	public Integer leatherHelmetChance = 10;
 
 	@ConfigEntry.Gui.Tooltip(count = 2)
 	@ConfigEntry.BoundedDiscrete(min = 1, max = 16)
