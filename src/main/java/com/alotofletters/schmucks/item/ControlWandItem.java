@@ -4,10 +4,12 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.alotofletters.schmucks.client.render.ControlWandWhitelistRenderer;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.entity.WhitelistComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
@@ -56,7 +58,6 @@ public class ControlWandItem extends TooltipItem {
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		World world = context.getWorld();
 		if (world.isClient) {
-			ControlWandWhitelistRenderer.HAS_RECALCULATED = false;
 			return ActionResult.PASS;
 		}
 		PlayerEntity player = context.getPlayer();
@@ -66,24 +67,18 @@ public class ControlWandItem extends TooltipItem {
 		BlockPos blockPos = context.getBlockPos();
 		BlockState blockState = world.getBlockState(blockPos);
 		BlockEntity blockEntity = world.getBlockEntity(blockPos);
-		// TODO: less convoluted way for checking if applicable to whitelist, and what its text should be
 		if (player.isSneaking() && blockEntity != null) {
 			return updateFromContext(context, "%s");
 		} else if (player.isSneaking()) {
 			if (blockState.isOf(Blocks.FARMLAND) || blockState.isIn(Schmucks.TILLABLE_TAG)) {
 				return updateFromContext(context, "%s_farmland");
-			} else if (blockState.isIn(BlockTags.LOGS)) {
+			} else if (blockState.isIn(BlockTags.LOGS) || blockState.getBlock() instanceof SaplingBlock) {
 				return updateFromContext(context, "%s_lumber");
 			} else {
-				AtomicBoolean removed = new AtomicBoolean(false);
-				forEachSchmuckNearby((ServerPlayerEntity) player, schmuckEntity -> {
-					if (schmuckEntity.getWhitelist().contains(blockPos)) {
-						schmuckEntity.getWhitelist().remove(context.getBlockPos());
-						schmuckEntity.updateWhitelist();
-						removed.set(true);
-					}
-				});
-				if (removed.get()) {
+				WhitelistComponent component = Schmucks.getWhitelistComponent(player);
+				if (component.containsWhiteList(blockPos)) {
+					component.removeWhitelist(blockPos);
+					component.sync();
 					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
 					return ActionResult.SUCCESS;
 				}
@@ -98,48 +93,16 @@ public class ControlWandItem extends TooltipItem {
 			return ActionResult.PASS;
 		}
 		BlockPos blockPos = context.getBlockPos();
-		AtomicBoolean removed = new AtomicBoolean(false);
-		AtomicBoolean added = new AtomicBoolean(false);
-		updateSchmucks((ServerPlayerEntity) player, blockPos, removed, added);
-		if (removed.get()) {
+		WhitelistComponent component = Schmucks.getWhitelistComponent(player);
+		if (component.containsWhiteList(blockPos)) {
 			player.sendMessage(new TranslatableText(String.format("item.schmucks.control_wand." + fmt, "removed"), blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
-			return ActionResult.SUCCESS;
-		} else if (added.get()) {
-			player.sendMessage(new TranslatableText(String.format("item.schmucks.control_wand." + fmt, "added"), blockPos.getY(), blockPos.getZ()), true);
-			return ActionResult.SUCCESS;
+			component.removeWhitelist(blockPos);
+		} else {
+			player.sendMessage(new TranslatableText(String.format("item.schmucks.control_wand." + fmt, "added"), blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+			component.addWhitelist(blockPos);
 		}
-		return ActionResult.PASS;
-	}
-
-	/**
-	 * Updates the whitelist for Schmucks nearby from a BlockPos.
-	 * @param player Player that used the item
-	 * @param blockPos Block position to update nearby Schmucks with
-	 * @param removed Atomic flag for the little actionbar message
-	 * @param added Atomic flag also for the little actionbar message
-	 */
-	private void updateSchmucks(ServerPlayerEntity player, BlockPos blockPos, AtomicBoolean removed, AtomicBoolean added) {
-		forEachSchmuckNearby(player, schmuckEntity -> {
-			if (schmuckEntity.getWhitelist().contains(blockPos)) {
-				schmuckEntity.getWhitelist().remove(blockPos);
-				schmuckEntity.updateWhitelist();
-				removed.set(true);
-			} else if (!removed.get()) {
-				schmuckEntity.getWhitelist().add(blockPos);
-				schmuckEntity.updateWhitelist();
-				added.set(true);
-			}
-		});
-	}
-
-	/**
-	 * Does an action to all Schmucks owned by <code>player</code> nearby.
-	 * @param player Player to test with
-	 * @param consumer Ran on every Schmuck nearby.
-	 */
-	private void forEachSchmuckNearby(ServerPlayerEntity player, Consumer<SchmuckEntity> consumer) {
-		player.world.getEntitiesByClass(SchmuckEntity.class, player.getBoundingBox().expand(Schmucks.CONFIG.wandRange), entity -> entity.getOwner() == player)
-				.forEach(consumer);
+		component.sync();
+		return ActionResult.SUCCESS;
 	}
 
 	@Override

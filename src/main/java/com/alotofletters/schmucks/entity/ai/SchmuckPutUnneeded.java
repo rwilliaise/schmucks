@@ -6,6 +6,8 @@ import com.alotofletters.schmucks.entity.SchmuckEntity;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SaplingBlock;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -15,6 +17,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 /** Makes Schmucks put unneeded items inside of whitelisted storage containers, or if possible, on farmland. */
@@ -44,9 +47,12 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			BlockState state = this.schmuck.world.getBlockState(this.targetPos);
 			if (this.isPlantable(this.schmuck.getMainHandStack()) && state.isOf(Blocks.FARMLAND)) {
 				this.putFarmland();
+			} else if (this.isSapling(this.schmuck.getMainHandStack()) && state.isAir()) {
+				this.putSapling();
 			} else if (this.isStorable(this.schmuck.getMainHandStack())) {
 				this.putChest();
 			}
+
 			this.schmuck.swingHand(Hand.MAIN_HAND);
 		}
 	}
@@ -57,7 +63,9 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			return false;
 		} else if (this.isPlantable(this.schmuck.getMainHandStack()) && this.schmuck.world.isAir(this.targetPos.up())) {
 			return true;
-		} else return this.isStorable(this.schmuck.getMainHandStack());
+		} else if (this.isSapling(this.schmuck.getMainHandStack()) && this.schmuck.world.isAir(this.targetPos)) {
+			return true;
+		} else return this.isStorable(this.schmuck.getMainHandStack()) && this.isContainer(this.targetPos);
 	}
 
 	/**
@@ -71,6 +79,19 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 			return false;
 		}
 		return !(item instanceof ToolItem || item instanceof ArmorItem || item instanceof RangedWeaponItem);
+	}
+
+	/**
+	 * See if an item is worth storing.
+	 * @param itemStack ItemStack to test
+	 * @return If the item should be stored
+	 */
+	public boolean isSapling(ItemStack itemStack) {
+		Item item = itemStack.getItem();
+		if (itemStack.isEmpty()) {
+			return false;
+		}
+		return item instanceof BlockItem && ((BlockItem) item).getBlock() instanceof SaplingBlock;
 	}
 
 	/**
@@ -95,18 +116,38 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		if (world.isAir(pos.up())) { // TODO: barrels don't need this, but its still checked
 			BlockState blockState = world.getBlockState(pos);
-			if (world.getBlockEntity(pos) instanceof Inventory && this.isNotFurnace(blockState)) {
+			if (this.isSapling(this.schmuck.getMainHandStack()) && canPlantSapling(pos)) {
+				return true;
+			} else if (blockState.isOf(Blocks.FARMLAND) && this.isPlantable(this.schmuck.getMainHandStack())) {
+				return true;
+			} else if (this.isContainer(pos) && this.isNotFurnace(blockState)) {
 				return isValidContainer(world, pos);
 			}
-			return blockState.isOf(Blocks.FARMLAND) && this.isPlantable(this.schmuck.getMainHandStack());
 		}
 		return false;
+	}
+
+	@Override
+	protected BlockPos getTargetPos() {
+		return SchmuckUseToolGoal.getStandablePosition(this.schmuck, this.targetPos);
 	}
 
 	@Override
 	public void stop() {
 		super.stop();
 		this.placed = false;
+	}
+
+	/**
+	 * Sees if a sapling is placeable at a given position.
+	 * @param pos Position to test
+	 * @return If a sapling can be placed at <code>pos</code>
+	 */
+	private boolean canPlantSapling(BlockPos pos) {
+		World world = this.schmuck.world;
+		return this.schmuck.getWhitelist().contains(pos) &&
+				world.isAir(pos) &&
+				Blocks.OAK_SAPLING.getDefaultState().canPlaceAt(world, pos);
 	}
 
 	/** Puts the current held item onto farmland. */
@@ -123,13 +164,29 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 						mainHandStack,
 						Direction.UP);
 				((BlockItem) item).place(context);
-			} else if (Blocks.WHEAT.canPlaceAt(blockStateUp, this.schmuck.world, this.targetPos.up())) {
+			} else if (Blocks.WHEAT.getDefaultState().canPlaceAt(this.schmuck.world, this.targetPos.up())) {
 				this.schmuck.world.setBlockState(this.targetPos.up(),
 						Blocks.WHEAT.getDefaultState());
 				mainHandStack.decrement(1);
+				this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, mainHandStack);
 			}
 			placed = true;
-			this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, mainHandStack);
+		}
+	}
+
+	private void putSapling() {
+		if (!placed && canPlantSapling(this.targetPos)) {
+			ItemStack mainHandStack = this.schmuck.getMainHandStack();
+			Item item = mainHandStack.getItem();
+			if (item instanceof BlockItem) {
+				ItemPlacementContext context = new AutomaticItemPlacementContext(this.schmuck.world,
+						this.targetPos,
+						Direction.UP,
+						mainHandStack,
+						Direction.UP);
+				((BlockItem) item).place(context);
+			}
+			placed = true;
 		}
 	}
 
@@ -154,6 +211,16 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	 */
 	private boolean isNotFurnace(BlockState state) {
 		return !state.isIn(Schmucks.ORE_SMELTERS_TAG) && !state.isIn(Schmucks.FOOD_SMELTERS_TAG);
+	}
+
+	/**
+	 * Used to see if a position is a container
+	 * @param pos Position to test
+	 * @return If pos contains a container
+	 */
+	private boolean isContainer(BlockPos pos) {
+		BlockEntity blockEntity = this.schmuck.world.getBlockEntity(pos);
+		return blockEntity instanceof Inventory;
 	}
 
 	/**

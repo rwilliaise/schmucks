@@ -40,7 +40,7 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 
 	@Override
 	protected BlockPos getTargetPos() {
-		return this.getStandablePosition();
+		return SchmuckUseToolGoal.getStandablePosition(this.schmuck, this.targetPos);
 	}
 
 	public boolean isOrePresent() {

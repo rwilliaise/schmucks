@@ -49,22 +49,21 @@ public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
         this.lastProgress = 0;
     }
 
-    protected boolean isStandable(BlockPos pos) {
-        World world = this.schmuck.world;
-        return world.isAir(pos) && world.getBlockState(pos.down()).hasSolidTopSurface(world, pos, this.schmuck);
+    public static boolean isStandable(World world, SchmuckEntity entity, BlockPos pos) {
+        return world.isAir(pos) && world.getBlockState(pos.down()).hasSolidTopSurface(world, pos, entity);
     }
 
-    protected BlockPos getStandablePosition() {
-        BlockPos pos = this.targetPos;
-        if (isStandable(pos.up())) {
+    public static BlockPos getStandablePosition(SchmuckEntity entity, BlockPos pos) {
+        World world = entity.world;
+        if (isStandable(world, entity, pos.up())) {
             return pos.up();
-        } else if (isStandable(pos.down())) {
+        } else if (isStandable(world, entity, pos.down())) {
             return pos.down();
-        } else if (isStandable(pos.north())) {
+        } else if (isStandable(world, entity, pos.north())) {
             return pos.north();
-        } else if (isStandable(pos.south())) {
+        } else if (isStandable(world, entity, pos.south())) {
             return pos.south();
-        } else if (isStandable(pos.west())) {
+        } else if (isStandable(world, entity, pos.west())) {
             return pos.west();
         } else {
             return pos.east();

@@ -3,7 +3,6 @@ package com.alotofletters.schmucks.entity;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
-import com.alotofletters.schmucks.mixin.DataTrackerAccessor;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
@@ -47,7 +46,6 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +54,6 @@ import java.util.function.Predicate;
 public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
 	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
-	private static final TrackedData<List<BlockPos>> WHITELISTED = DataTracker.registerData(SchmuckEntity.class, Schmucks.BLOCK_POS_LIST);
 
 	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
@@ -195,11 +192,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		tag.putBoolean("ShortTemper", this.shortTempered);
 		tag.putBoolean("CanTeleport", this.canTeleport);
 		tag.putBoolean("CanFollow", this.canFollow);
-		ListTag list = new ListTag();
-		for (BlockPos blockPos : this.getWhitelist()) {
-			list.add(NbtHelper.fromBlockPos(blockPos));
-		}
-		tag.put("Whitelisted", list);
 		this.angerToTag(tag);
 	}
 
@@ -210,8 +202,17 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.canFollow = tag.getBoolean("CanFollow");
-		ListTag list = tag.getList("Whitelisted", 10);
-		list.forEach(blockPosTag -> this.getWhitelist().add(NbtHelper.toBlockPos((CompoundTag) blockPosTag)));
+		if (tag.contains("Whitelisted") && this.getOwner() != null) {
+			ListTag list = tag.getList("Whitelisted", 10);
+			WhitelistComponent component = Schmucks.getWhitelistComponent((PlayerEntity) this.getOwner());
+			list.forEach(blockPosTag -> {
+				BlockPos pos = NbtHelper.toBlockPos((CompoundTag) blockPosTag);
+				if (!component.containsWhiteList(pos)) {
+					component.addWhitelist(pos);
+				}
+			});
+			component.sync();
+		}
 		this.updateAttackType();
 	}
 
@@ -292,7 +293,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	protected void initDataTracker() {
 		super.initDataTracker();
 		this.dataTracker.startTracking(ANGER_TIME, 0);
-		this.dataTracker.startTracking(WHITELISTED, new ArrayList<>());
 	}
 
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
@@ -397,14 +397,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	public List<BlockPos> getWhitelist() {
-		return this.dataTracker.get(WHITELISTED);
-	}
-
-	public void updateWhitelist() {
-		DataTrackerAccessor accessor = (DataTrackerAccessor) this.dataTracker;
-		DataTracker.Entry<List<BlockPos>> entry = accessor.invokeGetEntry(WHITELISTED);
-		entry.setDirty(true);
-		accessor.setDirty(true);
+		return Schmucks.getWhitelistOrEmpty((PlayerEntity) this.getOwner());
 	}
 
 	@Override
