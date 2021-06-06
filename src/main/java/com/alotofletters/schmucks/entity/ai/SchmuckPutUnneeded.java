@@ -53,7 +53,11 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	@Override
 	public boolean shouldContinue() {
-		return !placed && (this.isStorable(this.schmuck.getMainHandStack()) || this.isPlantable(this.schmuck.getMainHandStack()));
+		if (placed) {
+			return false;
+		} else if (this.isPlantable(this.schmuck.getMainHandStack()) && this.schmuck.world.isAir(this.targetPos.up())) {
+			return true;
+		} else return this.isStorable(this.schmuck.getMainHandStack());
 	}
 
 	/**
