@@ -2,11 +2,14 @@ package com.alotofletters.schmucks;
 
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.entity.WhitelistComponent;
 import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
 import com.google.common.collect.Lists;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -18,6 +21,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.network.PacketByteBuf;
@@ -53,26 +57,8 @@ public class Schmucks implements ModInitializer {
 	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(commonId("ore_smelters"));
 	public final static Tag<Block> TILLABLE_TAG = TagRegistry.block(commonId("tillable"));
 
-	public static final TrackedDataHandler<List<BlockPos>> BLOCK_POS_LIST = new TrackedDataHandler<List<BlockPos>>() {
-		public void write(PacketByteBuf data, List<BlockPos> object) {
-			data.writeInt(object.size());
-			for (BlockPos blockPos : object) {
-				data.writeBlockPos(blockPos);
-			}
-		}
-
-		public List<BlockPos> read(PacketByteBuf packetByteBuf) {
-			List<BlockPos> out = new ArrayList<>();
-			for (int i = 0; i < packetByteBuf.readInt(); i++) {
-				out.add(packetByteBuf.readBlockPos());
-			}
-			return out;
-		}
-
-		public List<BlockPos> copy(List<BlockPos> object) {
-			return Lists.newArrayList(object);
-		}
-	};
+	public static final ComponentKey<WhitelistComponent> WHITELIST =
+			ComponentRegistry.getOrCreate(id("whitelist"), WhitelistComponent.class);
 
 	public final static EntityType<SchmuckEntity> SCHMUCK = Registry.register(Registry.ENTITY_TYPE,
 			id("schmuck"),
@@ -91,14 +77,25 @@ public class Schmucks implements ModInitializer {
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}
 
+	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
+		return Schmucks.getWhitelistComponent(provider).getWhitelist();
+	}
+
+	public static List<BlockPos> getWhitelistOrEmpty(PlayerEntity provider) {
+		if (provider == null) {
+			return new ArrayList<>();
+		}
+		return Schmucks.WHITELIST.maybeGet(provider).map(WhitelistComponent::getWhitelist).orElse(new ArrayList<>());
+	}
+
+	public static WhitelistComponent getWhitelistComponent(PlayerEntity provider) {
+		return Schmucks.WHITELIST.get(provider);
+	}
+
 	public static Identifier id(String name) {
 		return new Identifier(Schmucks.MOD_ID, name);
 	}
 	public static Identifier commonId(String name) {
 		return new Identifier("c", name);
-	}
-
-	static {
-		TrackedDataHandlerRegistry.register(BLOCK_POS_LIST);
 	}
 }

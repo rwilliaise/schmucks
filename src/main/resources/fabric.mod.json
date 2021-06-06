@@ -24,6 +24,14 @@
     ],
     "modmenu": [
       "com.alotofletters.schmucks.config.SchmucksModMenuIntegration"
+    ],
+    "cardinal-components": [
+      "com.alotofletters.schmucks.entity.PlayerComponents"
+    ]
+  },
+  "custom": {
+    "cardinal-components": [
+      "schmucks:whitelist"
     ]
   },
   "mixins": [

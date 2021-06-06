@@ -81,6 +81,11 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 	}
 
 	@Override
+	protected BlockPos getTargetPos() {
+		return SchmuckUseToolGoal.getStandablePosition(this.schmuck, this.targetPos);
+	}
+
+	@Override
 	public double getDesiredSquaredDistanceToTarget() {
 		return 2.0D;
 	}

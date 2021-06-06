@@ -16,53 +16,32 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Used to render outlines on whitelisted blocks, while holding out the Schmuck Staff. */
 public class ControlWandWhitelistRenderer {
-    public static boolean HAS_RECALCULATED = false;
-
-    private static final List<BlockPos> NEAR_WHITELIST = new ArrayList<>();
 
     public static boolean onBlockOutline(WorldRenderContext worldRenderContext, HitResult result) {
+        ClientWorld world = worldRenderContext.world();
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null || !player.isHolding(Schmucks.CONTROL_WAND)) {
+            return true;
+        }
         WorldRendererAccessor accessor = (WorldRendererAccessor) worldRenderContext.worldRenderer();
         BufferBuilderStorage storage = accessor.getBufferBuilders();
         VertexConsumerProvider.Immediate immediate = storage.getEntityVertexConsumers();
         VertexConsumer consumer = immediate.getBuffer(RenderLayer.getLines());
-        ClientWorld world = worldRenderContext.world();
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if (world.getTime() % 5 == 0) {
-            HAS_RECALCULATED = false;
-        }
-        if (player == null) {
-            return true;
-        }
-        if (!HAS_RECALCULATED && player.isHolding(Schmucks.CONTROL_WAND)) {
-            NEAR_WHITELIST.clear();
-            world.getEntitiesIncludingUngeneratedChunks(SchmuckEntity.class,
-                    player.getBoundingBox().expand(10),
-                    schmuck -> player.getUuid().equals(schmuck.getOwnerUuid()))
-                            .stream()
-                            .map(SchmuckEntity::getWhitelist)
-                            .forEach(list -> list.forEach(pos -> {
-                                if (!NEAR_WHITELIST.contains(pos)) {
-                                    NEAR_WHITELIST.add(pos);
-                                }
-                            }));
-            HAS_RECALCULATED = true;
-        } else if (HAS_RECALCULATED && !player.isHolding(Schmucks.CONTROL_WAND)) {
-            HAS_RECALCULATED = false;
-        }
-        if (!player.isHolding(Schmucks.CONTROL_WAND)) {
-            return true;
-        }
         Vec3d cameraPos = worldRenderContext.camera().getPos();
         float shade = (float) ((Math.sin(Math.toRadians((world.getTime() + worldRenderContext.tickDelta()) * 15)) + 1) * 0.5);
-        NEAR_WHITELIST.forEach(pos -> {
+        Schmucks.getWhitelistOrEmpty(player).forEach(pos -> {
             BlockState state = world.getBlockState(pos);
             VoxelShape shape = state.getOutlineShape(world, pos, ShapeContext.of(player));
+            if (shape.isEmpty()) {
+                shape = VoxelShapes.fullCube();
+            }
             double x = pos.getX() - cameraPos.getX();
             double y = pos.getY() - cameraPos.getY();
             double z = pos.getZ() - cameraPos.getZ();

@@ -11,6 +11,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SchmuckFellTree extends SchmuckUseToolGoal {
@@ -54,6 +55,11 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
     }
 
     @Override
+    public double getDesiredSquaredDistanceToTarget() {
+        return 2.0D;
+    }
+
+    @Override
     public boolean canStart() {
         ItemStack stack = this.schmuck.getMainHandStack();
         return FabricToolTags.AXES.contains(stack.getItem()) && super.canStart();
@@ -66,7 +72,7 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 
     @Override
     protected BlockPos getTargetPos() {
-        return this.getStandablePosition();
+        return getStandablePosition(this.schmuck, this.targetPos);
     }
 
     /**
@@ -78,20 +84,23 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
         return state.isIn(BlockTags.LOGS);
     }
 
-    private void addNeighbors(World world, BlockPos pos) {
+    private synchronized void addNeighbors(List<BlockPos> cascadingOut, World world, BlockPos pos) {
         for (Direction direction : Direction.values()) {
             BlockPos newPosition = pos.offset(direction);
-            if (isValidLog(world.getBlockState(pos))) {
-                cascadingPos.add(newPosition);
+            if (isValidLog(world.getBlockState(newPosition))) {
+                cascadingOut.add(newPosition);
             }
         }
     }
 
-    private synchronized void cascade() {
+    private void cascade() {
+        List<BlockPos> cascadingOut = new ArrayList<>(this.cascadingPos);
         for (BlockPos pos : this.cascadingPos) {
-            this.cascadingPos.remove(pos);
-            this.addNeighbors(this.schmuck.world, pos);
+            cascadingOut.remove(pos);
+            this.schmuck.world.breakBlock(pos, true, this.schmuck);
+            this.addNeighbors(cascadingOut, this.schmuck.world, pos);
         }
+        this.cascadingPos = cascadingOut;
         if (this.cascadingPos.size() == 0) {
             this.cascading = false;
         }
