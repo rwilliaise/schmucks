@@ -50,7 +50,7 @@ public class SchmuckTill extends SchmuckUseToolGoal {
     public boolean isFullCrop(BlockPos pos) {
         BlockState state = this.schmuck.world.getBlockState(pos);
         return state.getBlock() instanceof CropBlock &&
-                state.get(CropBlock.AGE) == ((CropBlock) state.getBlock()).getMaxAge() &&
+                state.get(((CropBlock) state.getBlock()).getAgeProperty()) == ((CropBlock) state.getBlock()).getMaxAge() &&
                 this.schmuck.getWhitelist().contains(pos.down());
     }
 

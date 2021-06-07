@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,13 @@ public class ControlWandWhitelistRenderer {
         VertexConsumerProvider.Immediate immediate = storage.getEntityVertexConsumers();
         VertexConsumer consumer = immediate.getBuffer(RenderLayer.getLines());
         Vec3d cameraPos = worldRenderContext.camera().getPos();
-        float shade = (float) ((Math.sin(Math.toRadians((world.getTime() + worldRenderContext.tickDelta()) * 15)) + 1) * 0.5);
+        int minDistance = Schmucks.CONFIG.wandRenderDistance / 4;
+        int distance = Schmucks.CONFIG.wandRenderDistance - minDistance;
         Schmucks.getWhitelistOrEmpty(player).forEach(pos -> {
+            double dist = player.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ());
+            if (dist > Schmucks.CONFIG.wandRenderDistance) {
+                return;
+            }
             BlockState state = world.getBlockState(pos);
             VoxelShape shape = state.getOutlineShape(world, pos, ShapeContext.of(player));
             if (shape.isEmpty()) {
@@ -47,6 +53,10 @@ public class ControlWandWhitelistRenderer {
             double z = pos.getZ() - cameraPos.getZ();
             worldRenderContext.matrixStack().push();
             worldRenderContext.matrixStack().translate(x, y, z);
+            float transparency = (float) (dist - minDistance + Schmucks.CONFIG.wandRenderDistance);
+            float ratio = (transparency / distance) - 1;
+            float shade = (float) ((Math.sin(Math.toRadians((GLFW.glfwGetTime()) * 300)) + 1) * 0.5);
+            float finalTrans = Math.min(1, shade + ratio);
             shape.forEachBox((minX, minY, minZ, maxX, maxY, maxZ) ->
                     WorldRenderer.drawBox(worldRenderContext.matrixStack(),
                             consumer,
@@ -59,7 +69,7 @@ public class ControlWandWhitelistRenderer {
                             1,
                             1,
                             1,
-                            shade));
+                            1 - finalTrans));
             worldRenderContext.matrixStack().pop();
         });
         return true;

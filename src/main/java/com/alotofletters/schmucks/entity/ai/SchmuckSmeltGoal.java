@@ -31,15 +31,19 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 			return false;
 		}
 		Item item = this.schmuck.getMainHandStack().getItem();
-		return this.schmuck.isTamed() && this.isSmeltable(item) && super.canStart();
+		return this.schmuck.isTamed() && this.isUsable(item) && super.canStart();
 	}
 
-	public boolean isSmeltable(Item item) {
-		return Schmucks.RAW_MINERAL_TAG.contains(item) || Schmucks.RAW_MEAT_TAG.contains(item);
+	public boolean isUsable(Item item) {
+		return this.hasFuel() || Schmucks.RAW_MINERAL_TAG.contains(item) || Schmucks.RAW_MEAT_TAG.contains(item);
 	}
 
 	public boolean isGoodSmelter(BlockState state) {
-		Item item = this.schmuck.getMainHandStack().getItem();
+		ItemStack itemStack = this.schmuck.getMainHandStack();
+		Item item = itemStack.getItem();
+		if (state.getBlock() instanceof AbstractFurnaceBlock && AbstractFurnaceBlockEntity.canUseAsFuel(itemStack)) {
+			return true;
+		}
 		if (!state.isIn(Schmucks.ORE_SMELTERS_TAG) && !state.isIn(Schmucks.FOOD_SMELTERS_TAG)) {
 			return state.getBlock() instanceof AbstractFurnaceBlock;
 		}
@@ -68,7 +72,7 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) this.schmuck.world.getBlockEntity(this.targetPos);
 			if (blockEntity != null) {
 				ItemStack itemStack = this.schmuck.getMainHandStack();
-				HopperBlockEntity.transfer(null, blockEntity, itemStack, Direction.UP);
+				HopperBlockEntity.transfer(null, blockEntity, itemStack, this.hasFuel() ? Direction.WEST : Direction.UP);
 				this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
 			}
 		}
@@ -90,13 +94,17 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 		return 2.0D;
 	}
 
+	public boolean hasFuel() {
+		return AbstractFurnaceBlockEntity.canUseAsFuel(this.schmuck.getMainHandStack());
+	}
+
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState blockState = world.getBlockState(pos);
-		if (this.isGoodSmelter(blockState)) {
+		if (this.isGoodSmelter(blockState) && schmuck.getWhitelist().contains(pos)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) world.getBlockEntity(pos);
-			if (blockEntity != null && schmuck.getWhitelist().contains(pos)) {
-				ItemStack currentStack = blockEntity.getStack(0);
+			if (blockEntity != null) {
+				ItemStack currentStack = blockEntity.getStack(this.hasFuel() ? 1 : 0);
 				return (currentStack.isEmpty() || currentStack.isItemEqual(this.schmuck.getMainHandStack()));
 			}
 		}

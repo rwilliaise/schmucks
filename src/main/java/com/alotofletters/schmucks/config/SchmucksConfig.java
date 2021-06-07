@@ -7,6 +7,8 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.SerializedName;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 @SuppressWarnings("CanBeFinal") // this is invalid, at least for config
 @Config(name = Schmucks.MOD_ID)
@@ -44,6 +46,12 @@ public class SchmucksConfig implements ConfigData {
 	@ConfigEntry.BoundedDiscrete(min = 2, max = 64)
 	@SerializedName("wand_range")
 	public int wandRange = 32;
+
+	@ConfigEntry.Gui.Tooltip
+	@ConfigEntry.BoundedDiscrete(min = 2, max = 64)
+	@SerializedName("wand_render_distance")
+	@Environment(EnvType.CLIENT)
+	public int wandRenderDistance = 2048;
 
 	@ConfigEntry.Gui.Tooltip
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
