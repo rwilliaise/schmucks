@@ -3,6 +3,9 @@
   "values": [
     "minecraft:wheat_seeds",
     "minecraft:beetroot_seeds",
-    "minecraft:carrot"
+    "minecraft:carrot",
+    "minecraft:potato",
+    "minecraft:pumpkin_seeds",
+    "minecraft:melon_seeds"
   ]
 }
