@@ -38,7 +38,7 @@ public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
             this.schmuck.swingHand(Hand.MAIN_HAND);
             this.lastProgress = newProgress;
         }
-        this.schmuck.world.setBlockBreakingInfo(this.schmuck.getEntityId(), this.targetPos, newProgress);
+        this.schmuck.world.setBlockBreakingInfo(this.schmuck.getId(), this.targetPos, newProgress);
         return this.breakProgress >= this.getMaxProgress();
     }
 

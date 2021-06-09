@@ -31,16 +31,16 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.IntRange;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.intprovider.IntProvider;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -55,7 +55,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
-	private static final IntRange ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
+	private static final IntProvider ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
 	/** Used for when the Schmuck obtains a bow or egg. */
 	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
@@ -99,7 +99,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable CompoundTag entityTag) {
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
 		if (random.nextFloat() < Schmucks.CONFIG.leatherHelmetChance.floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
@@ -172,10 +172,12 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.tickAngerLogic((ServerWorld)this.world, true);
 
 			if (this.getTarget() != null && this.getTarget().getType() == EntityType.PLAYER) {
-				List<SchmuckEntity> entities = this.world.getEntitiesIncludingUngeneratedChunks(SchmuckEntity.class,
+				List<SchmuckEntity> entities = this.world.getEntitiesByClass(SchmuckEntity.class,
 						this.getBoundingBox().expand(10),
 						schmuck -> schmuck.getOwnerUuid() != this.getOwnerUuid());
-				this.setTarget(entities.get(this.random.nextInt(entities.size() - 1)));
+				if (entities.size() > 1) {
+					this.setTarget(entities.get(this.random.nextInt(entities.size()) - 1));
+				}
 			}
 		}
 	}
@@ -187,26 +189,26 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	@Override
-	public void writeCustomDataToTag(CompoundTag tag) {
-		super.writeCustomDataToTag(tag);
+	public void writeCustomDataToNbt(NbtCompound tag) {
+		super.writeCustomDataToNbt(tag);
 		tag.putBoolean("ShortTemper", this.shortTempered);
 		tag.putBoolean("CanTeleport", this.canTeleport);
 		tag.putBoolean("CanFollow", this.canFollow);
-		this.angerToTag(tag);
+		this.writeAngerToNbt(tag);
 	}
 
 	@Override
-	public void readCustomDataFromTag(CompoundTag tag) {
-		super.readCustomDataFromTag(tag);
-		this.angerFromTag((ServerWorld) this.world, tag);
+	public void readCustomDataFromNbt(NbtCompound tag) {
+		super.readCustomDataFromNbt(tag);
+		this.readAngerFromNbt(this.world, tag);
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
 		this.canFollow = tag.getBoolean("CanFollow");
 		if (tag.contains("Whitelisted") && this.getOwner() != null) {
-			ListTag list = tag.getList("Whitelisted", 10);
+			NbtList list = tag.getList("Whitelisted", 10);
 			WhitelistComponent component = Schmucks.getWhitelistComponent((PlayerEntity) this.getOwner());
 			list.forEach(blockPosTag -> {
-				BlockPos pos = NbtHelper.toBlockPos((CompoundTag) blockPosTag);
+				BlockPos pos = NbtHelper.toBlockPos((NbtCompound) blockPosTag);
 				if (!component.containsWhiteList(pos)) {
 					component.addWhitelist(pos);
 				}
@@ -348,7 +350,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	@Override
 	public void chooseRandomAngerTime() {
-		this.setAngerTime(ANGER_TIME_RANGE.choose(this.random));
+		this.setAngerTime(ANGER_TIME_RANGE.get(this.random));
 	}
 
 	@Override
@@ -455,7 +457,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			double d = target.getX() - this.getX();
 			double e = target.getBodyY(0.3333333333333333D) - eggEntity.getY();
 			double f = target.getZ() - this.getZ();
-			double g = MathHelper.sqrt(d * d + f * f);
+			double g = MathHelper.sqrt((float) (d * d + f * f));
 			eggEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
 			world.spawnEntity(eggEntity);
 			this.playSound(SoundEvents.ENTITY_EGG_THROW, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
@@ -466,7 +468,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		double d = target.getX() - this.getX();
 		double e = target.getBodyY(0.3333333333333333D) - persistentProjectileEntity.getY();
 		double f = target.getZ() - this.getZ();
-		double g = MathHelper.sqrt(d * d + f * f);
+		double g = MathHelper.sqrt((float) (d * d + f * f));
 		persistentProjectileEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
 		this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
 		this.world.spawnEntity(persistentProjectileEntity);

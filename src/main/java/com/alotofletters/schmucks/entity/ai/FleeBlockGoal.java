@@ -1,6 +1,6 @@
 package com.alotofletters.schmucks.entity.ai;
 
-import net.minecraft.entity.ai.TargetFinder;
+import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
@@ -42,7 +42,7 @@ public abstract class FleeBlockGoal extends MoveToTargetPosGoal {
 						mutable.set(blockPos, m, k - 1, n);
 						if (this.mob.isInWalkTargetRange(mutable) && this.isTargetPos(this.mob.world, mutable)) {
 							Vec3d position = new Vec3d(mutable.getX(), mutable.getY(), mutable.getZ());
-							Vec3d target = TargetFinder.findGroundTargetAwayFrom(this.mob, this.range, this.maxYDifference, position);
+							Vec3d target = NoPenaltyTargeting.find(this.mob, this.range, this.maxYDifference, position);
 							if (target != null) {
 								this.targetPos = new BlockPos(target.x, target.y, target.z);
 								return true;

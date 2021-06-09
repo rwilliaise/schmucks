@@ -21,8 +21,7 @@ public class FireBlockMixin {
 
 	@Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
 	public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, CallbackInfo callbackInfo) {
-		if (entity instanceof ItemEntity) {
-			ItemEntity itemEntity = (ItemEntity) entity;
+		if (entity instanceof ItemEntity itemEntity) {
 			ItemStack stack = itemEntity.getStack();
 			if (stack.getItem() == Schmucks.PURE_MAGIC) {
 				itemEntity.setStack(new ItemStack(Schmucks.FIERY_MAGIC, stack.getCount()));

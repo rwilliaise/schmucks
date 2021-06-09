@@ -2,12 +2,15 @@ package com.alotofletters.schmucks.client.gui.screen.ingame.widget;
 
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
+import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandDropdown.DropdownListEntry;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.PressableWidget;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
@@ -15,7 +18,7 @@ import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 
 /** Used for choosing a control group for the Schmuck Staff. */
-public class ControlWandDropdown extends AbstractPressableButtonWidget {
+public class ControlWandDropdown extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	private final boolean storeFlag;
 	private final StringIdentifiable[] options;
@@ -73,10 +76,11 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 			this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
 			MinecraftClient minecraftClient = MinecraftClient.getInstance();
-			minecraftClient.getTextureManager().bindTexture(TEXTURE);
 			RenderSystem.enableDepthTest();
 			TextRenderer textRenderer = minecraftClient.textRenderer;
-			RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderColor(1, 1, 1, this.alpha);
+			RenderSystem.setShaderTexture(0, TEXTURE);
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
@@ -93,7 +97,12 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 		}
 	}
 
-	class DropdownListEntry extends AbstractPressableButtonWidget {
+	@Override
+	public void appendNarrations(NarrationMessageBuilder builder) {
+		this.method_37021(builder);
+	}
+
+	class DropdownListEntry extends PressableWidget {
 		private final int index;
 
 		public DropdownListEntry(int x, int y, StringIdentifiable option, int index) {
@@ -111,7 +120,9 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 				minecraftClient.getTextureManager().bindTexture(TEXTURE);
 				RenderSystem.enableDepthTest();
 				TextRenderer textRenderer = minecraftClient.textRenderer;
-				RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+				RenderSystem.setShader(GameRenderer::getPositionTexShader);
+				RenderSystem.setShaderColor(1, 1, 1, this.alpha);
+				RenderSystem.setShaderTexture(0, TEXTURE);
 				RenderSystem.enableBlend();
 				RenderSystem.defaultBlendFunc();
 				RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
@@ -142,6 +153,11 @@ public class ControlWandDropdown extends AbstractPressableButtonWidget {
 				}
 				SchmucksConfig.save();
 			}
+		}
+
+		@Override
+		public void appendNarrations(NarrationMessageBuilder builder) {
+			this.method_37021(builder);
 		}
 	}
 }

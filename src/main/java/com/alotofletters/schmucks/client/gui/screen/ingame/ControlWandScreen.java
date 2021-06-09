@@ -11,8 +11,9 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
@@ -52,7 +53,7 @@ public class ControlWandScreen extends Screen {
 			drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 40, 16777215);
 		}
 		super.render(matrices, mouseX, mouseY, delta);
-		this.children.forEach(element -> {
+		this.children().forEach(element -> {
 			if (element instanceof ControlWandButtonWidget) {
 				if (((ControlWandButtonWidget) element).isHovered()) {
 					((ControlWandButtonWidget) element).renderToolTip(matrices, mouseX, mouseY);
@@ -62,8 +63,9 @@ public class ControlWandScreen extends Screen {
 	}
 
 	public void drawBackground(MatrixStack matrices, int mouseX, int mouseY) {
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-		this.client.getTextureManager().bindTexture(TEXTURE);
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, TEXTURE);
 		int i = (this.width - this.backgroundWidth) / 2;
 		int j = (this.height - this.backgroundHeight) / 2;
 		this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
@@ -223,7 +225,7 @@ public class ControlWandScreen extends Screen {
 		buf.writeEnumConstant(group);
 		buf.writeBoolean(this.schmuck != null);
 		if (this.schmuck != null) {
-			buf.writeInt(this.schmuck.getEntityId());
+			buf.writeInt(this.schmuck.getId());
 		}
 		ClientPlayNetworking.send(Schmucks.CONTROL_WAND_PACKET_ID, buf);
 		this.client.openScreen(null);
@@ -234,7 +236,7 @@ public class ControlWandScreen extends Screen {
 		return false;
 	}
 
-	public <T extends AbstractButtonWidget> T addButton(T child) {
-		return super.addButton(child);
+	public void addButton(ClickableWidget child) {
+		super.addDrawable(child);
 	}
 }

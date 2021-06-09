@@ -114,7 +114,7 @@ public class SchmuckFollowOwner extends Goal {
 		} else if (!this.canTeleportTo(new BlockPos(x, y, z))) {
 			return false;
 		} else {
-			this.tameable.refreshPositionAndAngles((double)x + 0.5D, y, (double)z + 0.5D, this.tameable.yaw, this.tameable.pitch);
+			this.tameable.refreshPositionAndAngles((double)x + 0.5D, y, (double)z + 0.5D, this.tameable.getYaw(), this.tameable.getPitch());
 			this.navigation.stop();
 			return true;
 		}

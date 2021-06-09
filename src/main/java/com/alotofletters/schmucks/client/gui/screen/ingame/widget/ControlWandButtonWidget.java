@@ -7,7 +7,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ScreenTexts;
-import net.minecraft.client.gui.widget.AbstractPressableButtonWidget;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.PressableWidget;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.StatusEffectSpriteManager;
 import net.minecraft.client.util.math.MatrixStack;
@@ -22,7 +24,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /** Used for the labelled buttons on the Schmuck Staff screen. */
-public abstract class ControlWandButtonWidget extends AbstractPressableButtonWidget {
+public abstract class ControlWandButtonWidget extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	protected final ControlWandScreen screen;
 
@@ -32,8 +34,9 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 	}
 
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		MinecraftClient.getInstance().getTextureManager().bindTexture(TEXTURE);
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, TEXTURE);
 		int j = 0;
 		if (!this.active) {
 			j += this.width * 2;
@@ -43,6 +46,11 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 
 		this.drawTexture(matrices, this.x, this.y, j, 219, this.width, this.height);
 		this.renderExtra(matrices);
+	}
+
+	@Override
+	public void appendNarrations(NarrationMessageBuilder builder) {
+		this.method_37021(builder);
 	}
 
 	protected abstract void renderExtra(MatrixStack matrices);
@@ -83,9 +91,9 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 		protected void renderExtra(MatrixStack matrices) {
 			StatusEffectSpriteManager statusEffectSpriteManager = screen.getClient().getStatusEffectSpriteManager();
 			Sprite sprite = statusEffectSpriteManager.getSprite(this.icon);
-			screen.getClient().getTextureManager().bindTexture(sprite.getAtlas().getId());
+			RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
 			drawSprite(matrices, this.x + 1, this.y + 1, this.getZOffset(), 18, 18, sprite);
-			screen.getClient().getTextureManager().bindTexture(TEXTURE);
+			RenderSystem.setShaderTexture(0, TEXTURE);
 			super.renderExtra(matrices);
 		}
 
@@ -119,14 +127,15 @@ public abstract class ControlWandButtonWidget extends AbstractPressableButtonWid
 
 		@Override
 		protected void renderExtra(MatrixStack matrices) {
-			RenderSystem.pushMatrix();
-			RenderSystem.translatef(0.5f, 0.5f, 0);
-			screen.getClient().getItemRenderer().renderInGuiWithOverrides(screen.schmuck, this.item, this.x + 3, this.y + 2);
-			screen.getClient().getTextureManager().bindTexture(TEXTURE);
+			MatrixStack matrixStack = RenderSystem.getModelViewStack();
+			matrixStack.translate(0.5f, 0.5f, 0);
+			screen.getClient().getItemRenderer().renderInGuiWithOverrides(this.item, this.x + 3, this.y + 2);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			RenderSystem.setShaderTexture(0, TEXTURE);
 			RenderSystem.disableDepthTest();
 			super.renderExtra(matrices);
 			RenderSystem.enableDepthTest();
-			RenderSystem.popMatrix();
 		}
 
 		@Override

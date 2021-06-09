@@ -4,9 +4,9 @@ import com.alotofletters.schmucks.Schmucks;
 import dev.onyxstudios.cca.api.v3.component.Component;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -79,15 +79,15 @@ public interface WhitelistComponent extends Component {
 		}
 
 		@Override
-		public void readFromNbt(CompoundTag tag) {
+		public void readFromNbt(NbtCompound tag) {
 			this.getWhitelist().clear();
-			ListTag list = tag.getList("Whitelisted", 10);
-			list.forEach(blockPosTag -> this.addWhitelist(NbtHelper.toBlockPos((CompoundTag) blockPosTag)));
+			NbtList list = tag.getList("Whitelisted", 10);
+			list.forEach(blockPosTag -> this.addWhitelist(NbtHelper.toBlockPos((NbtCompound) blockPosTag)));
 		}
 
 		@Override
-		public void writeToNbt(CompoundTag tag) {
-			ListTag list = new ListTag();
+		public void writeToNbt(NbtCompound tag) {
+			NbtList list = new NbtList();
 			for (BlockPos blockPos : this.getWhitelist()) {
 				list.add(NbtHelper.fromBlockPos(blockPos));
 			}

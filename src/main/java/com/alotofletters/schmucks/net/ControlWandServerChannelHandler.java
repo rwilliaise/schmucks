@@ -2,6 +2,8 @@ package com.alotofletters.schmucks.net;
 
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.item.ControlWandItem.ControlAction;
+import com.alotofletters.schmucks.item.ControlWandItem.ControlGroup;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
@@ -11,9 +13,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import static com.alotofletters.schmucks.item.ControlWandItem.ControlAction;
-import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup;
 
 public class ControlWandServerChannelHandler implements ServerPlayNetworking.PlayChannelHandler {
 	@Override
@@ -28,27 +27,13 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 			schmuck = (SchmuckEntity) player.world.getEntityById(buf.readInt());
 		}
 		switch (action) {
-			case STOP_ALL:
-				this.setSittingNearby(player, group, schmuck, true);
-				break;
-			case START_ALL:
-				this.setSittingNearby(player, group, schmuck, false);
-				break;
-			case STOP_TELEPORT:
-				this.setAllowTeleport(player, group, schmuck, false);
-				break;
-			case START_TELEPORT:
-				this.setAllowTeleport(player, group, schmuck, true);
-				break;
-			case STOP_FOLLOWING:
-				this.setAllowFollow(player, group, schmuck, false);
-				break;
-			case START_FOLLOWING:
-				this.setAllowFollow(player, group, schmuck, true);
-				break;
-			case STOP_ATTACKING:
-				this.forEachSchmuckNearby(player, group, schmuck, this::stopSchmuck);
-				break;
+			case STOP_ALL -> this.setSittingNearby(player, group, schmuck, true);
+			case START_ALL -> this.setSittingNearby(player, group, schmuck, false);
+			case STOP_TELEPORT -> this.setAllowTeleport(player, group, schmuck, false);
+			case START_TELEPORT -> this.setAllowTeleport(player, group, schmuck, true);
+			case STOP_FOLLOWING -> this.setAllowFollow(player, group, schmuck, false);
+			case START_FOLLOWING -> this.setAllowFollow(player, group, schmuck, true);
+			case STOP_ATTACKING -> this.forEachSchmuckNearby(player, group, schmuck, this::stopSchmuck);
 		}
 	}
 
@@ -60,32 +45,25 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 	}
 
 	public Predicate<SchmuckEntity> fromGroup(ControlGroup group, SchmuckEntity entity) {
-		switch (group) {
-			case THIS:
-				return schmuckEntity -> schmuckEntity.equals(entity);
-			case SAME_TOOL:
-				return schmuckEntity -> {
-					if (entity == null) {
-						return false;
-					}
-					return schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
-				};
-			case ALL_NO_TOOL:
-				return schmuckEntity -> schmuckEntity.getMainHandStack().isEmpty();
-			case ALL_BUT_THIS:
-				return schmuckEntity -> !schmuckEntity.equals(entity);
-			case ALL_BUT_SAME_TOOL:
-				return schmuckEntity -> {
-					if (entity == null) {
-						return false;
-					}
-					return !schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
-				};
-			case NOT_STOPPED:
-				return schmuckEntity -> !schmuckEntity.isSitting();
-			default:
-				return schmuckEntity -> true;
-		}
+		return switch (group) {
+			case THIS -> schmuckEntity -> schmuckEntity.equals(entity);
+			case SAME_TOOL -> schmuckEntity -> {
+				if (entity == null) {
+					return false;
+				}
+				return schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
+			};
+			case ALL_NO_TOOL -> schmuckEntity -> schmuckEntity.getMainHandStack().isEmpty();
+			case ALL_BUT_THIS -> schmuckEntity -> !schmuckEntity.equals(entity);
+			case ALL_BUT_SAME_TOOL -> schmuckEntity -> {
+				if (entity == null) {
+					return false;
+				}
+				return !schmuckEntity.getMainHandStack().isItemEqual(entity.getMainHandStack());
+			};
+			case NOT_STOPPED -> schmuckEntity -> !schmuckEntity.isSitting();
+			default -> schmuckEntity -> true;
+		};
 	}
 
 	public void stopSchmuck(SchmuckEntity entity) {

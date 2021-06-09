@@ -38,7 +38,7 @@ public class SchmuckTill extends SchmuckUseToolGoal {
     @Override
     public void stop() {
         super.stop();
-        this.schmuck.world.setBlockBreakingInfo(this.schmuck.getEntityId(), this.targetPos, -1);
+        this.schmuck.world.setBlockBreakingInfo(this.schmuck.getId(), this.targetPos, -1);
     }
 
     @Override

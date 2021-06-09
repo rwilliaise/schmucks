@@ -6,7 +6,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 public class SchmuckMine extends SchmuckUseToolGoal {
@@ -65,6 +64,6 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState state = world.getBlockState(pos);
 		ItemStack pickaxe = this.schmuck.getMainHandStack();
-		return this.isExposed(world, pos) && state.getBlock() instanceof OreBlock && pickaxe.isEffectiveOn(state);
+		return this.isExposed(world, pos) && state.getBlock() instanceof OreBlock && pickaxe.isSuitableFor(state);
 	}
 }

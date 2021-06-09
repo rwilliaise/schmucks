@@ -1,6 +1,5 @@
 package com.alotofletters.schmucks.entity.ai;
 
-import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -12,14 +11,6 @@ import net.minecraft.entity.mob.PathAwareEntity;
  */
 public abstract class SchmuckJobGoal extends MoveToTargetPosGoal {
 	protected final SchmuckEntity schmuck;
-
-	public SchmuckJobGoal(SchmuckEntity schmuck, double speed) {
-		this(schmuck, speed, Schmucks.CONFIG.jobRange);
-	}
-
-	public SchmuckJobGoal(SchmuckEntity schmuck, double speed, int range) {
-		this(schmuck, speed, range, 1);
-	}
 
 	public SchmuckJobGoal(SchmuckEntity schmuck, double speed, int range, int heightDifference) {
 		super(schmuck, speed, range, heightDifference);
