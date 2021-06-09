@@ -4,7 +4,8 @@
   "package": "com.alotofletters.schmucks.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "FireBlockMixin"
+    "FireBlockMixin",
+    "RegistryAccessor"
   ],
   "client": [
     "EntityRenderDispatcherMixin",

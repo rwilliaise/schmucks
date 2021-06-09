@@ -3,6 +3,7 @@ package com.alotofletters.schmucks.entity.ai;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
@@ -23,7 +24,7 @@ public class SchmuckTill extends SchmuckUseToolGoal {
             if (this.isFullCrop(this.targetPos)) {
                 this.schmuck.world.breakBlock(this.targetPos, true, this.schmuck);
             } else if (this.schmuck.world.getBlockState(this.targetPos).isIn(Schmucks.TILLABLE_TAG)) {
-                this.schmuck.world.setBlockState(this.targetPos, Blocks.FARMLAND.getDefaultState(), 11);
+                this.schmuck.world.setBlockState(this.targetPos, Blocks.FARMLAND.getDefaultState(), Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
                 this.schmuck.playSound(SoundEvents.ITEM_HOE_TILL, 1.0F, 1.0F);
             }
         }
