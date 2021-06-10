@@ -55,21 +55,6 @@ public abstract class ControlWandButtonWidget extends PressableWidget {
 
 	protected abstract void renderExtra(MatrixStack matrices);
 
-	@Environment(EnvType.CLIENT)
-	public static class CancelButtonWidget extends ControlWandButtonWidget.IconButtonWidget {
-		public CancelButtonWidget(int x, int y, ControlWandScreen screen) {
-			super(x, y, 112, 220, screen);
-		}
-
-		public void onPress() {
-			this.screen.getClient().openScreen(null);
-		}
-
-		public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
-			this.screen.renderTooltip(matrices, ScreenTexts.CANCEL, mouseX, mouseY);
-		}
-	}
-
 	public static class IconOverlayButtonWidget extends ControlWandButtonWidget.IconButtonWidget {
 		private final StatusEffect icon;
 		private final List<Text> message;

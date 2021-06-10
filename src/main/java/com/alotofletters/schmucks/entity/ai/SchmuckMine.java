@@ -4,6 +4,7 @@ import com.alotofletters.schmucks.entity.SchmuckEntity;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
+import net.minecraft.block.RedstoneOreBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
@@ -60,10 +61,14 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 				world.isAir(pos.east());
 	}
 
+	public boolean isOre(BlockState state) {
+		return state.getBlock() instanceof OreBlock || state.getBlock() instanceof RedstoneOreBlock;
+	}
+
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState state = world.getBlockState(pos);
 		ItemStack pickaxe = this.schmuck.getMainHandStack();
-		return this.isExposed(world, pos) && state.getBlock() instanceof OreBlock && pickaxe.isSuitableFor(state);
+		return this.isExposed(world, pos) && this.isOre(state) && pickaxe.isSuitableFor(state);
 	}
 }

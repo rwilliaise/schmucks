@@ -228,7 +228,7 @@ public class ControlWandScreen extends Screen {
 			buf.writeInt(this.schmuck.getId());
 		}
 		ClientPlayNetworking.send(Schmucks.CONTROL_WAND_PACKET_ID, buf);
-		this.client.openScreen(null);
+		this.client.player.closeScreen();
 	}
 
 	@Override
@@ -237,6 +237,6 @@ public class ControlWandScreen extends Screen {
 	}
 
 	public void addButton(ClickableWidget child) {
-		super.addDrawable(child);
+		super.addDrawableChild(child);
 	}
 }
