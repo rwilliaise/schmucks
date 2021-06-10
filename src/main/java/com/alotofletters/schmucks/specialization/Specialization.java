@@ -1,110 +1,80 @@
 package com.alotofletters.schmucks.specialization;
 
-import com.alotofletters.schmucks.entity.SchmuckEntity;
-import com.alotofletters.schmucks.mixin.RegistryAccessor;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
+import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
+import net.minecraft.advancement.AdvancementDisplay;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 
-import static com.alotofletters.schmucks.Schmucks.id;
+import java.util.Set;
+import java.util.function.Function;
 
-public abstract class Specialization {
-	public static final RegistryKey<Registry<Specialization>> SPECIALIZATION_KEY = RegistryKey.ofRegistry(id("specialization"));
-	public static final Registry<Specialization> SPECIALIZATION = RegistryAccessor.callCreate(SPECIALIZATION_KEY, () -> Specializations.EMPTY);
+public class Specialization {
+	private final Identifier id;
+	private final Identifier modifierId;
+	private final int maxLevel;
+	private final SpecializationDisplay display;
+	private final Specialization parent;
+	private final Set<Specialization> children = Sets.newLinkedHashSet();
 
-	@Nullable
-	protected String translationKey;
-
-	@Nullable
-	public static Specialization byRawId(int id) {
-		return SPECIALIZATION.get(id);
-	}
-
-	public void toTag(NbtCompound tag, int level) {
-		Identifier regId = SPECIALIZATION.getId(this);
-		if (regId == null) {
-			return;
-		}
-		String id = regId.toString();
-		tag.putString("Id", id);
-		tag.putInt("Level", level);
-	}
-
-	public Entry fromTag(NbtCompound tag) {
-		return new Entry(new Identifier(tag.getString("Id")), tag.getInt("Level"));
-	}
-
-	protected String getOrCreateTranslationKey() {
-		if (this.translationKey == null) {
-			this.translationKey = Util.createTranslationKey("specialization", SPECIALIZATION.getId(this));
-		}
-
-		return this.translationKey;
-	}
-
-	public String getTranslationKey() {
-		return this.getOrCreateTranslationKey();
+	public Specialization(Identifier id,
+	                      Identifier modifierId,
+	                      int maxLevel,
+	                      @Nullable SpecializationDisplay display,
+	                      @Nullable Specialization parent) {
+		this.parent = parent;
+		this.id = id;
+		this.modifierId = modifierId;
+		this.display = display;
+		this.maxLevel = maxLevel;
 	}
 
 	/**
-	 * Used for the cost of each level.
-	 * @param level Current level
-	 * @return How much does the next level cost
+	 * A raw specialization, before getting parent and getting id.
 	 */
-	public int getCost(int level) {
-		return 1 + level;
-	}
+	public static class Raw {
+		private Identifier parentId;
+		private Specialization parent;
+		private Identifier modifierId;
+		private SpecializationDisplay display;
+		private int maxLevel;
 
-	/**
-	 * Used to see how many levels a specialization can be.
-	 * @return The maximum level a specialization can be.
-	 */
-	public int getMaxLevel() {
-		return 3;
-	}
-
-	/**
-	 * Applies a specialization to all of a players schmucks.
-	 * @param player Player that owns Schmucks
-	 * @param level Level to apply to Schmucks
-	 */
-	public void apply(PlayerEntity player, int level) {
-		World world = player.world;
-		if (world instanceof ServerWorld serverWorld) {
-			serverWorld.getEntitiesByType(TypeFilter.instanceOf(SchmuckEntity.class), entity -> player.getUuid().equals(entity.getOwnerUuid()))
-					.forEach(entity -> {
-						this.cleanup(entity);
-						this.apply(entity, level);
-					});
+		Raw(Identifier parentId, Identifier modifierId, SpecializationDisplay display, int maxLevel) {
+			this.parentId = parentId;
+			this.modifierId = modifierId;
+			this.display = display;
+			this.maxLevel = maxLevel;
 		}
-	}
 
-	public abstract void apply(SchmuckEntity entity, int level);
+		public Raw() { }
 
-	public void cleanup(SchmuckEntity entity) { }
+		public static Raw fromJson(JsonObject object) {
+			Identifier parent = object.has("parent") ? new Identifier(JsonHelper.getString(object, "parent")) : null;
+			Identifier modifier = object.has("modifier") ? new Identifier(JsonHelper.getString(object, "modifier")) : null;
+			SpecializationDisplay display = object.has("display") ?
+					SpecializationDisplay.fromJson(JsonHelper.getObject(object, "display")) :
+					null;
+			int maxLevel = JsonHelper.getInt(object, "max_level", 3);
+			return new Specialization.Raw(parent, modifier, display, maxLevel);
+		}
 
-	record Entry(Identifier id, int level) {
-		public void apply(PlayerEntity player) {
-			Specialization spec = SPECIALIZATION.get(this.id);
-			if (spec == null) {
-				return;
+		public boolean findParent(Function<Identifier, Specialization> get) {
+			if (this.parentId == null) {
+				return true; // its a root!
 			}
-			spec.apply(player, this.level);
+			if (this.parent == null) {
+				this.parent = get.apply(this.parentId);
+			}
+			return this.parent != null;
 		}
 
-		public void apply(SchmuckEntity schmuck) {
-			Specialization spec = SPECIALIZATION.get(this.id);
-			if (spec == null) {
-				return;
+		public Specialization build(Identifier id) {
+			if (this.parent == null && this.parentId != null) {
+				// throw if we HAVENT found a parent
+				throw new IllegalStateException("Tried to build incomplete Specialization!");
 			}
-			spec.apply(schmuck, this.level);
+			return new Specialization(id, this.modifierId, this.maxLevel, this.display, this.parent);
 		}
 	}
 }

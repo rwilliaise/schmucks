@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "FireBlockMixin",
-    "RegistryAccessor"
+    "RegistryAccessor",
+    "ServerResourceManagerMixin"
   ],
   "client": [
     "EntityRenderDispatcherMixin",

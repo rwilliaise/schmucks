@@ -1,4 +1,4 @@
-package com.alotofletters.schmucks.specialization.progression;
+package com.alotofletters.schmucks.specialization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,12 +12,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
-public class ProgressionLoader extends JsonDataLoader {
+public class SpecializationLoader extends JsonDataLoader {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final Gson GSON = (new GsonBuilder()).create();
+	public static final SpecializationLoader INSTANCE = new SpecializationLoader();
 
-	public ProgressionLoader(Gson gson, String dataType) {
-		super(gson, dataType);
+	public SpecializationLoader() {
+		super(GSON, "specializations");
 	}
 
 	@Override
