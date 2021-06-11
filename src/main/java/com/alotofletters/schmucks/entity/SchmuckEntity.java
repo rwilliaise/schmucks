@@ -91,7 +91,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		addGoalPredicate(5, schmuck -> new SchmuckMine(schmuck, 1.0D, 60), SchmuckEntity::isMiner);
 		addGoalPredicate(5, schmuck -> new SchmuckTill(schmuck, 1.0D, 10), SchmuckEntity::isFarmer);
 		addGoalPredicate(5, schmuck -> new SchmuckFellTree(schmuck, 1.0D, 40), SchmuckEntity::isLumberjack);
-		addGoalPredicate(4, schmuck -> new PounceAtTargetGoal(schmuck, 0.3F), schmuck -> !schmuck.hasJob() || schmuck.isGladiator());
+//		addGoalPredicate(4, schmuck -> new PounceAtTargetGoal(schmuck, 0.3F), schmuck -> !schmuck.hasJob() || schmuck.isGladiator());
 		addGoalPredicate(5, schmuck -> new MeleeAttackGoal(schmuck, 1.2D, false), schmuck -> !schmuck.hasJob() || schmuck.isGladiator());
 	}
 
@@ -107,7 +107,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	private UUID targetUuid;
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
-	private boolean canFollow = true;
+	private boolean canFollow = false;
 	private boolean hasGivenArrows = false;
 	private int eggUsageTime;
 	private int flyCheckCooldown;
@@ -189,12 +189,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		}
 		shortTempered = Schmucks.CONFIG.chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
 		this.applyExistingModifiers();
-//		this.refreshGoals();
+		this.refreshGoals();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
 
 	public void refreshGoals() {
-		this.initGoals();
+		super.initGoals();
+		GOALS.forEach((factory, priority) -> factory.apply(priority, this, this.goalSelector));
+		TARGET_SELECTORS.forEach((factory, priority) -> factory.apply(priority, this, this.targetSelector));
 		if (!this.hasGivenArrows && this.isRanger()) {
 			ItemStack stack = new ItemStack(Items.ARROW, 10 + this.getModifierLevel(Modifiers.EXPANDABLE_QUIVER) * 30);
 			if (this.inventory.canInsert(stack)) {
@@ -211,13 +213,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 			return null;
 		}
 		return super.dropStack(stack, yOffset);
-	}
-
-	@Override
-	protected void initGoals() {
-		super.initGoals();
-		GOALS.forEach((factory, priority) -> factory.apply(priority, this, this.goalSelector));
-		TARGET_SELECTORS.forEach((factory, priority) -> factory.apply(priority, this, this.targetSelector));
 	}
 
 	@Override
@@ -248,14 +243,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		if (this.getOwner() == null || !(this.getOwner() instanceof PlayerEntity player)) {
 			return false;
 		}
-		return Schmucks.SPECIALIZATIONS.get(player).hasModifier(modifier);
+		return false;//Schmucks.SPECIALIZATIONS.get(player).hasModifier(modifier);
 	}
 
 	public int getModifierLevel(Modifier modifier) {
 		if (this.getOwner() == null || !(this.getOwner() instanceof PlayerEntity player)) {
 			return 0;
 		}
-		return Schmucks.SPECIALIZATIONS.get(player).getModifierLevel(modifier);
+		return 0; //Schmucks.SPECIALIZATIONS.get(player).getModifierLevel(modifier);
 	}
 
 	/**
@@ -334,7 +329,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		if (this.getOwner() == null || !(this.getOwner() instanceof PlayerEntity player)) {
 			return;
 		}
-		Schmucks.SPECIALIZATIONS.get(player).apply(this);
+		//Schmucks.SPECIALIZATIONS.get(player).apply(this);
 	}
 
 	/**
@@ -700,8 +695,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		}
 
 		public void apply(int priority, SchmuckEntity schmuck, GoalSelector selector) {
-			var result = (predicate == null || this.predicate.test(schmuck));
+			var result = this.predicate.test(schmuck);
 			if (result && !getApplied(schmuck)) {
+				System.out.println("HAHAHA IM APPLYING SCREW YOU! !!");
 				selector.add(priority, this.getGoal(schmuck));
 				applied.put(schmuck.uuid, true);
 			} else if (!result && getApplied(schmuck)) {
