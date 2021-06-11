@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(WorldRenderer.class)
 public interface WorldRendererAccessor {
-    @Accessor
-    BufferBuilderStorage getBufferBuilders();
+	@Accessor
+	BufferBuilderStorage getBufferBuilders();
 }

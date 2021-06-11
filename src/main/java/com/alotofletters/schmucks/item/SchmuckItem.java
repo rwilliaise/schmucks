@@ -40,13 +40,13 @@ public class SchmuckItem extends TooltipItem {
 				blockPos3 = blockPos.offset(direction);
 			}
 
-			SchmuckEntity entity = (SchmuckEntity) Schmucks.SCHMUCK.spawnFromItemStack((ServerWorld)world,
-				itemStack,
-				context.getPlayer(),
-				blockPos3,
-				SpawnReason.EVENT,
-				true,
-				!Objects.equals(blockPos, blockPos3) && direction == Direction.UP);
+			SchmuckEntity entity = (SchmuckEntity) Schmucks.SCHMUCK.spawnFromItemStack((ServerWorld) world,
+					itemStack,
+					context.getPlayer(),
+					blockPos3,
+					SpawnReason.EVENT,
+					true,
+					!Objects.equals(blockPos, blockPos3) && direction == Direction.UP);
 			if (entity != null) {
 				entity.setOwner(context.getPlayer());
 				itemStack.decrement(1);

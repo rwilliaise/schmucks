@@ -13,9 +13,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.Map;
 
 public class SpecializationLoader extends JsonDataLoader {
+	public static final SpecializationLoader INSTANCE = new SpecializationLoader();
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final Gson GSON = (new GsonBuilder()).create();
-	public static final SpecializationLoader INSTANCE = new SpecializationLoader();
 
 	public SpecializationLoader() {
 		super(GSON, "specializations");
@@ -23,6 +23,8 @@ public class SpecializationLoader extends JsonDataLoader {
 
 	@Override
 	protected void apply(Map<Identifier, JsonElement> prepared, ResourceManager manager, Profiler profiler) {
+		prepared.forEach((identifier, jsonElement) -> {
 
+		});
 	}
 }

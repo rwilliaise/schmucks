@@ -35,11 +35,11 @@ public abstract class FleeBlockGoal extends MoveToTargetPosGoal {
 		BlockPos blockPos = this.mob.getBlockPos();
 		BlockPos.Mutable mutable = new BlockPos.Mutable();
 
-		for(int k = this.lowestY; k <= this.maxYDifference; k = k > 0 ? -k : 1 - k) {
-			for(int l = 0; l < this.range; ++l) {
-				for(int m = 0; m <= l; m = m > 0 ? -m : 1 - m) {
-					for(int n = m < l && m > -l ? l : 0; n <= l; n = n > 0 ? -n : 1 - n) {
-						mutable.set(blockPos, m, k - 1, n);
+		for (int y = this.lowestY; y <= this.maxYDifference; y = y > 0 ? -y : 1 - y) {
+			for (int r = 0; r < this.range; ++r) {
+				for (int x = 0; x <= r; x = x > 0 ? -x : 1 - x) {
+					for (int z = x < r && x > -r ? r : 0; z <= r; z = z > 0 ? -z : 1 - z) {
+						mutable.set(blockPos, x, y - 1, z);
 						if (this.mob.isInWalkTargetRange(mutable) && this.isTargetPos(this.mob.world, mutable)) {
 							Vec3d position = new Vec3d(mutable.getX(), mutable.getY(), mutable.getZ());
 							Vec3d target = NoPenaltyTargeting.find(this.mob, this.range, this.maxYDifference, position);

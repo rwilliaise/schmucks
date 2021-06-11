@@ -2,7 +2,6 @@ package com.alotofletters.schmucks.client.gui.screen.ingame.widget;
 
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
-import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandDropdown.DropdownListEntry;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -17,7 +16,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 
-/** Used for choosing a control group for the Schmuck Staff. */
+/**
+ * Used for choosing a control group for the Schmuck Staff.
+ */
 public class ControlWandDropdown extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	private final boolean storeFlag;
@@ -27,7 +28,7 @@ public class ControlWandDropdown extends PressableWidget {
 
 	private boolean isVisible = false;
 
-	public ControlWandDropdown(ControlWandScreen parent, int x, int y, boolean storeFlag, StringIdentifiable ...options) {
+	public ControlWandDropdown(ControlWandScreen parent, int x, int y, boolean storeFlag, StringIdentifiable... options) {
 		super(x, y, 162, 20, null);
 		this.storeFlag = storeFlag;
 		this.options = options;

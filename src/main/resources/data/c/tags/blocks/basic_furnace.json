@@ -2,13 +2,37 @@
   "replace": false,
   "values": [
     "minecraft:furnace",
-    { "id": "ironfurnaces:copper_furnace", "required": false },
-    { "id": "ironfurnaces:diamond_furnace", "required": false },
-    { "id": "ironfurnaces:emerald_furnace", "required": false },
-    { "id": "ironfurnaces:gold_furnace", "required": false },
-    { "id": "ironfurnaces:iron_furnace", "required": false },
-    { "id": "ironfurnaces:netherite_furnace", "required": false },
-    { "id": "ironfurnaces:obsidian_furnace", "required": false },
-    { "id": "ironfurnaces:silver_furnace", "required": false }
+    {
+      "id": "ironfurnaces:copper_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:diamond_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:emerald_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:gold_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:iron_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:netherite_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:obsidian_furnace",
+      "required": false
+    },
+    {
+      "id": "ironfurnaces:silver_furnace",
+      "required": false
+    }
   ]
 }

@@ -10,9 +10,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
-import net.minecraft.client.render.entity.feature.ElytraFeatureRenderer;
-import net.minecraft.client.render.entity.feature.HeadFeatureRenderer;
-import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -75,7 +72,7 @@ public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, Pl
 		float k;
 		if (schmuckEntity.isFallFlying()) {
 			super.setupTransforms(schmuckEntity, matrixStack, f, g, h);
-			n = (float)schmuckEntity.getRoll() + h;
+			n = (float) schmuckEntity.getRoll() + h;
 			k = MathHelper.clamp(n * n / 100.0F, 0.0F, 1.0F);
 			if (!schmuckEntity.isUsingRiptide()) {
 				matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(k * (-90.0F - schmuckEntity.getPitch())));
@@ -88,7 +85,7 @@ public class SchmuckEntityRenderer extends BipedEntityRenderer<SchmuckEntity, Pl
 			if (d > 0.0D && e > 0.0D) {
 				double l = (vec3d2.x * vec3d.x + vec3d2.z * vec3d.z) / Math.sqrt(d * e);
 				double m = vec3d2.x * vec3d.z - vec3d2.z * vec3d.x;
-				matrixStack.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion((float)(Math.signum(m) * Math.acos(l))));
+				matrixStack.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion((float) (Math.signum(m) * Math.acos(l))));
 			}
 		} else if (i > 0.0F) {
 			super.setupTransforms(schmuckEntity, matrixStack, f, g, h);

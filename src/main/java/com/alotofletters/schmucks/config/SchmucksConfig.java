@@ -32,12 +32,16 @@ public class SchmucksConfig implements ConfigData {
 	@SerializedName("job_range")
 	public int jobRange = 8;
 
-	/** The index of the option selected in the entity control wand screen */
+	/**
+	 * The index of the option selected in the entity control wand screen
+	 */
 	@ConfigEntry.Gui.Excluded
 	@SerializedName("wand_index_entity")
 	public int wandIndexEntity = 0;
 
-	/** The index of the option selected in the ranged control wand screen */
+	/**
+	 * The index of the option selected in the ranged control wand screen
+	 */
 	@ConfigEntry.Gui.Excluded
 	@SerializedName("wand_index_range")
 	public int wandIndexRange = 0;
@@ -65,7 +69,7 @@ public class SchmucksConfig implements ConfigData {
 
 	public static SchmucksConfig init() {
 		return AutoConfig.register(SchmucksConfig.class, GsonConfigSerializer::new)
-					.getConfig();
+				.getConfig();
 	}
 
 	public static void save() {

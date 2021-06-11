@@ -7,7 +7,6 @@ import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
-import com.google.common.collect.Lists;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -19,12 +18,9 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.data.TrackedDataHandler;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -66,17 +62,6 @@ public class Schmucks implements ModInitializer {
 					.dimensions(EntityDimensions.fixed(0.5f, 0.75f))
 					.build());
 
-	@Override
-	public void onInitialize() {
-		SchmucksPackets.init();
-		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
-		Registry.register(Registry.ITEM, id("fiery_magic"), Schmucks.FIERY_MAGIC);
-		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);
-		Registry.register(Registry.ITEM, id("dead_schmuck"), Schmucks.DEAD_SCHMUCK);
-		Registry.register(Registry.ITEM, id("control_wand"), Schmucks.CONTROL_WAND);
-		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
-	}
-
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
 		return Schmucks.getWhitelistComponent(provider).getWhitelist();
 	}
@@ -95,7 +80,19 @@ public class Schmucks implements ModInitializer {
 	public static Identifier id(String name) {
 		return new Identifier(Schmucks.MOD_ID, name);
 	}
+
 	public static Identifier commonId(String name) {
 		return new Identifier("c", name);
+	}
+
+	@Override
+	public void onInitialize() {
+		SchmucksPackets.init();
+		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
+		Registry.register(Registry.ITEM, id("fiery_magic"), Schmucks.FIERY_MAGIC);
+		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);
+		Registry.register(Registry.ITEM, id("dead_schmuck"), Schmucks.DEAD_SCHMUCK);
+		Registry.register(Registry.ITEM, id("control_wand"), Schmucks.CONTROL_WAND);
+		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}
 }

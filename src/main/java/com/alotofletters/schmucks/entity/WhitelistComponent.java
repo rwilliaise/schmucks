@@ -20,7 +20,9 @@ public interface WhitelistComponent extends Component {
 	boolean containsWhiteList(BlockPos pos);
 
 	void sync();
+
 	void addWhitelist(BlockPos pos);
+
 	void removeWhitelist(BlockPos pos);
 
 	class Impl implements WhitelistComponent, AutoSyncedComponent {

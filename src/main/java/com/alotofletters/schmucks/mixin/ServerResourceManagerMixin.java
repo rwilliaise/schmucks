@@ -15,7 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerResourceManager.class)
 public class ServerResourceManagerMixin {
 
-	@Shadow @Final private ReloadableResourceManager resourceManager;
+	@Shadow
+	@Final
+	private ReloadableResourceManager resourceManager;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	public void init(DynamicRegistryManager registryManager, CommandManager.RegistrationEnvironment commandEnvironment, int functionPermissionLevel, CallbackInfo ci) {

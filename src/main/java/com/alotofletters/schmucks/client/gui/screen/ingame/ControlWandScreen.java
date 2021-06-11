@@ -29,14 +29,14 @@ import java.util.Arrays;
 import static com.alotofletters.schmucks.item.ControlWandItem.ControlAction.*;
 import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
 
-/** The Schmuck Staff GUI */
+/**
+ * The Schmuck Staff GUI
+ */
 public class ControlWandScreen extends Screen {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
+	public final SchmuckEntity schmuck;
 	protected final int backgroundWidth = 176;
 	protected final int backgroundHeight = 88;
-
-	public final SchmuckEntity schmuck;
-
 	private ControlWandDropdown dropdown;
 
 	public ControlWandScreen(SchmuckEntity schmuck) {
@@ -69,7 +69,7 @@ public class ControlWandScreen extends Screen {
 		int i = (this.width - this.backgroundWidth) / 2;
 		int j = (this.height - this.backgroundHeight) / 2;
 		this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
-		InventoryScreen.drawEntity(i + 141, j + 55, 52, (float)(i + 141) - mouseX, (float)(j + 5) - mouseY, this.schmuck);
+		InventoryScreen.drawEntity(i + 141, j + 55, 52, (float) (i + 141) - mouseX, (float) (j + 5) - mouseY, this.schmuck);
 	}
 
 	public MinecraftClient getClient() {
@@ -127,13 +127,13 @@ public class ControlWandScreen extends Screen {
 			x = this.width / 2 - 81;
 			y = this.height / 4 + 128 + -16;
 			storeFlag = true;
-			options = new ControlWandItem.ControlGroup[] { ALL, NOT_STOPPED, ALL_NO_TOOL };
+			options = new ControlWandItem.ControlGroup[]{ALL, NOT_STOPPED, ALL_NO_TOOL};
 		} else {
 			int i = (this.width - this.backgroundWidth) / 2;
 			int j = (this.height - this.backgroundHeight) / 2;
 			x = i + 7;
 			y = j + 65;
-			options = new ControlWandItem.ControlGroup[] { THIS, ALL_BUT_THIS, SAME_TOOL, ALL_BUT_SAME_TOOL };
+			options = new ControlWandItem.ControlGroup[]{THIS, ALL_BUT_THIS, SAME_TOOL, ALL_BUT_SAME_TOOL};
 			this.createGraphicalButton(i + 11,
 					j + 7,
 					START_TELEPORT,
@@ -201,8 +201,8 @@ public class ControlWandScreen extends Screen {
 				this,
 				item,
 				Arrays.asList(new TranslatableText(String.format("gui.schmucks.control_wand.%s", key)),
-							  new TranslatableText(String.format("gui.schmucks.control_wand.%s.tooltip", key))
-									  .formatted(Formatting.GRAY)),
+						new TranslatableText(String.format("gui.schmucks.control_wand.%s.tooltip", key))
+								.formatted(Formatting.GRAY)),
 				(button) -> this.sendControlPacket(action, (ControlWandItem.ControlGroup) this.dropdown.getSelected())));
 	}
 

@@ -55,6 +55,7 @@ public abstract class Modifier {
 
 	/**
 	 * Used for the cost of each level.
+	 *
 	 * @param level Current level
 	 * @return How much does the next level cost
 	 */
@@ -64,8 +65,9 @@ public abstract class Modifier {
 
 	/**
 	 * Applies a modifier to all of a players schmucks.
+	 *
 	 * @param player Player that owns Schmucks
-	 * @param level Level to apply to Schmucks
+	 * @param level  Level to apply to Schmucks
 	 */
 	public void apply(PlayerEntity player, int level) {
 		World world = player.world;
@@ -80,7 +82,8 @@ public abstract class Modifier {
 
 	public abstract void apply(SchmuckEntity entity, int level);
 
-	public void cleanup(SchmuckEntity entity) { }
+	public void cleanup(SchmuckEntity entity) {
+	}
 
 	record Entry(Identifier id, int level) {
 		public void apply(PlayerEntity player) {

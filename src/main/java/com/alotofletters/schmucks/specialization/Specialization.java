@@ -2,7 +2,6 @@ package com.alotofletters.schmucks.specialization;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.AdvancementDisplay;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +46,8 @@ public class Specialization {
 			this.maxLevel = maxLevel;
 		}
 
-		public Raw() { }
+		public Raw() {
+		}
 
 		public static Raw fromJson(JsonObject object) {
 			Identifier parent = object.has("parent") ? new Identifier(JsonHelper.getString(object, "parent")) : null;

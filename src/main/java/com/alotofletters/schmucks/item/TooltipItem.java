@@ -13,24 +13,24 @@ import java.util.List;
 
 public class TooltipItem extends Item {
 
-    public TooltipItem(Settings settings) {
-        super(settings);
-    }
+	public TooltipItem(Settings settings) {
+		super(settings);
+	}
 
-    @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if (this.getTooltipCount() == 1) {
-            tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip")
-                    .formatted(Formatting.GRAY));
-        } else if (this.getTooltipCount() > 1) {
-            for (int i = 0; i < this.getTooltipCount(); i++) {
-                tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip[" + i + "]")
-                        .formatted(Formatting.GRAY));
-            }
-        }
-    }
+	@Override
+	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+		if (this.getTooltipCount() == 1) {
+			tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip")
+					.formatted(Formatting.GRAY));
+		} else if (this.getTooltipCount() > 1) {
+			for (int i = 0; i < this.getTooltipCount(); i++) {
+				tooltip.add(new TranslatableText(this.getTranslationKey(stack) + ".tooltip[" + i + "]")
+						.formatted(Formatting.GRAY));
+			}
+		}
+	}
 
-    public int getTooltipCount() {
-        return 1;
-    }
+	public int getTooltipCount() {
+		return 1;
+	}
 }

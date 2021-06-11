@@ -20,7 +20,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
-/** Makes Schmucks put unneeded items inside of whitelisted storage containers, or if possible, on farmland. */
+/**
+ * Makes Schmucks put unneeded items inside of whitelisted storage containers, or if possible, on farmland.
+ */
 public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	private final SchmuckEntity schmuck;
 	private boolean placed;
@@ -70,6 +72,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * See if an item is worth storing.
+	 *
 	 * @param itemStack ItemStack to test
 	 * @return If the item should be stored
 	 */
@@ -83,6 +86,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * See if an item is worth storing.
+	 *
 	 * @param itemStack ItemStack to test
 	 * @return If the item should be stored
 	 */
@@ -96,6 +100,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * See if an item is worth planting.
+	 *
 	 * @param itemStack ItemStack to test
 	 * @return If the item should be planted
 	 */
@@ -140,6 +145,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * Sees if a sapling is placeable at a given position.
+	 *
 	 * @param pos Position to test
 	 * @return If a sapling can be placed at <code>pos</code>
 	 */
@@ -150,7 +156,9 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 				Blocks.OAK_SAPLING.getDefaultState().canPlaceAt(world, pos);
 	}
 
-	/** Puts the current held item onto farmland. */
+	/**
+	 * Puts the current held item onto farmland.
+	 */
 	private void putFarmland() {
 		BlockState blockState = this.schmuck.world.getBlockState(this.targetPos);
 		BlockState blockStateUp = this.schmuck.world.getBlockState(this.targetPos.up());
@@ -190,7 +198,9 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 		}
 	}
 
-	/** Puts the currently held item inside the targeted chest. */
+	/**
+	 * Puts the currently held item inside the targeted chest.
+	 */
 	private void putChest() {
 		BlockState blockState = this.schmuck.world.getBlockState(this.targetPos);
 		if (this.schmuck.world.getBlockEntity(this.targetPos) instanceof Inventory && this.isNotFurnace(blockState)) {
@@ -206,6 +216,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * Used to blacklist furnaces from being storage mediums.
+	 *
 	 * @param state BlockState to check
 	 * @return If the given BlockState is not a furnace.
 	 */
@@ -215,6 +226,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * Used to see if a position is a container
+	 *
 	 * @param pos Position to test
 	 * @return If pos contains a container
 	 */
@@ -225,6 +237,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 
 	/**
 	 * Used to see if a container is valid for use
+	 *
 	 * @return If container is whitelisted and has an empty slot
 	 */
 	private boolean isValidContainer(WorldView world, BlockPos pos) {

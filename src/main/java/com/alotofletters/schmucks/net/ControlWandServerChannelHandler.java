@@ -82,8 +82,8 @@ public class ControlWandServerChannelHandler implements ServerPlayNetworking.Pla
 
 	public void setSittingNearby(ServerPlayerEntity player, ControlGroup group, SchmuckEntity schmuck, boolean sitting) {
 		forEachSchmuckNearby(player, group, schmuck, entity -> {
-				entity.setSitting(sitting);
-				this.stopSchmuck(entity);
-			});
+			entity.setSitting(sitting);
+			this.stopSchmuck(entity);
+		});
 	}
 }

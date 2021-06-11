@@ -5,8 +5,6 @@ import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.render.GameRenderer;
@@ -23,7 +21,9 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Used for the labelled buttons on the Schmuck Staff screen. */
+/**
+ * Used for the labelled buttons on the Schmuck Staff screen.
+ */
 public abstract class ControlWandButtonWidget extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	protected final ControlWandScreen screen;

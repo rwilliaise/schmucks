@@ -21,12 +21,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
 
-	@Shadow @Final private ItemRenderer itemRenderer;
-	@Shadow @Final private EntityModelLoader modelLoader;
-	@Shadow @Final private TextRenderer textRenderer;
-
 	private static EntityRenderer<SchmuckEntity> RENDERER_DEFAULT;
 	private static EntityRenderer<SchmuckEntity> RENDERER_SLIM;
+	@Shadow
+	@Final
+	private ItemRenderer itemRenderer;
+	@Shadow
+	@Final
+	private EntityModelLoader modelLoader;
+	@Shadow
+	@Final
+	private TextRenderer textRenderer;
 
 	@Inject(at = @At("TAIL"), method = "reload")
 	public void reload(ResourceManager manager, CallbackInfo ci) {

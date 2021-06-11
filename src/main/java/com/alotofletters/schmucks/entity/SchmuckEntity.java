@@ -28,6 +28,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.item.*;
@@ -57,45 +58,69 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	private static final IntProvider ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
 
-	/** Used for when the Schmuck obtains a bow or egg. */
+	/**
+	 * Used for when the Schmuck obtains a bow or egg.
+	 */
 	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
-	/** Used for when the Schmuck obtains any item other than a pickaxe, bow, or egg. */
+	/**
+	 * Used for when the Schmuck obtains any item other than a pickaxe, bow, or egg.
+	 */
 	private final MeleeAttackGoal meleeAttackGoal = new MeleeAttackGoal(this, 1.2D, false);
-	/** Used for melee. */
+	/**
+	 * Used for melee.
+	 */
 	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
-	/** Used for when the Schmuck obtains a pickaxe. */
+	/**
+	 * Used for when the Schmuck obtains a pickaxe.
+	 */
 	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
-	/** Used for when the Schmuck obtains a hoe. */
+	/**
+	 * Used for when the Schmuck obtains a hoe.
+	 */
 	private final SchmuckTill tillGoal = new SchmuckTill(this, 1.0D, 10);
-	/** Used for when the Schmuck obtains an axe. */
+	/**
+	 * Used for when the Schmuck obtains an axe.
+	 */
 	private final SchmuckFellTree fellGoal = new SchmuckFellTree(this, 1.0D, 40);
 
 	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
 	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
-
+	/**
+	 * Used for mid-elytra flight.
+	 */
+	private final FlightMoveControl flightMoveControl = new FlightMoveControl(this, 20, false);
+	/**
+	 * Used for mid-elytra flight, more specifically how the Schmuck will path.
+	 */
+	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 	private UUID targetUuid;
-
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
 	private boolean canFollow = true;
-
 	private int eggUsageTime;
 	private int flyCheckCooldown;
-
-	/** Used to replace the flight control back with the old one (before starting flight control). */
+	/**
+	 * Used to replace the flight control back with the old one (before starting flight control).
+	 */
 	private MoveControl oldMoveControl;
-	/** Used to replace the flight nav with the old one (before starting flight navigation) */
+	/**
+	 * Used to replace the flight nav with the old one (before starting flight navigation)
+	 */
 	private EntityNavigation oldNavigation;
-	/** Used for mid-elytra flight. */
-	private final FlightMoveControl flightMoveControl = new FlightMoveControl(this, 20, false);
-	/** Used for mid-elytra flight, more specifically how the Schmuck will path. */
-	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.lookControl = new SchmuckLookControl(this);
 		this.setCanPickUpLoot(true);
 		((MobNavigation) this.getNavigation()).setCanPathThroughDoors(true);
+	}
+
+	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
+		return MobEntity.createMobAttributes()
+				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
+				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
+				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
 	}
 
 	@Override
@@ -117,7 +142,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.goalSelector.add(6, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
 		this.goalSelector.add(7, new AnimalMateGoal(this, 1.0D));
 		this.goalSelector.add(8, new SchmuckSmeltGoal(this, 1.0D));
-		this.goalSelector.add(9 , new SchmuckPutUnneeded(this, 1.0D));
+		this.goalSelector.add(9, new SchmuckPutUnneeded(this, 1.0D));
 		this.goalSelector.add(10, new SchmuckPickUpItemGoal());
 		this.goalSelector.add(11, new SchmuckFleeAllJobs(this, 1.0D));
 		this.goalSelector.add(12, new SchmuckFleeGoal<>(PlayerEntity.class));
@@ -169,7 +194,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.checkFallFlying();
 
 		if (!this.world.isClient) {
-			this.tickAngerLogic((ServerWorld)this.world, true);
+			this.tickAngerLogic((ServerWorld) this.world, true);
 
 			if (this.getTarget() != null && this.getTarget().getType() == EntityType.PLAYER) {
 				List<SchmuckEntity> entities = this.world.getEntitiesByClass(SchmuckEntity.class,
@@ -221,8 +246,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	/**
 	 * Used to create the flight navigation for mid-elytra flight. Without it, they would take unsatisfactory twists and
 	 * turns.
+	 *
 	 * @return BirdNavigation that the SchmuckEntity uses during flight.
-	 * */
+	 */
 	public BirdNavigation createFlightNavigation() {
 		BirdNavigation birdNavigation = new BirdNavigation(this, this.world);
 		birdNavigation.setCanPathThroughDoors(false);
@@ -231,7 +257,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return birdNavigation;
 	}
 
-	/** Replaces the current MoveControl with a FlightMoveControl. This allows the Schmuck to fly in a sensible way */
+	/**
+	 * Replaces the current MoveControl with a FlightMoveControl. This allows the Schmuck to fly in a sensible way
+	 */
 	public void startFlightControl() {
 		this.oldMoveControl = this.moveControl;
 		this.oldNavigation = this.navigation;
@@ -239,7 +267,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.moveControl = this.flightMoveControl;
 	}
 
-	/** Replaces the FlightMoveControl with the old default MoveControl. */
+	/**
+	 * Replaces the FlightMoveControl with the old default MoveControl.
+	 */
 	public void stopFlightControl() {
 		if (this.oldMoveControl == null || this.oldNavigation == null) {
 			return;
@@ -248,16 +278,18 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.navigation = this.oldNavigation;
 	}
 
-	/** Checks if the Schmuck is currently flying with an elytra. */
+	/**
+	 * Checks if the Schmuck is currently flying with an elytra.
+	 */
 	public void checkFallFlying() {
 		if (this.flyCheckCooldown-- > 0) {
 			return;
 		}
 		if (!this.onGround &&
-			!this.isFallFlying() &&
-			!this.isTouchingWater() &&
-			!this.hasStatusEffect(StatusEffects.LEVITATION) &&
-			this.fallDistance > 2) {
+				!this.isFallFlying() &&
+				!this.isTouchingWater() &&
+				!this.hasStatusEffect(StatusEffects.LEVITATION) &&
+				this.fallDistance > 2) {
 			ItemStack itemStack = this.getEquippedStack(EquipmentSlot.CHEST);
 			if (itemStack.getItem() == Items.ELYTRA && ElytraItem.isUsable(itemStack)) {
 				this.startFallFlying();
@@ -268,14 +300,18 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.flyCheckCooldown = 3;
 	}
 
-	/** Sets the internal flags for the Schmuck to start doing the fly animation. */
+	/**
+	 * Sets the internal flags for the Schmuck to start doing the fly animation.
+	 */
 	public void startFallFlying() {
 		System.out.println("Test");
 		this.setFlag(7, true);
 		this.startFlightControl();
 	}
 
-	/** Sets the internal flags for the Schmuck to stop doing the fly animation. */
+	/**
+	 * Sets the internal flags for the Schmuck to stop doing the fly animation.
+	 */
 	public void stopFallFlying() {
 //		this.setFlag(7, true);
 		this.stopFlightControl();
@@ -297,15 +333,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.dataTracker.startTracking(ANGER_TIME, 0);
 	}
 
-	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
-		return MobEntity.createMobAttributes()
-				.add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
-				.add(EntityAttributes.GENERIC_FLYING_SPEED, 0.6)
-				.add(EntityAttributes.GENERIC_MAX_HEALTH, 16.0)
-				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
-	}
-
-	/** This sets the current pose of the Schmuck, based on several variables. */
+	/**
+	 * This sets the current pose of the Schmuck, based on several variables.
+	 */
 	protected void updateAnimation() {
 		if (this.wouldPoseNotCollide(EntityPose.SWIMMING)) {
 			EntityPose entityPose6;
@@ -454,29 +484,30 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			ItemStack itemStack = this.getMainHandStack();
 			EggEntity eggEntity = new EggEntity(world, this);
 			eggEntity.setItem(itemStack);
-			double d = target.getX() - this.getX();
-			double e = target.getBodyY(0.3333333333333333D) - eggEntity.getY();
-			double f = target.getZ() - this.getZ();
-			double g = MathHelper.sqrt((float) (d * d + f * f));
-			eggEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
-			world.spawnEntity(eggEntity);
+			shootEntity(target, eggEntity);
+			this.world.spawnEntity(eggEntity);
 			this.playSound(SoundEvents.ENTITY_EGG_THROW, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
 			return;
 		}
 		ItemStack itemStack = this.getArrowType(this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW)));
 		PersistentProjectileEntity persistentProjectileEntity = this.createArrowProjectile(itemStack, pullProgress);
+		shootEntity(target, persistentProjectileEntity);
+		this.world.spawnEntity(persistentProjectileEntity);
+		this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+	}
+
+	private void shootEntity(LivingEntity target, ProjectileEntity projectileEntity) {
 		double d = target.getX() - this.getX();
-		double e = target.getBodyY(0.3333333333333333D) - persistentProjectileEntity.getY();
+		double e = target.getBodyY(0.3333333333333333D) - projectileEntity.getY();
 		double f = target.getZ() - this.getZ();
 		double g = MathHelper.sqrt((float) (d * d + f * f));
-		persistentProjectileEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
-		this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-		this.world.spawnEntity(persistentProjectileEntity);
+		projectileEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
 	}
 
 	/**
 	 * Creates an arrow projectile from an ItemStack. Borrowed from the Skeleton code.
-	 * @param arrow ItemStack of arrow to recreate
+	 *
+	 * @param arrow          ItemStack of arrow to recreate
 	 * @param damageModifier Multiplier for how much damage the arrow should do
 	 * @return Arrow entity created from given stack and modifier.
 	 */
@@ -486,13 +517,32 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	/**
 	 * Get the model ("default" or "slim") of the owners model. If an owner is not available, "default" is returned.
+	 *
 	 * @return "default" or "slim"
 	 */
 	public String getModel() {
 		return this.getOwnerUuid() != null ? DefaultSkinHelper.getModel(this.getOwnerUuid()) : "default";
 	}
 
-	/** Picks up items in a radius. Incredibly similar to the foxes pickup item goal. */
+	@Override
+	public int getItemUseTime() {
+		if (++this.eggUsageTime == 6) {
+			this.eggUsageTime = 0;
+		}
+		return this.getMainHandStack().getItem() == Items.EGG ? 15 + this.eggUsageTime : super.getItemUseTime();
+	}
+
+	/**
+	 * Overridden to ensure that eggs work for the SchmuckBowAttackGoal.
+	 */
+	@Override
+	public boolean isUsingItem() {
+		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
+	}
+
+	/**
+	 * Picks up items in a radius. Incredibly similar to the foxes pickup item goal.
+	 */
 	class SchmuckPickUpItemGoal extends Goal {
 
 		public SchmuckPickUpItemGoal() {
@@ -537,26 +587,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
-	@Override
-	public int getItemUseTime() {
-		if (++this.eggUsageTime == 6) {
-			this.eggUsageTime = 0;
-		}
-		return this.getMainHandStack().getItem() == Items.EGG ? 15 + this.eggUsageTime : super.getItemUseTime();
-	}
-
-	/** Overridden to ensure that eggs work for the SchmuckBowAttackGoal. */
-	@Override
-	public boolean isUsingItem() {
-		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
-	}
-
-	/** Moves and shoots a target tactically. Borrowed from the Skeleton code. */
+	/**
+	 * Moves and shoots a target tactically. Borrowed from the Skeleton code.
+	 */
 	class SchmuckBowAttackGoal extends Goal {
 		private final SchmuckEntity actor;
 		private final double speed;
-		private int attackInterval;
 		private final float squaredRange;
+		private int attackInterval;
 		private int cooldown = -1;
 		private int targetSeeingTicker;
 		private boolean movingToLeft;
@@ -616,7 +654,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 					--this.targetSeeingTicker;
 				}
 
-				if (!(d > (double)this.squaredRange) && this.targetSeeingTicker >= 20) {
+				if (!(d > (double) this.squaredRange) && this.targetSeeingTicker >= 20) {
 					this.actor.getNavigation().stop();
 					++this.combatTicks;
 				} else {
@@ -625,11 +663,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 				}
 
 				if (this.combatTicks >= 20) {
-					if ((double)this.actor.getRandom().nextFloat() < 0.3D) {
+					if ((double) this.actor.getRandom().nextFloat() < 0.3D) {
 						this.movingToLeft = !this.movingToLeft;
 					}
 
-					if ((double)this.actor.getRandom().nextFloat() < 0.3D) {
+					if ((double) this.actor.getRandom().nextFloat() < 0.3D) {
 						this.backward = !this.backward;
 					}
 
@@ -637,9 +675,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 				}
 
 				if (this.combatTicks > -1) {
-					if (d > (double)(this.squaredRange * 0.75F)) {
+					if (d > (double) (this.squaredRange * 0.75F)) {
 						this.backward = false;
-					} else if (d < (double)(this.squaredRange * 0.25F)) {
+					} else if (d < (double) (this.squaredRange * 0.25F)) {
 						this.backward = true;
 					}
 
@@ -656,7 +694,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 						int i = this.actor.getItemUseTime();
 						if (i >= 20) {
 							this.actor.clearActiveItem();
-							((RangedAttackMob)this.actor).attack(livingEntity, BowItem.getPullProgress(i));
+							((RangedAttackMob) this.actor).attack(livingEntity, BowItem.getPullProgress(i));
 							this.cooldown = this.attackInterval;
 						}
 					}
@@ -672,7 +710,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
-	/** Used for fleeing the player (albeit a small radius) so space is given for the player to roam around. */
+	/**
+	 * Used for fleeing the player (albeit a small radius) so space is given for the player to roam around.
+	 */
 	class SchmuckFleeGoal<T extends LivingEntity> extends FleeEntityGoal<T> {
 
 		public SchmuckFleeGoal(Class<T> fleeFromType) {

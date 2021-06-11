@@ -13,15 +13,15 @@ import java.util.EnumSet;
 
 public class SchmuckFollowOwner extends Goal {
 	private final SchmuckEntity tameable;
-	private LivingEntity owner;
 	private final WorldView world;
 	private final double speed;
 	private final EntityNavigation navigation;
-	private int updateCountdownTicks;
 	private final float maxDistance;
 	private final float minDistance;
-	private float oldWaterPathfindingPenalty;
 	private final boolean leavesAllowed;
+	private LivingEntity owner;
+	private int updateCountdownTicks;
+	private float oldWaterPathfindingPenalty;
 
 	public SchmuckFollowOwner(SchmuckEntity tameable, double speed, float minDistance, float maxDistance, boolean leavesAllowed) {
 		this.tameable = tameable;
@@ -48,7 +48,7 @@ public class SchmuckFollowOwner extends Goal {
 			return false;
 		} else if (this.tameable.isSitting()) {
 			return false;
-		} else if (this.tameable.squaredDistanceTo(livingEntity) < (double)(this.minDistance * this.minDistance)) {
+		} else if (this.tameable.squaredDistanceTo(livingEntity) < (double) (this.minDistance * this.minDistance)) {
 			return false;
 		} else {
 			this.owner = livingEntity;
@@ -62,7 +62,7 @@ public class SchmuckFollowOwner extends Goal {
 		} else if (this.tameable.isSitting()) {
 			return false;
 		} else {
-			return !(this.tameable.squaredDistanceTo(this.owner) <= (double)(this.maxDistance * this.maxDistance));
+			return !(this.tameable.squaredDistanceTo(this.owner) <= (double) (this.maxDistance * this.maxDistance));
 		}
 	}
 
@@ -79,7 +79,7 @@ public class SchmuckFollowOwner extends Goal {
 	}
 
 	public void tick() {
-		this.tameable.getLookControl().lookAt(this.owner, 10.0F, (float)this.tameable.getLookPitchSpeed());
+		this.tameable.getLookControl().lookAt(this.owner, 10.0F, (float) this.tameable.getLookPitchSpeed());
 		if (--this.updateCountdownTicks <= 0) {
 			this.updateCountdownTicks = 10;
 			if (!this.tameable.isLeashed() && !this.tameable.hasVehicle()) {
@@ -96,7 +96,7 @@ public class SchmuckFollowOwner extends Goal {
 	private void tryTeleport() {
 		BlockPos blockPos = this.owner.getBlockPos();
 
-		for(int i = 0; i < 10; ++i) {
+		for (int i = 0; i < 10; ++i) {
 			int j = this.getRandomInt(-3, 3);
 			int k = this.getRandomInt(-1, 1);
 			int l = this.getRandomInt(-3, 3);
@@ -109,12 +109,12 @@ public class SchmuckFollowOwner extends Goal {
 	}
 
 	private boolean tryTeleportTo(int x, int y, int z) {
-		if (Math.abs((double)x - this.owner.getX()) < 2.0D && Math.abs((double)z - this.owner.getZ()) < 2.0D) {
+		if (Math.abs((double) x - this.owner.getX()) < 2.0D && Math.abs((double) z - this.owner.getZ()) < 2.0D) {
 			return false;
 		} else if (!this.canTeleportTo(new BlockPos(x, y, z))) {
 			return false;
 		} else {
-			this.tameable.refreshPositionAndAngles((double)x + 0.5D, y, (double)z + 0.5D, this.tameable.getYaw(), this.tameable.getPitch());
+			this.tameable.refreshPositionAndAngles((double) x + 0.5D, y, (double) z + 0.5D, this.tameable.getYaw(), this.tameable.getPitch());
 			this.navigation.stop();
 			return true;
 		}
