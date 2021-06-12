@@ -1,8 +1,8 @@
 package com.alotofletters.schmucks.access;
 
-import com.alotofletters.schmucks.specialization.SpecializationLoader;
+import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 
 public interface SpecializationLoaderHolder {
 
-	SpecializationLoader getSpecializationHolder();
+	ServerSpecializationLoader getSpecializationHolder();
 }

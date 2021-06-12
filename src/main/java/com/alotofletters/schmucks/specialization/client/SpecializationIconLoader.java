@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @Environment(EnvType.CLIENT)
 public class SpecializationIconLoader extends SpriteAtlasHolder {
 	public SpecializationIconLoader(TextureManager textureManager) {
-		super(textureManager, Schmucks.id("textures/atlas/specialization_icons.png"), "spec_icon");
+		super(textureManager, Schmucks.id("textures/atlas/specialization.png"), "specialization");
 	}
 
 	@Override

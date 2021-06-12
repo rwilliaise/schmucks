@@ -7,8 +7,7 @@ import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
-import com.alotofletters.schmucks.specialization.SpecializationLoader;
-import com.alotofletters.schmucks.specialization.SpecializationManager;
+import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -64,7 +63,7 @@ public class Schmucks implements ModInitializer {
 					.dimensions(EntityDimensions.fixed(0.5f, 0.75f))
 					.build());
 
-	public static SpecializationLoader loader;
+	public static ServerSpecializationLoader loader;
 
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
 		return Schmucks.getWhitelistComponent(provider).getWhitelist();

@@ -1,0 +1,12 @@
+{
+  "display": {
+    "icon": "schmucks:hunter",
+    "title": {
+      "translate": "specialization.hunter.root.title"
+    },
+    "description": {
+      "translate": "specialization.hunter.root.description"
+    },
+    "announce_to_chat": false
+  }
+}

@@ -16,19 +16,19 @@ import org.jetbrains.annotations.Nullable;
 import static com.alotofletters.schmucks.Schmucks.id;
 
 public abstract class Modifier {
-	public static final RegistryKey<Registry<Modifier>> MODIFIER_KEY = RegistryKey.ofRegistry(id("modifier"));
-	public static final Registry<Modifier> MODIFIER = RegistryAccessor.callCreate(MODIFIER_KEY, () -> Modifiers.EMPTY);
+	public static final RegistryKey<Registry<Modifier>> REGISTRY_KEY = RegistryKey.ofRegistry(id("modifier"));
+	public static final Registry<Modifier> REGISTRY = RegistryAccessor.callCreate(REGISTRY_KEY, () -> Modifiers.EMPTY);
 
 	@Nullable
 	protected String translationKey;
 
 	@Nullable
 	public static Modifier byRawId(int id) {
-		return MODIFIER.get(id);
+		return REGISTRY.get(id);
 	}
 
 	public void toTag(NbtCompound tag, int level) {
-		Identifier regId = MODIFIER.getId(this);
+		Identifier regId = REGISTRY.getId(this);
 		if (regId == null) {
 			return;
 		}
@@ -43,7 +43,7 @@ public abstract class Modifier {
 
 	protected String getOrCreateTranslationKey() {
 		if (this.translationKey == null) {
-			this.translationKey = Util.createTranslationKey("modifier", MODIFIER.getId(this));
+			this.translationKey = Util.createTranslationKey("modifier", REGISTRY.getId(this));
 		}
 
 		return this.translationKey;
@@ -81,6 +81,8 @@ public abstract class Modifier {
 	}
 
 	public abstract void apply(SchmuckEntity entity, int level);
+
+	public void apply(PlayerEntity player, int level) { }
 
 	public void cleanup(SchmuckEntity entity) {
 	}

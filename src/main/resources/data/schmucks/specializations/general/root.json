@@ -1,7 +1,12 @@
 {
   "display": {
+    "icon": "schmucks:general",
     "title": {
-      "translate": "specialization.schmucks.general.root"
-    }
+      "translate": "specialization.general.root.title"
+    },
+    "description": {
+      "translate": "specialization.general.root.description"
+    },
+    "announce_to_chat": false
   }
 }

@@ -1,8 +1,7 @@
 package com.alotofletters.schmucks.mixin;
 
-import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.access.SpecializationLoaderHolder;
-import com.alotofletters.schmucks.specialization.SpecializationLoader;
+import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import net.minecraft.resource.ReloadableResourceManager;
 import net.minecraft.resource.ServerResourceManager;
 import net.minecraft.server.command.CommandManager;
@@ -21,16 +20,16 @@ public class ServerResourceManagerMixin implements SpecializationLoaderHolder {
 	@Final
 	private ReloadableResourceManager resourceManager;
 
-	private SpecializationLoader loader;
+	private ServerSpecializationLoader loader;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	public void init(DynamicRegistryManager registryManager, CommandManager.RegistrationEnvironment commandEnvironment, int functionPermissionLevel, CallbackInfo ci) {
-		this.loader = new SpecializationLoader();
+		this.loader = new ServerSpecializationLoader();
 		this.resourceManager.registerReloader(this.loader);
 	}
 
 	@Override
-	public SpecializationLoader getSpecializationHolder() {
+	public ServerSpecializationLoader getSpecializationHolder() {
 		return this.loader;
 	}
 }

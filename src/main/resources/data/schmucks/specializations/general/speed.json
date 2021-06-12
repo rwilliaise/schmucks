@@ -1,0 +1,15 @@
+{
+  "parents": [
+    "schmucks:general/root"
+  ],
+  "modifier": "schmucks:speed",
+  "max_level": 3,
+  "display": {
+    "title": {
+      "translate": "specialization.general.speed.title"
+    },
+    "description": {
+      "translate": "specialization.general.speed.description"
+    }
+  }
+}
