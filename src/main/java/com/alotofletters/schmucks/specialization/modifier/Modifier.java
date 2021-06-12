@@ -37,8 +37,8 @@ public abstract class Modifier {
 		tag.putInt("Level", level);
 	}
 
-	public Entry fromTag(NbtCompound tag) {
-		return new Entry(new Identifier(tag.getString("Id")), tag.getInt("Level"));
+	public NbtModifier fromTag(NbtCompound tag) {
+		return new NbtModifier(new Identifier(tag.getString("Id")), tag.getInt("Level"));
 	}
 
 	protected String getOrCreateTranslationKey() {
@@ -69,7 +69,7 @@ public abstract class Modifier {
 	 * @param player Player that owns Schmucks
 	 * @param level  Level to apply to Schmucks
 	 */
-	public void apply(PlayerEntity player, int level) {
+	public void applyAll(PlayerEntity player, int level) {
 		World world = player.world;
 		if (world instanceof ServerWorld serverWorld) {
 			serverWorld.getEntitiesByType(TypeFilter.instanceOf(SchmuckEntity.class), entity -> player.getUuid().equals(entity.getOwnerUuid()))
@@ -85,21 +85,5 @@ public abstract class Modifier {
 	public void cleanup(SchmuckEntity entity) {
 	}
 
-	record Entry(Identifier id, int level) {
-		public void apply(PlayerEntity player) {
-			Modifier spec = MODIFIER.get(this.id);
-			if (spec == null) {
-				return;
-			}
-			spec.apply(player, this.level);
-		}
-
-		public void apply(SchmuckEntity schmuck) {
-			Modifier spec = MODIFIER.get(this.id);
-			if (spec == null) {
-				return;
-			}
-			spec.apply(schmuck, this.level);
-		}
-	}
+	record NbtModifier(Identifier modifierId, int level) {}
 }

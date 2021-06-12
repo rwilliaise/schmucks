@@ -7,6 +7,8 @@ import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
+import com.alotofletters.schmucks.specialization.SpecializationLoader;
+import com.alotofletters.schmucks.specialization.SpecializationManager;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -62,6 +64,8 @@ public class Schmucks implements ModInitializer {
 					.dimensions(EntityDimensions.fixed(0.5f, 0.75f))
 					.build());
 
+	public static SpecializationLoader loader;
+
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
 		return Schmucks.getWhitelistComponent(provider).getWhitelist();
 	}
@@ -93,6 +97,7 @@ public class Schmucks implements ModInitializer {
 		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);
 		Registry.register(Registry.ITEM, id("dead_schmuck"), Schmucks.DEAD_SCHMUCK);
 		Registry.register(Registry.ITEM, id("control_wand"), Schmucks.CONTROL_WAND);
+
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}
 }

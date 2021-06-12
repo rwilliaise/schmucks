@@ -21,6 +21,10 @@ import org.lwjgl.glfw.GLFW;
 public class ControlWandWhitelistRenderer {
 
 	public static boolean onBlockOutline(WorldRenderContext worldRenderContext, HitResult result) {
+		return renderWhitelist(worldRenderContext, RenderLayer.getLines());
+	}
+
+	private static boolean renderWhitelist(WorldRenderContext worldRenderContext, RenderLayer layer) {
 		ClientWorld world = worldRenderContext.world();
 		ClientPlayerEntity player = MinecraftClient.getInstance().player;
 		if (player == null || !player.isHolding(Schmucks.CONTROL_WAND)) {
@@ -29,7 +33,7 @@ public class ControlWandWhitelistRenderer {
 		WorldRendererAccessor accessor = (WorldRendererAccessor) worldRenderContext.worldRenderer();
 		BufferBuilderStorage storage = accessor.getBufferBuilders();
 		VertexConsumerProvider.Immediate immediate = storage.getEntityVertexConsumers();
-		VertexConsumer consumer = immediate.getBuffer(RenderLayer.getLines());
+		VertexConsumer consumer = immediate.getBuffer(layer);
 		Vec3d cameraPos = worldRenderContext.camera().getPos();
 		int minDistance = Schmucks.CONFIG.wandRenderDistance / 4;
 		int distance = Schmucks.CONFIG.wandRenderDistance - minDistance;
