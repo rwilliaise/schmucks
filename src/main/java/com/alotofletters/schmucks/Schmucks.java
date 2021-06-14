@@ -3,6 +3,7 @@ package com.alotofletters.schmucks;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.entity.WhitelistComponent;
+import com.alotofletters.schmucks.entity.specialization.SpecializationsComponent;
 import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
@@ -56,6 +57,8 @@ public class Schmucks implements ModInitializer {
 
 	public static final ComponentKey<WhitelistComponent> WHITELIST =
 			ComponentRegistry.getOrCreate(id("whitelist"), WhitelistComponent.class);
+	public static final ComponentKey<SpecializationsComponent> SPECIALIZATIONS =
+			ComponentRegistry.getOrCreate(id("specializations"), SpecializationsComponent.class);
 
 	public final static EntityType<SchmuckEntity> SCHMUCK = Registry.register(Registry.ENTITY_TYPE,
 			id("schmuck"),

@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class SpecializationManager {
@@ -47,14 +48,10 @@ public class SpecializationManager {
 
 					if (built.hasParents()) {
 						this.children.add(built);
-						if (this.listener != null) {
-							this.listener.onChildAdded(built);
-						}
+						this.ifPresent(built, Listener::onChildAdded);
 					} else {
 						this.tabs.add(built);
-						if (this.listener != null) {
-							this.listener.onTabAdded(built);
-						}
+						this.ifPresent(built, Listener::onTabAdded);
 					}
 				}
 			}
@@ -97,14 +94,10 @@ public class SpecializationManager {
 
 		if (!specialization.hasParents()) {
 			this.tabs.remove(specialization);
-			if (this.listener != null) {
-				this.listener.onTabRemoved(specialization);
-			}
+			this.ifPresent(specialization, Listener::onTabRemoved);
 		} else {
 			this.children.remove(specialization);
-			if (this.listener != null) {
-				this.listener.onChildRemoved(specialization);
-			}
+			this.ifPresent(specialization, Listener::onChildRemoved);
 		}
 	}
 
@@ -114,9 +107,7 @@ public class SpecializationManager {
 		this.specializations.clear();
 		this.tabs.clear();
 		this.children.clear();
-		if (this.listener != null) {
-			this.listener.onClear();
-		}
+		this.ifPresent(Listener::onClear);
 	}
 
 	public void setListener(@Nullable Listener listener) {
@@ -124,6 +115,18 @@ public class SpecializationManager {
 		if (listener != null) {
 			this.tabs.forEach(listener::onTabAdded);
 			this.children.forEach(listener::onChildAdded);
+		}
+	}
+
+	private void ifPresent(Specialization spec, BiConsumer<Listener, Specialization> consumer) {
+		if (this.listener != null) {
+			consumer.accept(this.listener, spec);
+		}
+	}
+
+	private void ifPresent(Consumer<Listener> consumer) {
+		if (this.listener != null) {
+			consumer.accept(this.listener);
 		}
 	}
 

@@ -14,7 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface WhitelistComponent extends Component {
+public interface WhitelistComponent extends AutoSyncedComponent {
 	List<BlockPos> getWhitelist();
 
 	boolean containsWhiteList(BlockPos pos);
@@ -25,7 +25,7 @@ public interface WhitelistComponent extends Component {
 
 	void removeWhitelist(BlockPos pos);
 
-	class Impl implements WhitelistComponent, AutoSyncedComponent {
+	class Impl implements WhitelistComponent  {
 		private final List<BlockPos> whitelist = new ArrayList<>();
 		private final PlayerEntity provider;
 

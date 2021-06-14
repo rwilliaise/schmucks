@@ -2,12 +2,14 @@ package com.alotofletters.schmucks.specialization;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Specialization {
 	private final Identifier id;
@@ -27,6 +29,13 @@ public class Specialization {
 		this.modifierId = modifierId;
 		this.display = display;
 		this.maxLevel = maxLevel;
+	}
+
+	public Raw toRaw() {
+		return new Raw(this.parents.stream().map(Specialization::getId).collect(Collectors.toSet()),
+					   this.modifierId,
+					   this.display,
+					   this.maxLevel);
 	}
 
 	public Identifier getId() {
@@ -116,6 +125,15 @@ public class Specialization {
 
 		public boolean hasParents() {
 			return this.parents != null && !this.parents.isEmpty();
+		}
+
+		public void toPacket(PacketByteBuf buf) {
+			buf.writeCollection(this.parentIds, PacketByteBuf::writeIdentifier);
+			buf.writeCollection();
+		}
+
+		public void fromPacket(PacketByteBuf buf) {
+
 		}
 
 		public Specialization build(Identifier id) {
