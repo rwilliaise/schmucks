@@ -42,6 +42,8 @@ public class ServerSpecializationLoader extends JsonDataLoader {
 		SpecializationManager specializationManager = new SpecializationManager();
 		specializationManager.load(rawMap);
 
+
+
 		this.manager = specializationManager;
 	}
 }

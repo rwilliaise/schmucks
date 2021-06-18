@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks.entity.specialization;
 
+import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
@@ -37,6 +38,13 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 * @return If the spec can be seen in the tree.
 	 */
 	boolean canSee(Specialization spec);
+
+	/**
+	 * Invoked whenever the specialization loader reloads.
+	 *
+	 * @param loader Loader that reloaded
+	 */
+	void reload(ServerSpecializationLoader loader);
 
 	/**
 	 * Returns if a Specialization has been upgraded or bought at all.

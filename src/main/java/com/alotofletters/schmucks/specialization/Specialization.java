@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -129,11 +130,33 @@ public class Specialization {
 
 		public void toPacket(PacketByteBuf buf) {
 			buf.writeCollection(this.parentIds, PacketByteBuf::writeIdentifier);
-			buf.writeCollection();
+			if (this.modifierId == null) {
+				buf.writeBoolean(false);
+			} else {
+				buf.writeBoolean(true);
+				buf.writeIdentifier(this.modifierId);
+			}
+			if (this.display == null) {
+				buf.writeBoolean(false);
+			} else {
+				buf.writeBoolean(true);
+				this.display.toPacket(buf);
+			}
+			buf.writeVarInt(this.maxLevel);
 		}
 
-		public void fromPacket(PacketByteBuf buf) {
-
+		public static Raw fromPacket(PacketByteBuf buf) {
+			Set<Identifier> parentIds = buf.readCollection(HashSet::new, PacketByteBuf::readIdentifier);
+			Identifier modifierId = null;
+			if (buf.readBoolean()) {
+				modifierId = buf.readIdentifier();
+			}
+			SpecializationDisplay display = null;
+			if (buf.readBoolean()) {
+				display = SpecializationDisplay.fromPacket(buf);
+			}
+			int maxLevel = buf.readVarInt();
+			return new Raw(parentIds, modifierId, display, maxLevel);
 		}
 
 		public Specialization build(Identifier id) {
