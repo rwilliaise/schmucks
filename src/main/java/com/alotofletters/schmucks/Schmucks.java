@@ -9,12 +9,15 @@ import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
+import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
@@ -23,6 +26,7 @@ import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -93,6 +97,8 @@ public class Schmucks implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new ServerSpecializationLoader());
+
 		SchmucksPackets.init();
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
 		Registry.register(Registry.ITEM, id("fiery_magic"), Schmucks.FIERY_MAGIC);

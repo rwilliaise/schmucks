@@ -31,7 +31,8 @@
   },
   "custom": {
     "cardinal-components": [
-      "schmucks:whitelist"
+      "schmucks:whitelist",
+      "schmucks:specializations"
     ]
   },
   "mixins": [
