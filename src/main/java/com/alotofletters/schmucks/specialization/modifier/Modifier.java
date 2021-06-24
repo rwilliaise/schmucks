@@ -27,30 +27,8 @@ public abstract class Modifier {
 		return REGISTRY.get(id);
 	}
 
-	public void toTag(NbtCompound tag, int level) {
-		Identifier regId = REGISTRY.getId(this);
-		if (regId == null) {
-			return;
-		}
-		String id = regId.toString();
-		tag.putString("Id", id);
-		tag.putInt("Level", level);
-	}
-
-	public NbtModifier fromTag(NbtCompound tag) {
-		return new NbtModifier(new Identifier(tag.getString("Id")), tag.getInt("Level"));
-	}
-
-	protected String getOrCreateTranslationKey() {
-		if (this.translationKey == null) {
-			this.translationKey = Util.createTranslationKey("modifier", REGISTRY.getId(this));
-		}
-
-		return this.translationKey;
-	}
-
-	public String getTranslationKey() {
-		return this.getOrCreateTranslationKey();
+	public Identifier getId() {
+		return REGISTRY.getId(this);
 	}
 
 	/**
@@ -86,6 +64,4 @@ public abstract class Modifier {
 
 	public void cleanup(SchmuckEntity entity) {
 	}
-
-	record NbtModifier(Identifier modifierId, int level) {}
 }

@@ -54,4 +54,8 @@ public class ServerSpecializationLoader extends JsonDataLoader implements Identi
 	public Identifier getFabricId() {
 		return Schmucks.id("specialization");
 	}
+
+	public Specialization get(Identifier id) {
+		return this.manager.get(id);
+	}
 }

@@ -1,5 +1,7 @@
 package com.alotofletters.schmucks.specialization;
 
+import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import net.minecraft.network.PacketByteBuf;
@@ -14,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class Specialization {
 	private final Identifier id;
-	private final Identifier modifierId;
+	private final Modifier modifier;
 	private final int maxLevel;
 	private final SpecializationDisplay display;
 	private final Set<Specialization> parents;
@@ -27,16 +29,16 @@ public class Specialization {
 	                      @Nullable SpecializationDisplay display) {
 		this.parents = parents;
 		this.id = id;
-		this.modifierId = modifierId;
+		this.modifier = Modifier.REGISTRY.get(modifierId);
 		this.display = display;
 		this.maxLevel = maxLevel;
 	}
 
 	public Raw toRaw() {
 		return new Raw(this.parents.stream().map(Specialization::getId).collect(Collectors.toSet()),
-					   this.modifierId,
-					   this.display,
-					   this.maxLevel);
+					   this.getModifierId(),
+					   this.getDisplay(),
+					   this.getMaxLevel());
 	}
 
 	public Identifier getId() {
@@ -44,7 +46,7 @@ public class Specialization {
 	}
 
 	public Identifier getModifierId() {
-		return modifierId;
+		return this.modifier.getId();
 	}
 
 	public int getMaxLevel() {

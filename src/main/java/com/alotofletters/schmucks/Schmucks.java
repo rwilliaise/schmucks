@@ -45,6 +45,7 @@ public class Schmucks implements ModInitializer {
 	public final static Item PURE_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item FIERY_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item DEAD_SCHMUCK = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item GLADIATOR_HELMET = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
 
@@ -70,7 +71,8 @@ public class Schmucks implements ModInitializer {
 					.dimensions(EntityDimensions.fixed(0.5f, 0.75f))
 					.build());
 
-	public static ServerSpecializationLoader loader;
+	// FIXME: should this be on both sides?
+	public static ServerSpecializationLoader LOADER = new ServerSpecializationLoader();
 
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
 		return Schmucks.getWhitelistComponent(provider).getWhitelist();
@@ -97,7 +99,7 @@ public class Schmucks implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new ServerSpecializationLoader());
+		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(Schmucks.LOADER);
 
 		SchmucksPackets.init();
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);

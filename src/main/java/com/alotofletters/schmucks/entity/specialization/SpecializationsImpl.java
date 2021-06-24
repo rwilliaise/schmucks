@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks.entity.specialization;
 
+import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
 import com.alotofletters.schmucks.specialization.SpecializationManager;
@@ -44,6 +45,10 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	public void readFromNbt(NbtCompound tag) {
 		tag.getList("Levels", 10).forEach(element -> {
 			if (element instanceof NbtCompound compound) {
+				Identifier id = new Identifier(compound.getString("Id"));
+				int level = compound.getInt("Level");
+				Specialization specialization = Schmucks.LOADER.get(id);
+				this.levels.put(specialization, level);
 			}
 		});
 	}
@@ -62,9 +67,12 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void writeSyncPacket(PacketByteBuf buf, ServerPlayerEntity recipient) {
+		if (recipient != this.provider) {
+			return;
+		}
 		ImmutableMap.Builder<Identifier, Specialization.Raw> builder = ImmutableMap.builder();
 		ImmutableMap.Builder<Identifier, Integer> levelsBuilder = ImmutableMap.builder();
-		Set<Identifier> toRemove = this.dirty.stream().filter(this.visible::contains).map(Specialization::getId).collect(Collectors.toUnmodifiableSet());
+		Set<Identifier> toRemove = this.dirty.stream().filter(spec -> !this.visible.contains(spec)).map(Specialization::getId).collect(Collectors.toUnmodifiableSet());
 
 		this.dirty.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
 		this.levels.forEach((specialization, level) -> levelsBuilder.put(specialization.getId(), level));
@@ -76,8 +84,12 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void applySyncPacket(PacketByteBuf buf) {
-//		this.buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
-
+		Map<Identifier, Specialization.Raw> toEarn = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
+		Map<Identifier, Integer> levels = buf.readMap(PacketByteBuf::readIdentifier, PacketByteBuf::readVarInt);
+		Set<Identifier> toRemove = buf.readCollection(Sets::newLinkedHashSetWithExpectedSize, PacketByteBuf::readIdentifier);
+		manager.removeAll(toRemove);
+		manager.load(toEarn);
+		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
 	}
 
 	@Override
