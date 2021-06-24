@@ -40,6 +40,12 @@ public record SpecializationIcon(Identifier location) {
 	public static final SpecializationIcon SIXTH_SENSE = register("sixth_sense");
 	public static final SpecializationIcon SNUG_BOOTS = register("snug_boots");
 	public static final SpecializationIcon SPECTRAL_MENDING = register("spectral_mending");
+	public static final SpecializationIcon PROTECTOR = register("protector");
+	public static final SpecializationIcon RECLAMATION = register("reclamation");
+	public static final SpecializationIcon THRIFTY = register("thrifty");
+	public static final SpecializationIcon WHETTED_ARMS = register("whetted_arms");
+	public static final SpecializationIcon ZWEIHANDER = register("zweihander");
+	public static final SpecializationIcon ADVANCED_AXEMANSHIP = register("advanced_axemanship");
 
 	private static SpecializationIcon register(String name) {
 		return Registry.register(REGISTRY, Schmucks.id(name), new SpecializationIcon(Schmucks.id(name)));
