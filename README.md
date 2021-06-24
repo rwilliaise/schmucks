@@ -3,15 +3,76 @@
 Adds little people that look vaguely like you.
 
 ## TODO
-
+- [ ] Import the gladiator specialization hat
+    - [ ] Find way to make blockbench model an entity model instead of block/item
+    - [ ] Create a future process for importing hats
+    - [ ] If possible, forge -> fabric
+    - [ ] Also could manually take the model and just write it up as a .java
+- [x] Read levels from nbt and load the specializations for them. SpecializationsImpl.java
+    - [x] Sync after reading, or something along those lines
+    - [x] Also make sure that the client is up to date with the level info
+    - [x] Find a way to sync data similar to PlayerAdvancementTracker but with components
+        - [x] This is already half done, but I would like it to be fleshed out
+- [ ] Start on the first few modifiers/specializations(20 specializations)
+    - [ ] First spec: snug boots
+        - [ ] Create a way to modify the speed of an entity
+        - [ ] Look at the speed status effect
+    - [ ] Second spec: mollify
+        - [ ] Find a way for creepers to ignore Schmucks
+        - [ ] Also make a way for the creepers to know if the Schmucks actually have the specialization
+            - [ ] Possibly create a specific method in SchmuckEntity.java that gets if a given modifier has been applied
+    - [ ] Third spec: Constitution
+        - [ ] Look at the status effect that gives you extra health
+    - [ ] Find a way to bind custom events to their AI, for example a speed spec increases the speed on given goals
+        - [ ] Modifiers already have a .apply(), however this does not really interface with any goals or attributes.
+        - [ ] As well, modifiers aren't loaded from anywhere.
+- [ ] Import the rest of the icons, add them to atlas
+    - [ ] Also add them to the datapack specialization files
+- [ ] Find a way to make atlas code not use mixins to load (low priority)
+    - [ ] CLIENT_DATA does not work, have to use mixins to load atlas
+    - [ ] Primary reason being that the atlas loader will need the gl context before the context is even created, which causes a crash
+- [ ] Age loader
+    - [ ] Add an ages set to the specialization manager
+    - [ ] Seperate method in the ServerSpecializationLoader
+- [ ] Send sync packets automatically, detect if the specialization component is dirty
+    - [ ] Utilize .serverTick() to sync when dirty
+    - [ ] Also could add .putLevel() to manually set dirtiness
+- [ ] Replace the shift right-click with a normal right-click with the Schmuck Staff
+    - [ ] See raycast result to see if the right-click should be processed
+- [ ] Redo the graphics for the Schmuck staff - Chris
+    - [ ] If the angle has been edited, edit the model from /handheld to /generated
+    - [ ] If it has been flipped, find a way to flip the /handheld or just mess with the display obj
+- [ ] Add tabs to the Schmuck Staff UI
+    - [ ] Dashboard tab, move current UI into
+    - [ ] Specializations tab, copy and paste the advancements UI and fit it over the specializations
+        - [ ] Handle ages
+            - [ ] Fog of war that covers the specializations when the age is not acquired
+                - [ ] Find out how to do shaders
+                - [ ] If shaders aren't possible, just a black fog with a texture
+            - [ ] Ages should have a little text blurb with a hint what it is
+            - [ ] If the player has all ages it should show a "new age coming soon"
+            - [ ] Ages should automatically find the first element that is part of an age, and get the x and hide that.
+        - [ ] Subtabs (hunter, gatherer, general)
+            - [ ] Subtabs should be on the bottom, and show a specialization icon from the registry
+            - [ ] Decide if the root node of the tree should be hidden (the actual tab node)
+- [ ] Add specialization points
+    - [ ] Create specialization points per root
+    - [ ] Create advancements that give specialization points
+        - [ ] Use the advancement awards system to award points
+    - [ ] Also award points when a schmuck does a given task
+        - [ ] Kill a mob - 2 points
+        - [ ] Mine an ore/log - 1 point
+        - [ ] Smelt ore/food - 3 points
+        - [ ] Harvest crop - 1 points
+        - [ ] Brainstorm more
 - [ ] Have Schmucks throw TNT
     - [ ] Maybe a specific depletable TNT bomb
         - [ ] Create depletion of resources for Schmucks
     - [ ] Optionally planting TNT and detonating
-- [ ] Make Schmucks create bases
-    - [ ] Detection for existing bases (maybe village code w/ doors)
-    - [ ] Strategic placement
-        - [ ] Maybe something from the TargetFinder class
+- [ ] ~~Make Schmucks create bases~~
+    - [ ] ~~Detection for existing bases (maybe village code w/ doors)~~
+    - [ ] ~~Strategic placement~~
+        - [ ] ~~Maybe something from the TargetFinder class~~
 - [ ] Make Schmucks have finer tuned control
     - [x] Right click a Schmuck to only affect them, GUI option to affect tag
     - [x] Custom Radius or search for Schmucks
