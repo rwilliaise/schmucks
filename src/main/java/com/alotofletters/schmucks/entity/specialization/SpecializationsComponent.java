@@ -22,7 +22,7 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 *
 	 * @return Specs with changed visibility.
 	 */
-	Set<Specialization> getDirty();
+	Set<Specialization> getLevelUpdates();
 
 	/**
 	 * Returns a map of all specs to their current upgrade status.

@@ -8,7 +8,7 @@ Adds little people that look vaguely like you.
     - [ ] Create a future process for importing hats
     - [ ] If possible, forge -> fabric
     - [ ] Also could manually take the model and just write it up as a .java
-- [x] Read levels from nbt and load the specializations for them. SpecializationsImpl.java
+- [x] Read levels from nbt and load the specializations for them. SpecializationsImpl.java - 6/24
     - [x] Sync after reading, or something along those lines
     - [x] Also make sure that the client is up to date with the level info
     - [x] Find a way to sync data similar to PlayerAdvancementTracker but with components
@@ -26,22 +26,22 @@ Adds little people that look vaguely like you.
     - [ ] Find a way to bind custom events to their AI, for example a speed spec increases the speed on given goals
         - [ ] Modifiers already have a .apply(), however this does not really interface with any goals or attributes.
         - [ ] As well, modifiers aren't loaded from anywhere.
-- [ ] Import the rest of the icons, add them to atlas
-    - [ ] Also add them to the datapack specialization files
-- [ ] Find a way to make atlas code not use mixins to load (low priority)
-    - [ ] CLIENT_DATA does not work, have to use mixins to load atlas
-    - [ ] Primary reason being that the atlas loader will need the gl context before the context is even created, which causes a crash
+- [x] Import the rest of the icons, add them to atlas - 6/24
+    - [x] Also add them to the datapack specialization files
+- [ ] ~~Find a way to make atlas code not use mixins to load (low priority)~~
+    - [ ] ~~CLIENT_DATA does not work, have to use mixins to load atlas~~
+    - [ ] ~~Primary reason being that the atlas loader will need the gl context before the context is even created, which causes a crash~~
 - [ ] Age loader
     - [ ] Add an ages set to the specialization manager
     - [ ] Seperate method in the ServerSpecializationLoader
-- [ ] Send sync packets automatically, detect if the specialization component is dirty
-    - [ ] Utilize .serverTick() to sync when dirty
-    - [ ] Also could add .putLevel() to manually set dirtiness
+- [x] Send sync packets automatically, detect if the specialization component is dirty
+    - [x] Utilize .serverTick() to sync when dirty
+    - [x] Also could add .putLevel() to manually set dirtiness
 - [ ] Replace the shift right-click with a normal right-click with the Schmuck Staff
     - [ ] See raycast result to see if the right-click should be processed
-- [ ] Redo the graphics for the Schmuck staff - Chris
-    - [ ] If the angle has been edited, edit the model from /handheld to /generated
-    - [ ] If it has been flipped, find a way to flip the /handheld or just mess with the display obj
+- [x] Redo the graphics for the Schmuck staff - Chris - 6/25
+    - [x] If the angle has been edited, edit the model from /handheld to /generated
+    - [x] If it has been flipped, find a way to flip the /handheld or just mess with the display obj
 - [ ] Add tabs to the Schmuck Staff UI
     - [ ] Dashboard tab, move current UI into
     - [ ] Specializations tab, copy and paste the advancements UI and fit it over the specializations
@@ -65,10 +65,10 @@ Adds little people that look vaguely like you.
         - [ ] Smelt ore/food - 3 points
         - [ ] Harvest crop - 1 points
         - [ ] Brainstorm more
-- [ ] Have Schmucks throw TNT
-    - [ ] Maybe a specific depletable TNT bomb
-        - [ ] Create depletion of resources for Schmucks
-    - [ ] Optionally planting TNT and detonating
+- [ ] ~~Have Schmucks throw TNT~~
+    - [ ] ~~Maybe a specific depletable TNT bomb~~
+        - [ ] ~~Create depletion of resources for Schmucks~~
+    - [ ] ~~Optionally planting TNT and detonating~~
 - [ ] ~~Make Schmucks create bases~~
     - [ ] ~~Detection for existing bases (maybe village code w/ doors)~~
     - [ ] ~~Strategic placement~~

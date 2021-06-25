@@ -73,6 +73,10 @@ public class Specialization {
 		this.children.add(child);
 	}
 
+	public Modifier getModifier() {
+		return modifier;
+	}
+
 	/**
 	 * A raw specialization, before getting parent and getting id.
 	 */

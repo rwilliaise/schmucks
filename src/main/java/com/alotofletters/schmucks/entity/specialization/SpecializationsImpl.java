@@ -5,12 +5,10 @@ import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
 import com.alotofletters.schmucks.specialization.SpecializationManager;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.advancement.Advancement;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 public class SpecializationsImpl implements SpecializationsComponent {
 	private final Map<Specialization, Integer> levels = Maps.newHashMap();
 	private final Set<Specialization> visible = Sets.newLinkedHashSet();
-	private final Set<Specialization> dirty = Sets.newLinkedHashSet();
+	private final Set<Specialization> levelUpdates = Sets.newLinkedHashSet();
 	private final PlayerEntity provider;
 
 	@Environment(EnvType.CLIENT)
@@ -38,7 +36,7 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	@Override
 	public void reload(ServerSpecializationLoader loader) {
 		this.visible.clear();
-		this.dirty.clear();
+		this.levelUpdates.clear();
 	}
 
 	@Override
@@ -72,9 +70,9 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		}
 		ImmutableMap.Builder<Identifier, Specialization.Raw> builder = ImmutableMap.builder();
 		ImmutableMap.Builder<Identifier, Integer> levelsBuilder = ImmutableMap.builder();
-		Set<Identifier> toRemove = this.dirty.stream().filter(spec -> !this.visible.contains(spec)).map(Specialization::getId).collect(Collectors.toUnmodifiableSet());
+		Set<Identifier> toRemove = this.levelUpdates.stream().filter(spec -> !this.visible.contains(spec)).map(Specialization::getId).collect(Collectors.toUnmodifiableSet());
 
-		this.dirty.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
+		this.levelUpdates.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
 		this.levels.forEach((specialization, level) -> levelsBuilder.put(specialization.getId(), level));
 
 		buf.writeMap(builder.build(), PacketByteBuf::writeIdentifier, (byteBuf, raw) -> raw.toPacket(byteBuf));
@@ -84,12 +82,19 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void applySyncPacket(PacketByteBuf buf) {
-		Map<Identifier, Specialization.Raw> toEarn = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
+		Map<Identifier, Specialization.Raw> levelUpdates = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
 		Map<Identifier, Integer> levels = buf.readMap(PacketByteBuf::readIdentifier, PacketByteBuf::readVarInt);
 		Set<Identifier> toRemove = buf.readCollection(Sets::newLinkedHashSetWithExpectedSize, PacketByteBuf::readIdentifier);
 		manager.removeAll(toRemove);
-		manager.load(toEarn);
+		manager.load(levelUpdates); // FIXME: this should load newly visible upgrades
 		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
+	}
+
+	public void upgradeLevel(Specialization spec) {
+		if (spec.getMaxLevel() <= this.levels.get(spec) + 1) {
+			this.levels.put(spec, this.levels.get(spec) + 1);
+			this.levelUpdates.add(spec);
+		}
 	}
 
 	@Override
@@ -98,8 +103,8 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	}
 
 	@Override
-	public Set<Specialization> getDirty() {
-		return this.dirty;
+	public Set<Specialization> getLevelUpdates() {
+		return this.levelUpdates;
 	}
 
 	@Override

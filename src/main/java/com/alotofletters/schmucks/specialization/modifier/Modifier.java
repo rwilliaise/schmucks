@@ -2,6 +2,9 @@ package com.alotofletters.schmucks.specialization.modifier;
 
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.mixin.RegistryAccessor;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
@@ -13,14 +16,16 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.alotofletters.schmucks.Schmucks.id;
 
 public abstract class Modifier {
 	public static final RegistryKey<Registry<Modifier>> REGISTRY_KEY = RegistryKey.ofRegistry(id("modifier"));
 	public static final Registry<Modifier> REGISTRY = RegistryAccessor.callCreate(REGISTRY_KEY, () -> Modifiers.EMPTY);
 
-	@Nullable
-	protected String translationKey;
+	private final Map<EntityAttribute, EntityAttributeModifier> attributes = new HashMap<>();
 
 	@Nullable
 	public static Modifier byRawId(int id) {
@@ -56,6 +61,28 @@ public abstract class Modifier {
 						this.apply(entity, level);
 					});
 		}
+	}
+
+	public void addModifier(EntityAttribute attribute, double amount, EntityAttributeModifier.Operation op) {
+		this.attributes.put(attribute, new EntityAttributeModifier(this.getId().toString(), amount, op));
+	}
+
+	public void applyModifiers(SchmuckEntity entity, int level) {
+		this.attributes.forEach((attribute, modifier) -> {
+			EntityAttributeInstance entityAttributeInstance = entity.getAttributes().getCustomInstance(attribute);
+			if (entityAttributeInstance != null) {
+				entityAttributeInstance.addTemporaryModifier(new EntityAttributeModifier(modifier.getId(), modifier.getName(), modifier.getValue() * level, modifier.getOperation()));
+			}
+		});
+	}
+
+	public void removeModifiers(SchmuckEntity entity) {
+		this.attributes.forEach((attribute, modifier) -> {
+			EntityAttributeInstance entityAttributeInstance = entity.getAttributes().getCustomInstance(attribute);
+			if (entityAttributeInstance != null) {
+				entityAttributeInstance.removeModifier(modifier);
+			}
+		});
 	}
 
 	public abstract void apply(SchmuckEntity entity, int level);
