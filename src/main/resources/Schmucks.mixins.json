@@ -10,7 +10,8 @@
   "client": [
     "EntityRenderDispatcherMixin",
     "MinecraftClientMixin",
-    "WorldRendererAccessor"
+    "WorldRendererAccessor",
+    "ArmorFeatureRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

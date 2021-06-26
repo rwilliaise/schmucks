@@ -27,6 +27,9 @@
     ],
     "cardinal-components": [
       "com.alotofletters.schmucks.entity.PlayerComponents"
+    ],
+    "dynamiclights": [
+      "com.alotofletters.schmucks.entity.LambDynamicLightsCompat"
     ]
   },
   "custom": {
@@ -36,7 +39,7 @@
     ]
   },
   "mixins": [
-    "Shmucks.mixins.json"
+    "Schmucks.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.11.3",

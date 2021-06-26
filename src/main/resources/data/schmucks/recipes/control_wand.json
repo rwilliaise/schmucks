@@ -1,13 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "  M",
-    " S ",
-    "S  "
+    " C ",
+    " M ",
+    " S "
   ],
   "key": {
     "S": {
       "item": "minecraft:stick"
+    },
+    "C": {
+      "item": "schmucks:schmuck"
     },
     "M": {
       "item": "schmucks:magic"

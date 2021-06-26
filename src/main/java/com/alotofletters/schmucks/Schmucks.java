@@ -22,8 +22,11 @@ import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.resource.ResourceType;
@@ -45,7 +48,9 @@ public class Schmucks implements ModInitializer {
 	public final static Item PURE_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item FIERY_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item DEAD_SCHMUCK = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item GLADIATOR_HELMET = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item GLADIATOR_HELMET = new ArmorItem(ArmorMaterials.IRON, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item LUMBERJACK_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item MINERS_CAP = new ArmorItem(ArmorMaterials.GOLD, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
 
@@ -54,6 +59,7 @@ public class Schmucks implements ModInitializer {
 	public final static Tag<Item> RAW_MEAT_TAG = TagRegistry.item(commonId("raw_food"));
 	public final static Tag<Item> RAW_MINERAL_TAG = TagRegistry.item(commonId("raw_mineral"));
 	public final static Tag<Item> PLANTABLE_TAG = TagRegistry.item(commonId("plantable"));
+	public final static Tag<Item> JOB_HATS_TAG = TagRegistry.item(id("job_hats")); // schmucks specific
 
 	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs")); // schmucks specific
 	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(commonId("food_smelters"));
@@ -72,6 +78,7 @@ public class Schmucks implements ModInitializer {
 					.build());
 
 	// FIXME: should this be on both sides?
+	// ya
 	public static ServerSpecializationLoader LOADER = new ServerSpecializationLoader();
 
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
@@ -107,6 +114,9 @@ public class Schmucks implements ModInitializer {
 		Registry.register(Registry.ITEM, id("schmuck"), Schmucks.SCHMUCK_ITEM);
 		Registry.register(Registry.ITEM, id("dead_schmuck"), Schmucks.DEAD_SCHMUCK);
 		Registry.register(Registry.ITEM, id("control_wand"), Schmucks.CONTROL_WAND);
+		Registry.register(Registry.ITEM, id("gladiator_helmet"), Schmucks.GLADIATOR_HELMET);
+		Registry.register(Registry.ITEM, id("lumberjack"), Schmucks.LUMBERJACK_HAT);
+		Registry.register(Registry.ITEM, id("miners_cap"), Schmucks.MINERS_CAP);
 
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}

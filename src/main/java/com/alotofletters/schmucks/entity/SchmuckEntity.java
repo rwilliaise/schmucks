@@ -300,6 +300,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.flyCheckCooldown = 3;
 	}
 
+	public boolean isGladiator() {
+		// TODO
+		return true;
+	}
+
 	/**
 	 * Sets the internal flags for the Schmuck to start doing the fly animation.
 	 */
