@@ -34,7 +34,7 @@ public class ServerSpecializationLoader extends JsonDataLoader implements Identi
 		prepared.forEach((identifier, jsonElement) -> {
 			if (identifier.getPath().startsWith("ages/")) {
 				// this is an age, we need to treat it differently
-				LOGGER.info("Loading age {} from mod id {}", identifier.getPath(), identifier.getNamespace());
+				LOGGER.trace("Loading age {} from mod id {}", identifier.getPath(), identifier.getNamespace());
 				return;
 			}
 			JsonObject object = JsonHelper.asObject(jsonElement, "specialization");
@@ -44,8 +44,6 @@ public class ServerSpecializationLoader extends JsonDataLoader implements Identi
 
 		SpecializationManager specializationManager = new SpecializationManager();
 		specializationManager.load(rawMap);
-
-
 
 		this.manager = specializationManager;
 	}

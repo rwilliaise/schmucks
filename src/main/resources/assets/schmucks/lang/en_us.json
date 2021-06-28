@@ -14,7 +14,10 @@
   "item.schmucks.control_wand.removed": "(%s, %s, %s) removed from whitelist",
   "item.schmucks.control_wand.removed_farmland": "(%s, %s, %s) removed from available farmland",
   "item.schmucks.control_wand.removed_lumber": "(%s, %s, %s) removed from lumberyard",
-  "item.schmucks.control_wand.tooltip": "It's covered in purple glitter.",
+  "item.schmucks.farmer": "Farmer's Hat",
+  "item.schmucks.miners_cap": "Miner's Cap",
+  "item.schmucks.lumberjack": "Lumberjack Beanie",
+  "item.schmucks.gladiator_helmet": "Gladiator Helmet",
 
   "specialization.general.root.title": "General",
   "specialization.general.root.description": "Specializations that apply to all Schmucks.",

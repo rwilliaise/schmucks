@@ -48,10 +48,10 @@ public class Schmucks implements ModInitializer {
 	public final static Item PURE_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item FIERY_MAGIC = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC).rarity(Rarity.RARE));
 	public final static Item DEAD_SCHMUCK = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item GLADIATOR_HELMET = new ArmorItem(ArmorMaterials.IRON, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item LUMBERJACK_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item FARMERS_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
-	public final static Item MINERS_CAP = new ArmorItem(ArmorMaterials.GOLD, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item GLADIATOR_HELMET = new ArmorItem(ArmorMaterials.IRON, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
+	public final static Item LUMBERJACK_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
+	public final static Item FARMERS_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
+	public final static Item MINERS_CAP = new ArmorItem(ArmorMaterials.GOLD, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
 
@@ -78,8 +78,6 @@ public class Schmucks implements ModInitializer {
 					.dimensions(EntityDimensions.fixed(0.5f, 0.75f))
 					.build());
 
-	// FIXME: should this be on both sides?
-	// ya
 	public static ServerSpecializationLoader LOADER = new ServerSpecializationLoader();
 
 	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
