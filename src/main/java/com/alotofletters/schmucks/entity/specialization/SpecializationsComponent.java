@@ -2,6 +2,7 @@ package com.alotofletters.schmucks.entity.specialization;
 
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
+import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 
@@ -45,6 +46,10 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 * @param loader Loader that reloaded
 	 */
 	void reload(ServerSpecializationLoader loader);
+
+	default boolean hasModifier(Modifier modifier) {
+		return this.getLevels().entrySet().stream().anyMatch(entry -> modifier.equals(entry.getKey().getModifier()));
+	}
 
 	/**
 	 * Returns if a Specialization has been upgraded or bought at all.

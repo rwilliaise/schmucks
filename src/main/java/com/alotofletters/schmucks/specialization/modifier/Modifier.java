@@ -91,4 +91,14 @@ public abstract class Modifier {
 
 	public void cleanup(SchmuckEntity entity) {
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Modifier modifier = (Modifier) o;
+
+		return modifier.getId() == this.getId();
+	}
 }

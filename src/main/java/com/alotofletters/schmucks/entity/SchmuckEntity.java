@@ -3,6 +3,7 @@ package com.alotofletters.schmucks.entity;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
+import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
@@ -173,6 +174,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 
 		return super.interactMob(player, hand);
+	}
+
+	public boolean hasModifier(Modifier modifier) {
+		if (this.getOwner() == null || !(this.getOwner() instanceof PlayerEntity player)) {
+			return false;
+		}
+		return Schmucks.SPECIALIZATIONS.get(player).hasModifier(modifier);
 	}
 
 	/**

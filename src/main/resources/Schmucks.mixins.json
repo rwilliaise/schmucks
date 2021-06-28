@@ -5,13 +5,14 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "FireBlockMixin",
-    "RegistryAccessor"
+    "RegistryAccessor",
+    "TrackTargetGoalMixin"
   ],
   "client": [
+    "ArmorFeatureRendererMixin",
     "EntityRenderDispatcherMixin",
     "MinecraftClientMixin",
-    "WorldRendererAccessor",
-    "ArmorFeatureRendererMixin"
+    "WorldRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

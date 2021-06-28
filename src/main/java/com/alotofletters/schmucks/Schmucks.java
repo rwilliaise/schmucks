@@ -50,6 +50,7 @@ public class Schmucks implements ModInitializer {
 	public final static Item DEAD_SCHMUCK = new TooltipItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item GLADIATOR_HELMET = new ArmorItem(ArmorMaterials.IRON, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item LUMBERJACK_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
+	public final static Item FARMERS_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item MINERS_CAP = new ArmorItem(ArmorMaterials.GOLD, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
@@ -116,6 +117,7 @@ public class Schmucks implements ModInitializer {
 		Registry.register(Registry.ITEM, id("control_wand"), Schmucks.CONTROL_WAND);
 		Registry.register(Registry.ITEM, id("gladiator_helmet"), Schmucks.GLADIATOR_HELMET);
 		Registry.register(Registry.ITEM, id("lumberjack"), Schmucks.LUMBERJACK_HAT);
+		Registry.register(Registry.ITEM, id("farmer"), Schmucks.FARMERS_HAT);
 		Registry.register(Registry.ITEM, id("miners_cap"), Schmucks.MINERS_CAP);
 
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());

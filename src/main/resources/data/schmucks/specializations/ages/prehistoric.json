@@ -1,3 +1,10 @@
 {
-
+  "display": {
+    "title": {
+      "translate": "age.prehistoric.title"
+    },
+    "description": {
+      "translate": "age.prehistoric.description"
+    }
+  }
 }
