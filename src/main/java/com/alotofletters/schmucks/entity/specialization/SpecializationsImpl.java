@@ -75,6 +75,8 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		this.levelUpdates.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
 		this.levels.forEach((specialization, level) -> levelsBuilder.put(specialization.getId(), level));
 
+		this.levelUpdates.clear();
+
 		buf.writeMap(builder.build(), PacketByteBuf::writeIdentifier, (byteBuf, raw) -> raw.toPacket(byteBuf));
 		buf.writeMap(levelsBuilder.build(), PacketByteBuf::writeIdentifier, PacketByteBuf::writeVarInt);
 		buf.writeCollection(toRemove, PacketByteBuf::writeIdentifier);
@@ -91,8 +93,23 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	}
 
 	public void upgradeLevel(Specialization spec) {
-		if (spec.getMaxLevel() <= this.levels.get(spec) + 1) {
-			this.levels.put(spec, this.levels.get(spec) + 1);
+		Integer level = this.levels.get(spec);
+		if (level == null) {
+			level = 0;
+		}
+		this.setLevel(spec,  level + 1);
+	}
+
+	@Override
+	public void apply() {
+		this.getLevels().forEach(((spec, lvl) -> {
+			spec.getModifier().applyAll(this.provider, lvl);
+		}));
+	}
+
+	public void setLevel(Specialization spec, int level) {
+		if (spec.getMaxLevel() <= level) {
+			this.levels.put(spec, level);
 			this.levelUpdates.add(spec);
 		}
 	}

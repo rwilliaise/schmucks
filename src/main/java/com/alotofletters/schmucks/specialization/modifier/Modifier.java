@@ -80,7 +80,7 @@ public abstract class Modifier {
 		this.attributes.forEach((attribute, modifier) -> {
 			EntityAttributeInstance entityAttributeInstance = entity.getAttributes().getCustomInstance(attribute);
 			if (entityAttributeInstance != null) {
-				entityAttributeInstance.removeModifier(modifier);
+				entityAttributeInstance.removeModifier(modifier.getId());
 			}
 		});
 	}

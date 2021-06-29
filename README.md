@@ -3,6 +3,21 @@
 Adds little people that look vaguely like you.
 
 ## TODO
+- [x] Tabs will be created for each root 
+  - [ ] 
+  - [ ] Subtabs (hunter, gatherer, general) 6/29
+    - [ ] Subtabs should be on the bottom, and show a specialization icon from the registry 6/29
+    - [ ] Decide if the root node of the tree should be hidden (the actual tab node) 6/29
+    - [ ] Add specialization points
+      - [ ] Create specialization points per root
+        - [ ] Create advancements that give specialization points
+          - [ ] Use the advancement awards system to award points
+        - [ ] Also award points when a schmuck does a given task
+          - [ ] Kill a mob - 2 points
+          - [ ] Mine an ore/log - 1 point
+          - [ ] Smelt ore/food - 3 points
+          - [ ] Harvest crop - 1 points
+          - [ ] Brainstorm more
 - [ ] Import the gladiator specialization hat
     - [ ] Find way to make blockbench model an entity model instead of block/item
     - [ ] Create a future process for importing hats
@@ -52,19 +67,7 @@ Adds little people that look vaguely like you.
             - [ ] Ages should have a little text blurb with a hint what it is
             - [ ] If the player has all ages it should show a "new age coming soon"
             - [ ] Ages should automatically find the first element that is part of an age, and get the x and hide that.
-        - [ ] Subtabs (hunter, gatherer, general)
-            - [ ] Subtabs should be on the bottom, and show a specialization icon from the registry
-            - [ ] Decide if the root node of the tree should be hidden (the actual tab node)
-- [ ] Add specialization points
-    - [ ] Create specialization points per root
-    - [ ] Create advancements that give specialization points
-        - [ ] Use the advancement awards system to award points
-    - [ ] Also award points when a schmuck does a given task
-        - [ ] Kill a mob - 2 points
-        - [ ] Mine an ore/log - 1 point
-        - [ ] Smelt ore/food - 3 points
-        - [ ] Harvest crop - 1 points
-        - [ ] Brainstorm more
+
 - [ ] ~~Have Schmucks throw TNT~~
     - [ ] ~~Maybe a specific depletable TNT bomb~~
         - [ ] ~~Create depletion of resources for Schmucks~~

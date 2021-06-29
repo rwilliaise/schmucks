@@ -9,11 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -102,6 +99,10 @@ public class SpecializationManager {
 	}
 
 	public Specialization get(Identifier id) { return this.specializations.get(id); }
+
+	public Collection<Specialization> getSpecializations() {
+		return this.specializations.values();
+	}
 
 	public void clear() {
 		this.specializations.clear();

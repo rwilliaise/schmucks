@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.advancement.Advancement;
 import net.minecraft.resource.JsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -55,5 +56,9 @@ public class ServerSpecializationLoader extends JsonDataLoader implements Identi
 
 	public Specialization get(Identifier id) {
 		return this.manager.get(id);
+	}
+
+	public Collection<Specialization> getSpecializations() {
+		return this.manager.getSpecializations();
 	}
 }

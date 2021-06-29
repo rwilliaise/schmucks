@@ -47,6 +47,12 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 */
 	void reload(ServerSpecializationLoader loader);
 
+	void setLevel(Specialization spec, int level);
+
+	void upgradeLevel(Specialization spec);
+
+	void apply();
+
 	default boolean hasModifier(Modifier modifier) {
 		return this.getLevels().entrySet().stream().anyMatch(entry -> modifier.equals(entry.getKey().getModifier()));
 	}

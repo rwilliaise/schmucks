@@ -8,11 +8,13 @@ import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
+import com.alotofletters.schmucks.server.command.SpecializationCommand;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -52,6 +54,7 @@ public class Schmucks implements ModInitializer {
 	public final static Item LUMBERJACK_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
 	public final static Item FARMERS_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
 	public final static Item MINERS_CAP = new ArmorItem(ArmorMaterials.GOLD, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
+	public final static Item RANGER_HAT = new ArmorItem(ArmorMaterials.LEATHER, EquipmentSlot.HEAD, new FabricItemSettings().group(ItemGroup.TOOLS));
 	public final static Item SCHMUCK_ITEM = new SchmuckItem(new FabricItemSettings().group(ItemGroup.MISC));
 	public final static Item CONTROL_WAND = new ControlWandItem(new FabricItemSettings().group(ItemGroup.TOOLS));
 
@@ -117,6 +120,9 @@ public class Schmucks implements ModInitializer {
 		Registry.register(Registry.ITEM, id("lumberjack"), Schmucks.LUMBERJACK_HAT);
 		Registry.register(Registry.ITEM, id("farmer"), Schmucks.FARMERS_HAT);
 		Registry.register(Registry.ITEM, id("miners_cap"), Schmucks.MINERS_CAP);
+		Registry.register(Registry.ITEM, id("ranger"), Schmucks.RANGER_HAT);
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> SpecializationCommand.register(dispatcher));
 
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}
