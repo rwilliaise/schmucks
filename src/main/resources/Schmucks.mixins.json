@@ -12,7 +12,8 @@
     "ArmorFeatureRendererMixin",
     "EntityRenderDispatcherMixin",
     "MinecraftClientMixin",
-    "WorldRendererAccessor"
+    "WorldRendererAccessor",
+    "CreeperEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

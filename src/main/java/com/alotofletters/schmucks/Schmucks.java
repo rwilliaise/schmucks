@@ -11,6 +11,7 @@ import com.alotofletters.schmucks.net.SchmucksPackets;
 import com.alotofletters.schmucks.server.command.SpecializationCommand;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
+import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -109,6 +110,8 @@ public class Schmucks implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(Schmucks.LOADER);
+
+		Modifiers.register();
 
 		SchmucksPackets.init();
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);

@@ -45,6 +45,17 @@ public class SpecializationCommand {
 									return 0;
 								}))
 				)
+				.then(literal("apply")
+						.executes(context -> {
+							if (context.getSource().getPlayer() != null) {
+								SpecializationsComponent component =
+										Schmucks.SPECIALIZATIONS.get(context.getSource().getPlayer());
+								component.apply();
+								return Command.SINGLE_SUCCESS;
+							}
+							return 0;
+						})
+				)
 		);
 	}
 }

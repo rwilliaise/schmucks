@@ -7,9 +7,11 @@ import com.google.gson.JsonObject;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
+import net.minecraft.util.registry.RegistryKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,6 +48,9 @@ public class Specialization {
 	}
 
 	public Identifier getModifierId() {
+		if (this.modifier == null) {
+			return null;
+		}
 		return this.modifier.getId();
 	}
 

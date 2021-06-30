@@ -4,6 +4,7 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
+import com.google.common.collect.Maps;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
@@ -23,7 +24,6 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.Angerable;
-import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
@@ -38,8 +38,10 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.intprovider.IntProvider;
@@ -50,6 +52,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -109,6 +112,9 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	 */
 	private EntityNavigation oldNavigation;
 
+	private static final Map<Integer, PredicatedGoal> GOALS = Maps.newHashMap();
+	private static final Map<Integer, PredicatedGoal> TARGET_SELECTORS = Maps.newHashMap();
+
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.lookControl = new SchmuckLookControl(this);
@@ -134,11 +140,17 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
 
+	public void refreshGoals() {
+		this.goalSelector.clear();
+		this.targetSelector.clear();
+		this.initGoals();
+	}
+
 	@Override
 	protected void initGoals() {
 		super.initGoals();
 		this.goalSelector.add(1, new SwimGoal(this));
-		this.goalSelector.add(2, new FleeEntityGoal<>(this, CreeperEntity.class, 16, 1.0D, 1.2D));
+//		this.goalSelector.add(2, new FleeEntityGoal<>(this, CreeperEntity.class, 16, 1.0D, 1.2D));
 		this.goalSelector.add(3, new SitGoal(this));
 		this.goalSelector.add(6, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
 		this.goalSelector.add(7, new AnimalMateGoal(this, 1.0D));
@@ -308,9 +320,26 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.flyCheckCooldown = 3;
 	}
 
+	public boolean displaysHat() {
+		return (this.hasJob() && this.getEquippedStack(EquipmentSlot.HEAD).isEmpty())
+					|| this.getEquippedStack(EquipmentSlot.HEAD).isIn(Schmucks.JOB_HATS_TAG);
+	}
+
+	public boolean displaysMinersCap() {
+		return (this.isMiner() && this.getEquippedStack(EquipmentSlot.HEAD).isEmpty())
+				|| this.getEquippedStack(EquipmentSlot.HEAD).getItem() == Schmucks.MINERS_CAP;
+	}
+
+	public boolean hasJob() {
+		return this.isGladiator() || this.isMiner();
+	}
+
 	public boolean isGladiator() {
-		// TODO
-		return true;
+		return this.getMainHandStack().isIn(FabricToolTags.SWORDS);
+	}
+
+	public boolean isMiner() {
+		return this.getMainHandStack().isIn(FabricToolTags.PICKAXES);
 	}
 
 	/**
@@ -488,6 +517,26 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
+	public static void addGoalPredicate(int priority, Goal goal, Predicate<SchmuckEntity> predicate) {
+		SchmuckEntity.GOALS.put(priority, new PredicatedGoal(predicate, goal));
+	}
+
+	public static void addGoal(int priority, Goal goal) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> true);
+	}
+
+	public static void addGoalItem(int priority, Goal goal, Item item) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> item.equals(e.getMainHandStack().getItem()));
+	}
+
+	public static void addGoalTag(int priority, Goal goal, Tag<Item> tag) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.getMainHandStack().isIn(tag));
+	}
+
+	public static void addGoalModifier(int priority, Goal goal, Modifier modifier) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.hasModifier(modifier));
+	}
+
 	public boolean canUseRangedWeapon(RangedWeaponItem weapon) {
 		return weapon == Items.BOW;
 	}
@@ -596,6 +645,28 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 					SchmuckEntity.PICKABLE_DROP_FILTER);
 			if (!list.isEmpty()) {
 				SchmuckEntity.this.getNavigation().startMovingTo(list.get(0), 1.2D);
+			}
+		}
+	}
+
+	static class PredicatedGoal {
+		private final Predicate<SchmuckEntity> predicate;
+		private final Goal goal;
+
+		PredicatedGoal(Predicate<SchmuckEntity> predicate, Goal goal) {
+			this.predicate = predicate;
+			this.goal = goal;
+		}
+
+		PredicatedGoal(Goal goal) {
+			this(null, goal);
+		}
+
+		public void load(int priority, SchmuckEntity schmuck, GoalSelector selector) {
+			if (predicate == null) {
+				selector.add(priority, this.goal);
+			} else if (this.predicate.test(schmuck)) {
+				selector.add(priority, this.goal);
 			}
 		}
 	}

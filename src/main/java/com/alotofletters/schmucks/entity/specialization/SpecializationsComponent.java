@@ -7,6 +7,7 @@ import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public interface SpecializationsComponent extends AutoSyncedComponent, ServerTickingComponent {
@@ -54,7 +55,7 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	void apply();
 
 	default boolean hasModifier(Modifier modifier) {
-		return this.getLevels().entrySet().stream().anyMatch(entry -> modifier.equals(entry.getKey().getModifier()));
+		return this.getLevels().keySet().stream().anyMatch(spec -> modifier.getId() == spec.getModifierId() && this.getLevels().get(spec) > 0);
 	}
 
 	/**

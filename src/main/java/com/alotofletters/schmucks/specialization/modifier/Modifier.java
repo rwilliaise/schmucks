@@ -25,6 +25,8 @@ public abstract class Modifier {
 	public static final RegistryKey<Registry<Modifier>> REGISTRY_KEY = RegistryKey.ofRegistry(id("modifier"));
 	public static final Registry<Modifier> REGISTRY = RegistryAccessor.callCreate(REGISTRY_KEY, () -> Modifiers.EMPTY);
 
+	private static Integer id = 0;
+
 	private final Map<EntityAttribute, EntityAttributeModifier> attributes = new HashMap<>();
 
 	@Nullable
@@ -64,7 +66,7 @@ public abstract class Modifier {
 	}
 
 	public void addModifier(EntityAttribute attribute, double amount, EntityAttributeModifier.Operation op) {
-		this.attributes.put(attribute, new EntityAttributeModifier(this.getId().toString(), amount, op));
+		this.attributes.put(attribute, new EntityAttributeModifier((id++).toString(), amount, op));
 	}
 
 	public void applyModifiers(SchmuckEntity entity, int level) {

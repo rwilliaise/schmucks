@@ -9,8 +9,8 @@ public class LambDynamicLightsCompat implements DynamicLightsInitializer {
 	@Override
 	public void onInitializeDynamicLights() {
 		DynamicLightHandlers.registerDynamicLightHandler(Schmucks.SCHMUCK, schmuck -> {
-			if (schmuck.getEquippedStack(EquipmentSlot.HEAD).getItem() == Schmucks.MINERS_CAP) {
-				return 12;
+			if (schmuck.displaysMinersCap()) {
+				return 8;
 			}
 			return 0;
 		});

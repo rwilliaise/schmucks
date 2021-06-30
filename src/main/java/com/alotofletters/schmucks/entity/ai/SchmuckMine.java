@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.block.RedstoneOreBlock;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
@@ -29,6 +30,9 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 		super.tick();
 		if (this.hasReached() && this.use()) {
 			this.schmuck.world.breakBlock(this.targetPos, true);
+			this.schmuck.getMainHandStack().damage(1, this.schmuck, schmuckEntity -> {
+				schmuckEntity.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+			});
 		}
 
 		this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());

@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ArmorFeatureRenderer.class)
 public class ArmorFeatureRendererMixin {
 	private final static ItemStack GLADIATOR_HELMET_STACK = new ItemStack(Schmucks.GLADIATOR_HELMET);
+	private final static ItemStack MINERS_CAP_STACK = new ItemStack(Schmucks.MINERS_CAP);
 
 	@Inject(method = "renderArmor", at = @At("HEAD"), cancellable = true)
 	private <T extends LivingEntity, A extends BipedEntityModel<T>> void renderArmor(MatrixStack matrices,
@@ -31,16 +32,22 @@ public class ArmorFeatureRendererMixin {
 																					 A model,
 																					 CallbackInfo ci) {
 		if ((entity instanceof SchmuckEntity schmuck
-				&& schmuck.isGladiator()
-				&& !schmuck.getEquippedStack(armorSlot).isEmpty()
-					|| entity.getEquippedStack(armorSlot).isIn(Schmucks.JOB_HATS_TAG))
+				&& schmuck.displaysHat()
+				|| entity.getEquippedStack(armorSlot).isIn(Schmucks.JOB_HATS_TAG))
 				&& armorSlot == EquipmentSlot.HEAD) {
 			matrices.push();
 			((ModelWithHead)((ArmorFeatureRenderer)(Object)this).getContextModel()).getHead().rotate(matrices);
 			this.translate(matrices);
 			ItemStack stack = entity.getEquippedStack(armorSlot);
-			if (entity instanceof SchmuckEntity schmuck && schmuck.isGladiator() && !(entity.getEquippedStack(armorSlot).isIn(Schmucks.JOB_HATS_TAG)) && entity.getEquippedStack(armorSlot).getItem() != Schmucks.GLADIATOR_HELMET) {
-				stack = GLADIATOR_HELMET_STACK;
+			if (entity instanceof SchmuckEntity schmuck
+					&& schmuck.hasJob()
+					&& schmuck.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
+				if (schmuck.isGladiator()) {
+					stack = GLADIATOR_HELMET_STACK;
+				}
+				if (schmuck.isMiner()) {
+					stack = MINERS_CAP_STACK;
+				}
 			}
 			MinecraftClient.getInstance().getHeldItemRenderer().renderItem(entity, stack, ModelTransformation.Mode.HEAD, false, matrices, vertexConsumers, light);
 			matrices.pop();
