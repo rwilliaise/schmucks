@@ -1,7 +1,6 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
-import dev.onyxstudios.cca.api.v3.component.Component;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -25,7 +24,7 @@ public interface WhitelistComponent extends AutoSyncedComponent {
 
 	void removeWhitelist(BlockPos pos);
 
-	class Impl implements WhitelistComponent  {
+	class Impl implements WhitelistComponent {
 		private final List<BlockPos> whitelist = new ArrayList<>();
 		private final PlayerEntity provider;
 

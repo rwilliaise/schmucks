@@ -17,7 +17,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 public class SpecializationDisplay {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -47,19 +46,6 @@ public class SpecializationDisplay {
 		}
 	}
 
-	public void toPacket(PacketByteBuf buf) {
-		buf.writeText(this.title);
-		buf.writeText(this.description);
-		if (this.icon == null) {
-			buf.writeBoolean(false);
-		} else {
-			buf.writeBoolean(true);
-			this.icon.toPacket(buf);
-		}
-		buf.writeFloat(this.x);
-		buf.writeFloat(this.y);
-	}
-
 	public static SpecializationDisplay fromPacket(PacketByteBuf buf) {
 		Text title = buf.readText();
 		Text description = buf.readText();
@@ -72,6 +58,19 @@ public class SpecializationDisplay {
 		SpecializationDisplay out = new SpecializationDisplay(title, description, icon, false);
 		out.setPos(x, y);
 		return out;
+	}
+
+	public void toPacket(PacketByteBuf buf) {
+		buf.writeText(this.title);
+		buf.writeText(this.description);
+		if (this.icon == null) {
+			buf.writeBoolean(false);
+		} else {
+			buf.writeBoolean(true);
+			this.icon.toPacket(buf);
+		}
+		buf.writeFloat(this.x);
+		buf.writeFloat(this.y);
 	}
 
 	public Text getTitle() {
@@ -148,6 +147,18 @@ public class SpecializationDisplay {
 			}
 		}
 
+		public static Icon fromPacket(PacketByteBuf buf) {
+			ItemStack stack = null;
+			Identifier icon = null;
+			if (buf.readBoolean()) {
+				stack = buf.readItemStack();
+			}
+			if (buf.readBoolean()) {
+				icon = buf.readIdentifier();
+			}
+			return new Icon(stack, icon);
+		}
+
 		public void toPacket(PacketByteBuf buf) {
 			if (this.isStack()) {
 				buf.writeBoolean(true);
@@ -161,18 +172,6 @@ public class SpecializationDisplay {
 			if (id == null) {
 				LOGGER.warn("Id is null!");
 			}
-		}
-
-		public static Icon fromPacket(PacketByteBuf buf) {
-			ItemStack stack = null;
-			Identifier icon = null;
-			if (buf.readBoolean()) {
-				stack = buf.readItemStack();
-			}
-			if (buf.readBoolean()) {
-				icon = buf.readIdentifier();
-			}
-			return new Icon(stack, icon);
 		}
 
 		public boolean isStack() {

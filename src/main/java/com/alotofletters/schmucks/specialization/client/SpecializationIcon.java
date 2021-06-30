@@ -13,10 +13,8 @@ import static com.alotofletters.schmucks.Schmucks.id;
 @Environment(EnvType.CLIENT)
 public record SpecializationIcon(Identifier location) {
 	public static final RegistryKey<Registry<SpecializationIcon>> ICON_KEY = RegistryKey.ofRegistry(id("icon"));
-	public static final Registry<SpecializationIcon> REGISTRY = RegistryAccessor.callCreate(ICON_KEY, () -> SpecializationIcon.MISSING);
-
 	public static final SpecializationIcon MISSING = register("missing");
-
+	public static final Registry<SpecializationIcon> REGISTRY = RegistryAccessor.callCreate(ICON_KEY, () -> SpecializationIcon.MISSING);
 	// subtabs
 	public static final SpecializationIcon GENERAL = register("general");
 	public static final SpecializationIcon GATHERER = register("gatherer");

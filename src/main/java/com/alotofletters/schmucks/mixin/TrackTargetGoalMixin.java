@@ -7,7 +7,6 @@ import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.TrackTargetGoal;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.particle.ParticleTypes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,7 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(TrackTargetGoal.class)
 public class TrackTargetGoalMixin {
 
-	@Shadow @Final protected MobEntity mob;
+	@Shadow
+	@Final
+	protected MobEntity mob;
 
 	@Inject(method = "canTrack", at = @At("TAIL"), cancellable = true)
 	protected void canTrack(LivingEntity target, TargetPredicate targetPredicate, CallbackInfoReturnable<Boolean> cir) {

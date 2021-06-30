@@ -4,6 +4,7 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
+import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import com.google.common.collect.Maps;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.client.util.DefaultSkinHelper;
@@ -24,6 +25,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.Angerable;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
@@ -41,7 +43,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.intprovider.IntProvider;
@@ -50,45 +51,53 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
-	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private static final IntProvider ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
+	private static final Map<Integer, PredicatedGoalFactory> GOALS = Maps.newHashMap();
+	private static final Map<Integer, PredicatedGoalFactory> TARGET_SELECTORS = Maps.newHashMap();
 
-	/**
-	 * Used for when the Schmuck obtains a bow or egg.
-	 */
-	private final SchmuckBowAttackGoal bowAttackGoal = new SchmuckBowAttackGoal(1.0D, 20, 15.0F);
-	/**
-	 * Used for when the Schmuck obtains any item other than a pickaxe, bow, or egg.
-	 */
-	private final MeleeAttackGoal meleeAttackGoal = new MeleeAttackGoal(this, 1.2D, false);
-	/**
-	 * Used for melee.
-	 */
-	private final PounceAtTargetGoal pounceGoal = new PounceAtTargetGoal(this, 0.3F);
-	/**
-	 * Used for when the Schmuck obtains a pickaxe.
-	 */
-	private final SchmuckMine mineGoal = new SchmuckMine(this, 1.0D, 60);
-	/**
-	 * Used for when the Schmuck obtains a hoe.
-	 */
-	private final SchmuckTill tillGoal = new SchmuckTill(this, 1.0D, 10);
-	/**
-	 * Used for when the Schmuck obtains an axe.
-	 */
-	private final SchmuckFellTree fellGoal = new SchmuckFellTree(this, 1.0D, 40);
+	static {
+		addGoal(1, SwimGoal::new);
+		addGoalModifier_n(
+				2,
+				schmuckEntity -> new FleeEntityGoal<>(
+						schmuckEntity,
+						CreeperEntity.class,
+						16,
+						1.0D,
+						1.2D),
+				Modifiers.MOLLIFY);
+		addGoal(3, SitGoal::new);
+		addGoal(6, schmuck -> new SchmuckFollowOwner(schmuck, 1.0D, 15.0F, 4.0F, false));
+		addGoal(7, schmuck -> new AnimalMateGoal(schmuck, 1));
+		addGoal(8, schmuck -> new SchmuckSmeltGoal(schmuck, 1));
+		addGoal(9, schmuck -> new SchmuckPutUnneeded(schmuck, 1));
+		addGoal(10, SchmuckPickUpItemGoal::new);
+		addGoal(11, schmuck -> new SchmuckFleeAllJobs(schmuck, 1.0D));
+		addGoal(12, schmuck -> new SchmuckFleeGoal<>(schmuck, PlayerEntity.class));
+		addGoal(13, schmuck -> new WanderAroundFarGoal(schmuck, 1.0D));
+		addGoal(14, schmuck -> new LookAtEntityGoal(schmuck, PlayerEntity.class, 8.0F));
+		addSelector(1, TrackOwnerAttackerGoal::new);
+		addSelector(2, AttackWithOwnerGoal::new);
+		addSelectorPredicate(3, schmuck -> (new RevengeGoal(schmuck)).setGroupRevenge(), schmuck -> schmuck.shortTempered);
+		addSelectorPredicate(3, schmuck -> (new RevengeGoal(schmuck, SchmuckEntity.class)).setGroupRevenge(), schmuck -> !schmuck.shortTempered);
+		addSelector(4, schmuck -> new UniversalAngerGoal<>(schmuck, true));
 
-	private final RevengeGoal shortTemperRevengeGoal = (new RevengeGoal(this)).setGroupRevenge();
-	private final RevengeGoal revengeGoal = (new RevengeGoal(this, SchmuckEntity.class)).setGroupRevenge();
+		Function<SchmuckEntity, Goal> goal = schmuck -> new SchmuckBowAttackGoal(schmuck, 1.0D, 20, 15.0F);
+		addGoalPredicate(5, goal, SchmuckEntity::isRanger);
+		addGoalPredicate(5, schmuck -> new SchmuckMine(schmuck, 1.0D, 60), SchmuckEntity::isMiner);
+		addGoalPredicate(5, schmuck -> new SchmuckTill(schmuck, 1.0D, 10), SchmuckEntity::isFarmer);
+		addGoalPredicate(5, schmuck -> new SchmuckFellTree(schmuck, 1.0D, 40), SchmuckEntity::isLumberjack);
+	}
+
 	/**
 	 * Used for mid-elytra flight.
 	 */
@@ -112,9 +121,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	 */
 	private EntityNavigation oldNavigation;
 
-	private static final Map<Integer, PredicatedGoal> GOALS = Maps.newHashMap();
-	private static final Map<Integer, PredicatedGoal> TARGET_SELECTORS = Maps.newHashMap();
-
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.lookControl = new SchmuckLookControl(this);
@@ -130,13 +136,45 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 				.add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
 	}
 
+	public static void addSelectorPredicate(int priority, Function<SchmuckEntity, Goal> goal, Predicate<SchmuckEntity> predicate) {
+		SchmuckEntity.TARGET_SELECTORS.put(priority, new PredicatedGoalFactory(predicate, goal));
+	}
+
+	public static void addSelector(int priority, Function<SchmuckEntity, Goal> goal) {
+		SchmuckEntity.addSelectorPredicate(priority, goal, e -> true);
+	}
+
+	public static void addGoalPredicate(int priority, Function<SchmuckEntity, Goal> goal, Predicate<SchmuckEntity> predicate) {
+		SchmuckEntity.GOALS.put(priority, new PredicatedGoalFactory(predicate, goal));
+	}
+
+	public static void addGoal(int priority, Function<SchmuckEntity, Goal> goal) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> true);
+	}
+
+	public static void addGoalItem(int priority, Function<SchmuckEntity, Goal> goal, Item item) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> item.equals(e.getMainHandStack().getItem()));
+	}
+
+	public static void addGoalTag(int priority, Function<SchmuckEntity, Goal> goal, Tag<Item> tag) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.getMainHandStack().isIn(tag));
+	}
+
+	public static void addGoalModifier(int priority, Function<SchmuckEntity, Goal> goal, Modifier modifier) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.hasModifier(modifier));
+	}
+
+	public static void addGoalModifier_n(int priority, Function<SchmuckEntity, Goal> goal, Modifier modifier) {
+		SchmuckEntity.addGoalPredicate(priority, goal, e -> !e.hasModifier(modifier));
+	}
+
 	@Override
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityTag) {
 		if (random.nextFloat() < Schmucks.CONFIG.leatherHelmetChance.floatValue() / 100) {
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
 		shortTempered = Schmucks.CONFIG.chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
-		this.updateAttackType();
+		this.refreshGoals();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
 
@@ -149,23 +187,8 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	@Override
 	protected void initGoals() {
 		super.initGoals();
-		this.goalSelector.add(1, new SwimGoal(this));
-//		this.goalSelector.add(2, new FleeEntityGoal<>(this, CreeperEntity.class, 16, 1.0D, 1.2D));
-		this.goalSelector.add(3, new SitGoal(this));
-		this.goalSelector.add(6, new SchmuckFollowOwner(this, 1.0D, 15.0F, 4.0F, false));
-		this.goalSelector.add(7, new AnimalMateGoal(this, 1.0D));
-		this.goalSelector.add(8, new SchmuckSmeltGoal(this, 1.0D));
-		this.goalSelector.add(9, new SchmuckPutUnneeded(this, 1.0D));
-		this.goalSelector.add(10, new SchmuckPickUpItemGoal());
-		this.goalSelector.add(11, new SchmuckFleeAllJobs(this, 1.0D));
-		this.goalSelector.add(12, new SchmuckFleeGoal<>(PlayerEntity.class));
-		this.goalSelector.add(13, new WanderAroundFarGoal(this, 1.0D));
-		this.goalSelector.add(14, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-		this.goalSelector.add(14, new LookAtEntityGoal(this, SchmuckEntity.class, 8.0F));
-		this.goalSelector.add(14, new LookAroundGoal(this));
-		this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
-		this.targetSelector.add(2, new AttackWithOwnerGoal(this));
-		this.targetSelector.add(4, new UniversalAngerGoal<>(this, true));
+		GOALS.forEach((priority, factory) -> factory.apply(priority, this, this.goalSelector));
+		TARGET_SELECTORS.forEach((priority, factory) -> factory.apply(priority, this, this.targetSelector));
 	}
 
 	@Override
@@ -260,7 +283,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			});
 			component.sync();
 		}
-		this.updateAttackType();
+		this.refreshGoals();
 	}
 
 	/**
@@ -322,7 +345,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public boolean displaysHat() {
 		return (this.hasJob() && this.getEquippedStack(EquipmentSlot.HEAD).isEmpty())
-					|| this.getEquippedStack(EquipmentSlot.HEAD).isIn(Schmucks.JOB_HATS_TAG);
+				|| this.getEquippedStack(EquipmentSlot.HEAD).isIn(Schmucks.JOB_HATS_TAG);
 	}
 
 	public boolean displaysMinersCap() {
@@ -331,7 +354,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	public boolean hasJob() {
-		return this.isGladiator() || this.isMiner();
+		return this.isGladiator()
+				|| this.isMiner()
+				|| this.isFarmer()
+				|| this.isLumberjack()
+				|| this.isRanger();
 	}
 
 	public boolean isGladiator() {
@@ -340,6 +367,19 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public boolean isMiner() {
 		return this.getMainHandStack().isIn(FabricToolTags.PICKAXES);
+	}
+
+	public boolean isFarmer() {
+		return this.getMainHandStack().isIn(FabricToolTags.HOES);
+	}
+
+	public boolean isLumberjack() {
+		return this.getMainHandStack().isIn(FabricToolTags.AXES);
+	}
+
+	public boolean isRanger() {
+		Item item = this.getMainHandStack().getItem();
+		return item == Items.BOW || item == Items.EGG;
 	}
 
 	/**
@@ -450,7 +490,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public void equipStack(EquipmentSlot slot, ItemStack stack) {
 		super.equipStack(slot, stack);
 		if (!this.world.isClient) {
-			this.updateAttackType();
+			this.refreshGoals();
 		}
 	}
 
@@ -481,60 +521,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public void equipNoUpdate(EquipmentSlot slot, ItemStack stack) {
 		super.equipStack(slot, stack);
-	}
-
-	public void updateAttackType() {
-		if (this.world != null && !this.world.isClient) {
-			this.goalSelector.remove(this.meleeAttackGoal);
-			this.goalSelector.remove(this.bowAttackGoal);
-			this.goalSelector.remove(this.mineGoal);
-			this.goalSelector.remove(this.pounceGoal);
-			this.goalSelector.remove(this.tillGoal);
-			this.goalSelector.remove(this.fellGoal);
-			this.targetSelector.remove(this.shortTemperRevengeGoal);
-			this.targetSelector.remove(this.revengeGoal);
-			ItemStack itemStack = this.getMainHandStack();
-			if (itemStack.getItem() == Items.BOW || itemStack.getItem() == Items.EGG) {
-				this.bowAttackGoal.setAttackInterval(itemStack.getItem() == Items.EGG ? 5 : 30);
-				this.goalSelector.add(5, this.bowAttackGoal);
-			} else if (FabricToolTags.PICKAXES.contains(itemStack.getItem())) {
-				this.goalSelector.add(5, this.mineGoal);
-			} else if (FabricToolTags.HOES.contains(itemStack.getItem())) {
-				this.goalSelector.add(4, this.meleeAttackGoal);
-				this.goalSelector.add(5, this.tillGoal);
-			} else if (FabricToolTags.AXES.contains(itemStack.getItem())) {
-				this.goalSelector.add(4, this.meleeAttackGoal);
-				this.goalSelector.add(5, this.fellGoal);
-			} else {
-				this.goalSelector.add(4, this.pounceGoal);
-				this.goalSelector.add(5, this.meleeAttackGoal);
-			}
-			if (this.shortTempered) {
-				this.targetSelector.add(3, this.shortTemperRevengeGoal);
-			} else {
-				this.targetSelector.add(3, this.revengeGoal);
-			}
-		}
-	}
-
-	public static void addGoalPredicate(int priority, Goal goal, Predicate<SchmuckEntity> predicate) {
-		SchmuckEntity.GOALS.put(priority, new PredicatedGoal(predicate, goal));
-	}
-
-	public static void addGoal(int priority, Goal goal) {
-		SchmuckEntity.addGoalPredicate(priority, goal, e -> true);
-	}
-
-	public static void addGoalItem(int priority, Goal goal, Item item) {
-		SchmuckEntity.addGoalPredicate(priority, goal, e -> item.equals(e.getMainHandStack().getItem()));
-	}
-
-	public static void addGoalTag(int priority, Goal goal, Tag<Item> tag) {
-		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.getMainHandStack().isIn(tag));
-	}
-
-	public static void addGoalModifier(int priority, Goal goal, Modifier modifier) {
-		SchmuckEntity.addGoalPredicate(priority, goal, e -> e.hasModifier(modifier));
 	}
 
 	public boolean canUseRangedWeapon(RangedWeaponItem weapon) {
@@ -602,205 +588,34 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
 	}
 
-	/**
-	 * Picks up items in a radius. Incredibly similar to the foxes pickup item goal.
-	 */
-	class SchmuckPickUpItemGoal extends Goal {
-
-		public SchmuckPickUpItemGoal() {
-			this.setControls(EnumSet.of(Control.MOVE));
-		}
-
-		@Override
-		public boolean canStart() {
-			if (!SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) {
-				return false;
-			} else if (SchmuckEntity.this.getAttacker() == null) {
-				if (SchmuckEntity.this.getRandom().nextInt(10) != 0) {
-					return false;
-				} else {
-					List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
-							SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
-							SchmuckEntity.PICKABLE_DROP_FILTER);
-					return !list.isEmpty() && SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
-				}
-			} else {
-				return false;
-			}
-		}
-
-		public void tick() {
-			List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
-					SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
-					SchmuckEntity.PICKABLE_DROP_FILTER);
-			ItemStack itemStack = SchmuckEntity.this.getEquippedStack(EquipmentSlot.MAINHAND);
-			if (itemStack.isEmpty() && !list.isEmpty()) {
-				SchmuckEntity.this.getNavigation().startMovingTo(list.get(0), 1.2D);
-			}
-		}
-
-		public void start() {
-			List<ItemEntity> list = SchmuckEntity.this.world.getEntitiesByClass(ItemEntity.class,
-					SchmuckEntity.this.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
-					SchmuckEntity.PICKABLE_DROP_FILTER);
-			if (!list.isEmpty()) {
-				SchmuckEntity.this.getNavigation().startMovingTo(list.get(0), 1.2D);
-			}
-		}
-	}
-
-	static class PredicatedGoal {
+	static class PredicatedGoalFactory {
 		private final Predicate<SchmuckEntity> predicate;
-		private final Goal goal;
+		private final Function<SchmuckEntity, Goal> goal;
+		private final Map<UUID, Goal> goals = Maps.newHashMap();
 
-		PredicatedGoal(Predicate<SchmuckEntity> predicate, Goal goal) {
+		PredicatedGoalFactory(Predicate<SchmuckEntity> predicate, Function<SchmuckEntity, Goal> goal) {
 			this.predicate = predicate;
 			this.goal = goal;
 		}
 
-		PredicatedGoal(Goal goal) {
+		PredicatedGoalFactory(Function<SchmuckEntity, Goal> goal) {
 			this(null, goal);
 		}
 
-		public void load(int priority, SchmuckEntity schmuck, GoalSelector selector) {
-			if (predicate == null) {
-				selector.add(priority, this.goal);
-			} else if (this.predicate.test(schmuck)) {
-				selector.add(priority, this.goal);
+		public void apply(int priority, SchmuckEntity schmuck, GoalSelector selector) {
+			if (predicate == null || this.predicate.test(schmuck)) {
+				selector.add(priority, this.getGoal(schmuck));
 			}
 		}
-	}
 
-	/**
-	 * Moves and shoots a target tactically. Borrowed from the Skeleton code.
-	 */
-	class SchmuckBowAttackGoal extends Goal {
-		private final SchmuckEntity actor;
-		private final double speed;
-		private final float squaredRange;
-		private int attackInterval;
-		private int cooldown = -1;
-		private int targetSeeingTicker;
-		private boolean movingToLeft;
-		private boolean backward;
-		private int combatTicks = -1;
-
-		public SchmuckBowAttackGoal(double speed, int attackInterval, float range) {
-			this.actor = SchmuckEntity.this;
-			this.speed = speed;
-			this.attackInterval = attackInterval;
-			this.squaredRange = range * range;
-			this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
-		}
-
-		public void setAttackInterval(int attackInterval) {
-			this.attackInterval = attackInterval;
-		}
-
-		public boolean canStart() {
-			return !this.actor.isSitting() && this.actor.getTarget() != null && this.isHoldingRangedWeapon();
-		}
-
-		protected boolean isHoldingRangedWeapon() {
-			return this.actor.isHolding(Items.BOW) || this.actor.isHolding(Items.EGG);
-		}
-
-		public boolean shouldContinue() {
-			return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingRangedWeapon();
-		}
-
-		public void start() {
-			super.start();
-			this.actor.setAttacking(true);
-		}
-
-		public void stop() {
-			super.stop();
-			this.actor.setAttacking(false);
-			this.targetSeeingTicker = 0;
-			this.cooldown = -1;
-			this.actor.clearActiveItem();
-		}
-
-		public void tick() {
-			LivingEntity livingEntity = this.actor.getTarget();
-			if (livingEntity != null) {
-				double d = this.actor.squaredDistanceTo(livingEntity.getX(), livingEntity.getY(), livingEntity.getZ());
-				boolean bl = this.actor.getVisibilityCache().canSee(livingEntity);
-				boolean bl2 = this.targetSeeingTicker > 0;
-				if (bl != bl2) {
-					this.targetSeeingTicker = 0;
-				}
-
-				if (bl) {
-					++this.targetSeeingTicker;
-				} else {
-					--this.targetSeeingTicker;
-				}
-
-				if (!(d > (double) this.squaredRange) && this.targetSeeingTicker >= 20) {
-					this.actor.getNavigation().stop();
-					++this.combatTicks;
-				} else {
-					this.actor.getNavigation().startMovingTo(livingEntity, this.speed);
-					this.combatTicks = -1;
-				}
-
-				if (this.combatTicks >= 20) {
-					if ((double) this.actor.getRandom().nextFloat() < 0.3D) {
-						this.movingToLeft = !this.movingToLeft;
-					}
-
-					if ((double) this.actor.getRandom().nextFloat() < 0.3D) {
-						this.backward = !this.backward;
-					}
-
-					this.combatTicks = 0;
-				}
-
-				if (this.combatTicks > -1) {
-					if (d > (double) (this.squaredRange * 0.75F)) {
-						this.backward = false;
-					} else if (d < (double) (this.squaredRange * 0.25F)) {
-						this.backward = true;
-					}
-
-					this.actor.getMoveControl().strafeTo(this.backward ? -0.5F : 0.5F, this.movingToLeft ? 0.5F : -0.5F);
-					this.actor.lookAtEntity(livingEntity, 30.0F, 30.0F);
-				} else {
-					this.actor.getLookControl().lookAt(livingEntity, 30.0F, 30.0F);
-				}
-
-				if (this.actor.isUsingItem()) {
-					if (!bl && this.targetSeeingTicker < -60) {
-						this.actor.clearActiveItem();
-					} else if (bl) {
-						int i = this.actor.getItemUseTime();
-						if (i >= 20) {
-							this.actor.clearActiveItem();
-							((RangedAttackMob) this.actor).attack(livingEntity, BowItem.getPullProgress(i));
-							this.cooldown = this.attackInterval;
-						}
-					}
-				} else if (--this.cooldown <= 0 && this.targetSeeingTicker >= -60) {
-					Hand hand = ProjectileUtil.getHandPossiblyHolding(this.actor, Items.BOW);
-					if (hand == null) {
-						hand = ProjectileUtil.getHandPossiblyHolding(this.actor, Items.EGG);
-					}
-					this.actor.setCurrentHand(hand);
-				}
-
+		private Goal getGoal(SchmuckEntity schmuck) {
+			if (goals.containsKey(schmuck.uuid)) {
+				return goals.get(schmuck.uuid);
 			}
+			Goal out = this.goal.apply(schmuck);
+			goals.put(schmuck.uuid, out);
+			return out;
 		}
 	}
 
-	/**
-	 * Used for fleeing the player (albeit a small radius) so space is given for the player to roam around.
-	 */
-	class SchmuckFleeGoal<T extends LivingEntity> extends FleeEntityGoal<T> {
-
-		public SchmuckFleeGoal(Class<T> fleeFromType) {
-			super(SchmuckEntity.this, fleeFromType, 2, 1.0D, 1.0D, (entity) -> !(entity instanceof PlayerEntity));
-		}
-	}
 }

@@ -6,11 +6,9 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
-import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -55,9 +53,12 @@ public abstract class Modifier {
 	 * @param level  Level to apply to Schmucks
 	 */
 	public void applyAll(PlayerEntity player, int level) {
+		System.out.println("this.getId() = " + this.getId());
 		World world = player.world;
 		if (world instanceof ServerWorld serverWorld) {
-			serverWorld.getEntitiesByType(TypeFilter.instanceOf(SchmuckEntity.class), entity -> player.getUuid().equals(entity.getOwnerUuid()))
+			serverWorld.getEntitiesByType(
+					TypeFilter.instanceOf(SchmuckEntity.class),
+					entity -> player.equals(entity.getOwner()))
 					.forEach(entity -> {
 						this.cleanup(entity);
 						this.apply(entity, level);
@@ -89,7 +90,8 @@ public abstract class Modifier {
 
 	public abstract void apply(SchmuckEntity entity, int level);
 
-	public void apply(PlayerEntity player, int level) { }
+	public void apply(PlayerEntity player, int level) {
+	}
 
 	public void cleanup(SchmuckEntity entity) {
 	}

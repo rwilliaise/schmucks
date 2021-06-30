@@ -11,9 +11,10 @@ import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
-import static net.minecraft.server.command.CommandManager.*;
-
 import java.util.Collection;
+
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class SpecializationCommand {
 
@@ -24,10 +25,10 @@ public class SpecializationCommand {
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("specialization")
-			.requires(source -> source.hasPermissionLevel(2))
+				.requires(source -> source.hasPermissionLevel(2))
 				.then(literal("upgrade")
 						.then(argument("specialization", IdentifierArgumentType.identifier())
-							.suggests(SUGGESTION_PROVIDER)
+								.suggests(SUGGESTION_PROVIDER)
 								.executes(context -> {
 									Identifier id = IdentifierArgumentType.getIdentifier(context, "specialization");
 									if (context.getSource().getPlayer() != null && id != null) {

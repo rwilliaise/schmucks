@@ -16,8 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin implements SpecializationIconLoaderHolder {
 
-	@Shadow @Final private ReloadableResourceManager resourceManager;
-	@Shadow @Final private TextureManager textureManager;
+	@Shadow
+	@Final
+	private ReloadableResourceManager resourceManager;
+	@Shadow
+	@Final
+	private TextureManager textureManager;
 	private SpecializationIconLoader specializationIconLoader;
 
 	@Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleManager;<init>(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/client/texture/TextureManager;)V"))

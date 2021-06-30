@@ -47,6 +47,7 @@ public class SpecializationsImpl implements SpecializationsComponent {
 				int level = compound.getInt("Level");
 				Specialization specialization = Schmucks.LOADER.get(id);
 				this.levels.put(specialization, level);
+				this.levelUpdates.add(specialization);
 			}
 		});
 	}
@@ -75,8 +76,6 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		this.levelUpdates.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
 		this.levels.forEach((specialization, level) -> levelsBuilder.put(specialization.getId(), level));
 
-		this.levelUpdates.clear();
-
 		buf.writeMap(builder.build(), PacketByteBuf::writeIdentifier, (byteBuf, raw) -> raw.toPacket(byteBuf));
 		buf.writeMap(levelsBuilder.build(), PacketByteBuf::writeIdentifier, PacketByteBuf::writeVarInt);
 		buf.writeCollection(toRemove, PacketByteBuf::writeIdentifier);
@@ -87,9 +86,9 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		Map<Identifier, Specialization.Raw> levelUpdates = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
 		Map<Identifier, Integer> levels = buf.readMap(PacketByteBuf::readIdentifier, PacketByteBuf::readVarInt);
 		Set<Identifier> toRemove = buf.readCollection(Sets::newLinkedHashSetWithExpectedSize, PacketByteBuf::readIdentifier);
-		manager.removeAll(toRemove);
-		manager.load(levelUpdates); // FIXME: this should load newly visible upgrades
-		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
+//		manager.removeAll(toRemove);
+//		manager.load(levelUpdates); // FIXME: this should load newly visible upgrades
+//		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
 	}
 
 	public void upgradeLevel(Specialization spec) {
@@ -97,18 +96,21 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		if (level == null) {
 			level = 0;
 		}
-		this.setLevel(spec,  level + 1);
+		this.setLevel(spec, level + 1);
 	}
 
 	@Override
 	public void apply() {
-		this.getLevels().forEach(((spec, lvl) -> {
+		this.levelUpdates.forEach((spec -> {
+			int lvl = this.levels.get(spec);
 			spec.getModifier().applyAll(this.provider, lvl);
 		}));
+		Schmucks.SPECIALIZATIONS.sync(this.provider);
+		this.levelUpdates.clear();
 	}
 
 	public void setLevel(Specialization spec, int level) {
-		if (spec.getMaxLevel() <= level) {
+		if (spec.getMaxLevel() >= level) {
 			this.levels.put(spec, level);
 			this.levelUpdates.add(spec);
 		}
@@ -136,6 +138,8 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void serverTick() {
-
+		if (this.levelUpdates.size() > 0) {
+			this.apply();
+		}
 	}
 }

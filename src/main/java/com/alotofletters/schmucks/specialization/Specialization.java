@@ -1,17 +1,14 @@
 package com.alotofletters.schmucks.specialization;
 
-import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
-import net.minecraft.util.registry.RegistryKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,10 +22,10 @@ public class Specialization {
 	private final Set<Specialization> children = Sets.newLinkedHashSet();
 
 	public Specialization(Set<Specialization> parents,
-	                      Identifier id,
-	                      Identifier modifierId,
-	                      int maxLevel,
-	                      @Nullable SpecializationDisplay display) {
+						  Identifier id,
+						  Identifier modifierId,
+						  int maxLevel,
+						  @Nullable SpecializationDisplay display) {
 		this.parents = parents;
 		this.id = id;
 		this.modifier = Modifier.REGISTRY.get(modifierId);
@@ -38,9 +35,9 @@ public class Specialization {
 
 	public Raw toRaw() {
 		return new Raw(this.parents.stream().map(Specialization::getId).collect(Collectors.toSet()),
-					   this.getModifierId(),
-					   this.getDisplay(),
-					   this.getMaxLevel());
+				this.getModifierId(),
+				this.getDisplay(),
+				this.getMaxLevel());
 	}
 
 	public Identifier getId() {
@@ -116,6 +113,20 @@ public class Specialization {
 			return new Specialization.Raw(parents, modifier, display, maxLevel);
 		}
 
+		public static Raw fromPacket(PacketByteBuf buf) {
+			Set<Identifier> parentIds = buf.readCollection(HashSet::new, PacketByteBuf::readIdentifier);
+			Identifier modifierId = null;
+			if (buf.readBoolean()) {
+				modifierId = buf.readIdentifier();
+			}
+			SpecializationDisplay display = null;
+			if (buf.readBoolean()) {
+				display = SpecializationDisplay.fromPacket(buf);
+			}
+			int maxLevel = buf.readVarInt();
+			return new Raw(parentIds, modifierId, display, maxLevel);
+		}
+
 		public boolean findParents(Function<Identifier, Specialization> get) {
 			if (!this.hasParentIds()) {
 				return true; // its a root!
@@ -123,7 +134,7 @@ public class Specialization {
 			if (!this.hasParents()) {
 				this.parents = Sets.newLinkedHashSet();
 				for (Identifier parentId : this.parentIds) {
-					if (parentId != null) {
+					if (parentId != null && get.apply(parentId) != null) {
 						this.parents.add(get.apply(parentId));
 					}
 				}
@@ -154,20 +165,6 @@ public class Specialization {
 				this.display.toPacket(buf);
 			}
 			buf.writeVarInt(this.maxLevel);
-		}
-
-		public static Raw fromPacket(PacketByteBuf buf) {
-			Set<Identifier> parentIds = buf.readCollection(HashSet::new, PacketByteBuf::readIdentifier);
-			Identifier modifierId = null;
-			if (buf.readBoolean()) {
-				modifierId = buf.readIdentifier();
-			}
-			SpecializationDisplay display = null;
-			if (buf.readBoolean()) {
-				display = SpecializationDisplay.fromPacket(buf);
-			}
-			int maxLevel = buf.readVarInt();
-			return new Raw(parentIds, modifierId, display, maxLevel);
 		}
 
 		public Specialization build(Identifier id) {

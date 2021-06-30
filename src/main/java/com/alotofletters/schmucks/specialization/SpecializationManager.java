@@ -3,7 +3,6 @@ package com.alotofletters.schmucks.specialization;
 import com.alotofletters.schmucks.specialization.Specialization.Raw;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.minecraft.advancement.Advancement;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -98,7 +97,9 @@ public class SpecializationManager {
 		}
 	}
 
-	public Specialization get(Identifier id) { return this.specializations.get(id); }
+	public Specialization get(Identifier id) {
+		return this.specializations.get(id);
+	}
 
 	public Collection<Specialization> getSpecializations() {
 		return this.specializations.values();

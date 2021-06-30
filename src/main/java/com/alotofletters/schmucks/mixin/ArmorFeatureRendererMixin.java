@@ -22,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ArmorFeatureRendererMixin {
 	private final static ItemStack GLADIATOR_HELMET_STACK = new ItemStack(Schmucks.GLADIATOR_HELMET);
 	private final static ItemStack MINERS_CAP_STACK = new ItemStack(Schmucks.MINERS_CAP);
+	private final static ItemStack FARMERS_HAT_STACK = new ItemStack(Schmucks.FARMERS_HAT);
+	private final static ItemStack RANGER_HAT_STACK = new ItemStack(Schmucks.RANGER_HAT);
 
 	@Inject(method = "renderArmor", at = @At("HEAD"), cancellable = true)
 	private <T extends LivingEntity, A extends BipedEntityModel<T>> void renderArmor(MatrixStack matrices,
@@ -36,7 +38,7 @@ public class ArmorFeatureRendererMixin {
 				|| entity.getEquippedStack(armorSlot).isIn(Schmucks.JOB_HATS_TAG))
 				&& armorSlot == EquipmentSlot.HEAD) {
 			matrices.push();
-			((ModelWithHead)((ArmorFeatureRenderer)(Object)this).getContextModel()).getHead().rotate(matrices);
+			((ModelWithHead) ((ArmorFeatureRenderer) (Object) this).getContextModel()).getHead().rotate(matrices);
 			this.translate(matrices);
 			ItemStack stack = entity.getEquippedStack(armorSlot);
 			if (entity instanceof SchmuckEntity schmuck
@@ -47,6 +49,9 @@ public class ArmorFeatureRendererMixin {
 				}
 				if (schmuck.isMiner()) {
 					stack = MINERS_CAP_STACK;
+				}
+				if (schmuck.isFarmer()) {
+					stack = FARMERS_HAT_STACK;
 				}
 			}
 			MinecraftClient.getInstance().getHeldItemRenderer().renderItem(entity, stack, ModelTransformation.Mode.HEAD, false, matrices, vertexConsumers, light);

@@ -7,7 +7,6 @@ import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public interface SpecializationsComponent extends AutoSyncedComponent, ServerTickingComponent {
