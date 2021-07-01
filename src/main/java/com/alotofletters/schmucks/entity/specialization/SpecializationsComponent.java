@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks.entity.specialization;
 
+import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
@@ -52,6 +53,8 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	void upgradeLevel(Specialization spec);
 
 	void apply();
+
+	void apply(SchmuckEntity schmuck);
 
 	default boolean hasModifier(Modifier modifier) {
 		return this.getLevels().keySet().stream().anyMatch(spec -> modifier.getId() == spec.getModifierId() && this.getLevels().get(spec) > 0);

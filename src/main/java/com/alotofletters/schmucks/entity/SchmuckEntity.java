@@ -174,6 +174,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			this.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}
 		shortTempered = Schmucks.CONFIG.chaosMode || random.nextFloat() < Schmucks.CONFIG.shortTemperChance.floatValue() / 100; // will attack teammates if damaged
+		this.applyExistingModifiers();
 		this.refreshGoals();
 		return super.initialize(world, difficulty, spawnReason, entityData, entityTag);
 	}
@@ -284,6 +285,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 			component.sync();
 		}
 		this.refreshGoals();
+	}
+
+	public void applyExistingModifiers() {
+		if (this.getOwner() == null || !(this.getOwner() instanceof PlayerEntity player)) {
+			return;
+		}
+		Schmucks.SPECIALIZATIONS.get(player).apply(this);
 	}
 
 	/**

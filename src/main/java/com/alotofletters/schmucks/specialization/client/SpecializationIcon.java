@@ -13,37 +13,67 @@ import static com.alotofletters.schmucks.Schmucks.id;
 @Environment(EnvType.CLIENT)
 public record SpecializationIcon(Identifier location) {
 	public static final RegistryKey<Registry<SpecializationIcon>> ICON_KEY = RegistryKey.ofRegistry(id("icon"));
-	public static final SpecializationIcon MISSING = register("missing");
 	public static final Registry<SpecializationIcon> REGISTRY = RegistryAccessor.callCreate(ICON_KEY, () -> SpecializationIcon.MISSING);
+
+	public static SpecializationIcon MISSING;
+
 	// subtabs
-	public static final SpecializationIcon GENERAL = register("general");
-	public static final SpecializationIcon GATHERER = register("gatherer");
-	public static final SpecializationIcon HUNTER = register("hunter");
+	public static SpecializationIcon GENERAL;
+	public static SpecializationIcon GATHERER;
+	public static SpecializationIcon HUNTER;
 
 	// tabs
-	public static final SpecializationIcon DASHBOARD = register("dashboard");
-	public static final SpecializationIcon SPECIALIZATION = register("specialization");
+	public static SpecializationIcon DASHBOARD;
+	public static SpecializationIcon SPECIALIZATION;
 
 	// specializations
-	public static final SpecializationIcon ADVENTURER = register("adventurer");
-	public static final SpecializationIcon CLEAVE = register("cleave");
-	public static final SpecializationIcon CONSTITUTION = register("constitution");
-	public static final SpecializationIcon CULTIVATION = register("cultivation");
-	public static final SpecializationIcon DRIFTLESS_MINING = register("driftless_mining");
-	public static final SpecializationIcon FIRST_AID = register("first_aid");
-	public static final SpecializationIcon FULL_HARVEST = register("full_harvest");
-	public static final SpecializationIcon MOLLIFY = register("mollify");
-	public static final SpecializationIcon NURTURE = register("nurture");
-	public static final SpecializationIcon OVERLOADED = register("overloaded");
-	public static final SpecializationIcon SIXTH_SENSE = register("sixth_sense");
-	public static final SpecializationIcon SNUG_BOOTS = register("snug_boots");
-	public static final SpecializationIcon SPECTRAL_MENDING = register("spectral_mending");
-	public static final SpecializationIcon PROTECTOR = register("protector");
-	public static final SpecializationIcon RECLAMATION = register("reclamation");
-	public static final SpecializationIcon THRIFTY = register("thrifty");
-	public static final SpecializationIcon WHETTED_ARMS = register("whetted_arms");
-	public static final SpecializationIcon ZWEIHANDER = register("zweihander");
-	public static final SpecializationIcon ADVANCED_AXEMANSHIP = register("advanced_axemanship");
+	public static SpecializationIcon ADVENTURER;
+	public static SpecializationIcon CLEAVE;
+	public static SpecializationIcon CONSTITUTION;
+	public static SpecializationIcon CULTIVATION;
+	public static SpecializationIcon DRIFTLESS_MINING;
+	public static SpecializationIcon FIRST_AID;
+	public static SpecializationIcon FULL_HARVEST;
+	public static SpecializationIcon MOLLIFY;
+	public static SpecializationIcon NURTURE;
+	public static SpecializationIcon OVERLOADED;
+	public static SpecializationIcon SIXTH_SENSE;
+	public static SpecializationIcon SNUG_BOOTS;
+	public static SpecializationIcon SPECTRAL_MENDING;
+	public static SpecializationIcon PROTECTOR;
+	public static SpecializationIcon RECLAMATION;
+	public static SpecializationIcon THRIFTY;
+	public static SpecializationIcon WHETTED_ARMS;
+	public static SpecializationIcon ZWEIHANDER;
+	public static SpecializationIcon ADVANCED_AXEMANSHIP;
+
+	public static void register() {
+		MISSING = register("missing");
+		GENERAL = register("general");
+		GATHERER = register("gatherer");
+		HUNTER = register("hunter");
+		DASHBOARD = register("dashboard");
+		SPECIALIZATION = register("specialization");
+		ADVENTURER = register("adventurer");
+		CLEAVE = register("cleave");
+		CONSTITUTION = register("constitution");
+		CULTIVATION = register("cultivation");
+		DRIFTLESS_MINING = register("driftless_mining");
+		FIRST_AID = register("first_aid");
+		FULL_HARVEST = register("full_harvest");
+		MOLLIFY = register("mollify");
+		NURTURE = register("nurture");
+		OVERLOADED = register("overloaded");
+		SIXTH_SENSE = register("sixth_sense");
+		SNUG_BOOTS = register("snug_boots");
+		SPECTRAL_MENDING = register("spectral_mending");
+		PROTECTOR = register("protector");
+		RECLAMATION = register("reclamation");
+		THRIFTY = register("thrifty");
+		WHETTED_ARMS = register("whetted_arms");
+		ZWEIHANDER = register("zweihander");
+		ADVANCED_AXEMANSHIP = register("advanced_axemanship");
+	}
 
 	private static SpecializationIcon register(String name) {
 		return Registry.register(REGISTRY, Schmucks.id(name), new SpecializationIcon(Schmucks.id(name)));

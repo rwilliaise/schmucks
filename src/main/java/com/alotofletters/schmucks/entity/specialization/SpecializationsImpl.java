@@ -1,6 +1,7 @@
 package com.alotofletters.schmucks.entity.specialization;
 
 import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
 import com.alotofletters.schmucks.specialization.SpecializationManager;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypeFilter;
 
 import java.util.Map;
 import java.util.Set;
@@ -101,12 +103,17 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void apply() {
-		this.levelUpdates.forEach((spec -> {
+		this.levelUpdates.forEach(spec -> {
 			int lvl = this.levels.get(spec);
 			spec.getModifier().applyAll(this.provider, lvl);
-		}));
+		});
 		Schmucks.SPECIALIZATIONS.sync(this.provider);
 		this.levelUpdates.clear();
+	}
+
+	@Override
+	public void apply(SchmuckEntity schmuck) {
+		this.levels.forEach((spec, lvl) -> spec.getModifier().apply(schmuck, lvl));
 	}
 
 	public void setLevel(Specialization spec, int level) {

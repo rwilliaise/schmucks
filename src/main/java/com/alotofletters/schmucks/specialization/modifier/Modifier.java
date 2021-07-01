@@ -62,6 +62,7 @@ public abstract class Modifier {
 					.forEach(entity -> {
 						this.cleanup(entity);
 						this.apply(entity, level);
+						entity.refreshGoals();
 					});
 		}
 	}
