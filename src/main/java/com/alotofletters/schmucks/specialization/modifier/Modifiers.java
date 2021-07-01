@@ -4,6 +4,7 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.modifier.general.HealthModifier;
 import com.alotofletters.schmucks.specialization.modifier.general.SpeedModifier;
+import com.alotofletters.schmucks.specialization.modifier.hunter.DamageModifier;
 import net.minecraft.util.registry.Registry;
 
 public class Modifiers {
@@ -13,14 +14,24 @@ public class Modifiers {
 	});
 	public static Modifier SPEED;
 	public static Modifier HEALTH;
+	public static Modifier DAMAGE;
 	public static Modifier MOLLIFY;
+	public static Modifier FULL_HARVEST;
 	public static Modifier DRIFTLESS_MINING;
+	public static Modifier THRIFTY;
+	public static Modifier TREE_FELL;
+	public static Modifier PROTECTOR;
 
 	public static void register() {
 		SPEED = register("speed", new SpeedModifier());
 		HEALTH = register("health", new HealthModifier());
+		DAMAGE = register("damage", new DamageModifier());
 		MOLLIFY = register("mollify", new GenericModifier());
+		FULL_HARVEST = register("full_harvest", new GenericModifier());
 		DRIFTLESS_MINING = register("driftless_mining", new GenericModifier());
+		THRIFTY = register("thrifty", new GenericModifier());
+		TREE_FELL = register("tree_fell", new GenericModifier());
+		PROTECTOR = register("protector", new GenericModifier());
 	}
 
 	private static Modifier register(String id, Modifier entry) {

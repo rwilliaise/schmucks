@@ -1,6 +1,7 @@
 package com.alotofletters.schmucks.entity.ai;
 
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import com.google.common.collect.Lists;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
@@ -13,6 +14,7 @@ import net.minecraft.world.WorldView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SchmuckFellTree extends SchmuckUseToolGoal {
 	private List<BlockPos> cascadingPos;
@@ -82,24 +84,40 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 	 * @return If the state is a valid log for cutting.
 	 */
 	private boolean isValidLog(BlockState state) {
-		return state.isIn(BlockTags.LOGS);
+		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES);
 	}
 
-	private synchronized void addNeighbors(List<BlockPos> cascadingOut, World world, BlockPos pos) {
+	private synchronized void addNeighbors(List<BlockPos> cascadingOut,
+										   World world,
+										   BlockPos pos,
+										   AtomicInteger limitedAmount,
+										   int max) {
 		for (Direction direction : Direction.values()) {
+			if (limitedAmount.get() >= max) {
+				return;
+			}
 			BlockPos newPosition = pos.offset(direction);
 			if (isValidLog(world.getBlockState(newPosition))) {
 				cascadingOut.add(newPosition);
+				limitedAmount.incrementAndGet();
 			}
 		}
 	}
 
 	private void cascade() {
+		int max = 1;
+		if (this.schmuck.hasModifier(Modifiers.TREE_FELL)) {
+			max += this.schmuck.getModifierLevel(Modifiers.TREE_FELL) * 5;
+		}
+		AtomicInteger limitedAmount = new AtomicInteger();
 		List<BlockPos> cascadingOut = new ArrayList<>(this.cascadingPos);
 		for (BlockPos pos : this.cascadingPos) {
 			cascadingOut.remove(pos);
 			this.schmuck.world.breakBlock(pos, true, this.schmuck);
-			this.addNeighbors(cascadingOut, this.schmuck.world, pos);
+			this.addNeighbors(cascadingOut, this.schmuck.world, pos, limitedAmount, max);
+			if (limitedAmount.get() >= max) {
+				break;
+			}
 		}
 		this.cascadingPos = cascadingOut;
 		if (this.cascadingPos.size() == 0) {

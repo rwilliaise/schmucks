@@ -1,0 +1,12 @@
+{
+  "display": {
+    "icon": "schmucks:gatherer",
+    "title": {
+      "translate": "specialization.gatherer.root.title"
+    },
+    "description": {
+      "translate": "specialization.gatherer.root.description"
+    },
+    "announce_to_chat": false
+  }
+}

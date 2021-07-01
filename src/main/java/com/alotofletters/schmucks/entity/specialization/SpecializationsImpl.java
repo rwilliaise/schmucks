@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
 
@@ -107,6 +108,10 @@ public class SpecializationsImpl implements SpecializationsComponent {
 			int lvl = this.levels.get(spec);
 			spec.getModifier().applyAll(this.provider, lvl);
 		});
+		((ServerWorld)this.provider.world).getEntitiesByType(
+				TypeFilter.instanceOf(SchmuckEntity.class),
+				entity -> this.provider.equals(entity.getOwner()))
+				.forEach(SchmuckEntity::refreshGoals);
 		Schmucks.SPECIALIZATIONS.sync(this.provider);
 		this.levelUpdates.clear();
 	}

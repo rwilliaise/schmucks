@@ -53,7 +53,6 @@ public abstract class Modifier {
 	 * @param level  Level to apply to Schmucks
 	 */
 	public void applyAll(PlayerEntity player, int level) {
-		System.out.println("this.getId() = " + this.getId());
 		World world = player.world;
 		if (world instanceof ServerWorld serverWorld) {
 			serverWorld.getEntitiesByType(
@@ -62,7 +61,6 @@ public abstract class Modifier {
 					.forEach(entity -> {
 						this.cleanup(entity);
 						this.apply(entity, level);
-						entity.refreshGoals();
 					});
 		}
 	}

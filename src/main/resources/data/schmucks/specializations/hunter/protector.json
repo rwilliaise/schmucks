@@ -1,0 +1,15 @@
+{
+  "parents": [
+    "schmucks:hunter/root"
+  ],
+  "modifier": "schmucks:protector",
+  "max_level": 1,
+  "display": {
+    "title": {
+      "translate": "specialization.hunter.protector.title"
+    },
+    "description": {
+      "translate": "specialization.hunter.protector.description"
+    }
+  }
+}

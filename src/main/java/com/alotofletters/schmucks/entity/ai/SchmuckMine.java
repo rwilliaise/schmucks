@@ -1,6 +1,7 @@
 package com.alotofletters.schmucks.entity.ai;
 
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
@@ -30,12 +31,23 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 		super.tick();
 		if (this.hasReached() && this.use()) {
 			this.schmuck.world.breakBlock(this.targetPos, true);
-			this.schmuck.getMainHandStack().damage(1, this.schmuck, schmuckEntity -> {
-				schmuckEntity.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
-			});
+			this.damage(this.schmuck.getMainHandStack());
 		}
 
 		this.mob.getLookControl().lookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
+	}
+
+	public void damage(ItemStack stack) {
+		float chance = 0;
+		if (this.schmuck.hasModifier(Modifiers.THRIFTY)) {
+			chance = this.schmuck.getModifierLevel(Modifiers.THRIFTY);
+		}
+		if (this.schmuck.getRandom().nextFloat() > chance) {
+			stack.damage(1, this.schmuck, schmuckEntity -> {
+				schmuckEntity.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+//				schmuckEntity.refreshGoals();
+			});
+		}
 	}
 
 	public boolean shouldContinue() {

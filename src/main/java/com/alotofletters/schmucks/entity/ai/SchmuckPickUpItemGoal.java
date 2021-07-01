@@ -14,20 +14,21 @@ import java.util.function.Predicate;
  * Picks up items in a radius. Incredibly similar to the foxes pickup item goal.
  */
 public class SchmuckPickUpItemGoal extends Goal {
-	private static final Predicate<ItemEntity> PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup() && itemEntity.isAlive();
-
+	private final Predicate<ItemEntity> PICKABLE_DROP_FILTER;
 	private final SchmuckEntity schmuck;
 
 	public SchmuckPickUpItemGoal(SchmuckEntity schmuck) {
 		this.schmuck = schmuck;
 		this.setControls(EnumSet.of(Control.MOVE));
+		PICKABLE_DROP_FILTER = (itemEntity) -> !itemEntity.cannotPickup()
+				&& itemEntity.isAlive()
+				&& schmuck.canGather(itemEntity.getStack());
+
 	}
 
 	@Override
 	public boolean canStart() {
-		if (!schmuck.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()) {
-			return false;
-		} else if (schmuck.getAttacker() == null) {
+		if (schmuck.getAttacker() == null) {
 			if (schmuck.getRandom().nextInt(10) != 0) {
 				return false;
 			} else {
@@ -36,9 +37,8 @@ public class SchmuckPickUpItemGoal extends Goal {
 						PICKABLE_DROP_FILTER);
 				return !list.isEmpty() && schmuck.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
 			}
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	public void tick() {

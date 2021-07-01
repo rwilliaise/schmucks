@@ -9,6 +9,8 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 import java.util.Collection;
@@ -46,6 +48,18 @@ public class SpecializationCommand {
 									return 0;
 								}))
 				)
+				.then(literal("list")
+					.executes(context -> {
+						if (context.getSource().getPlayer() != null) {
+							SpecializationsComponent component =
+									Schmucks.SPECIALIZATIONS.get(context.getSource().getPlayer());
+							component.getLevels().forEach((specialization, integer) -> {
+								context.getSource().sendFeedback(new LiteralText("Specialization ").append(specialization.getDisplay().getTitle()).append(", level " + integer), false);
+							});
+							return Command.SINGLE_SUCCESS;
+						}
+						return 0;
+					}))
 				.then(literal("apply")
 						.executes(context -> {
 							if (context.getSource().getPlayer() != null) {

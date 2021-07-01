@@ -64,6 +64,12 @@ public class Schmucks implements ModInitializer {
 	public final static Tag<Item> PLANTABLE_TAG = TagRegistry.item(commonId("plantable"));
 	public final static Tag<Item> JOB_HATS_TAG = TagRegistry.item(id("job_hats")); // schmucks specific
 
+	public final static Tag<Item> GLADIATOR_LIKES = TagRegistry.item(id("gladiator_likes"));
+	public final static Tag<Item> MINER_LIKES = TagRegistry.item(id("miner_likes"));
+	public final static Tag<Item> FARMER_LIKES = TagRegistry.item(id("farmer_likes"));
+	public final static Tag<Item> LUMBERJACK_LIKES = TagRegistry.item(id("lumberjack_likes"));
+	public final static Tag<Item> RANGER_LIKES = TagRegistry.item(id("ranger_likes"));
+
 	public final static Tag<Block> JOBS_TAG = TagRegistry.block(id("jobs")); // schmucks specific
 	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(commonId("food_smelters"));
 	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(commonId("ore_smelters"));

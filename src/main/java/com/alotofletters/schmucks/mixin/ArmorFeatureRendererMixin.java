@@ -23,6 +23,7 @@ public class ArmorFeatureRendererMixin {
 	private final static ItemStack GLADIATOR_HELMET_STACK = new ItemStack(Schmucks.GLADIATOR_HELMET);
 	private final static ItemStack MINERS_CAP_STACK = new ItemStack(Schmucks.MINERS_CAP);
 	private final static ItemStack FARMERS_HAT_STACK = new ItemStack(Schmucks.FARMERS_HAT);
+	private final static ItemStack LUMBERJACK_HAT_STACK = new ItemStack(Schmucks.LUMBERJACK_HAT);
 	private final static ItemStack RANGER_HAT_STACK = new ItemStack(Schmucks.RANGER_HAT);
 
 	@Inject(method = "renderArmor", at = @At("HEAD"), cancellable = true)
@@ -52,6 +53,12 @@ public class ArmorFeatureRendererMixin {
 				}
 				if (schmuck.isFarmer()) {
 					stack = FARMERS_HAT_STACK;
+				}
+				if (schmuck.isLumberjack()) {
+					stack = LUMBERJACK_HAT_STACK;
+				}
+				if (schmuck.isRanger()) {
+					stack = RANGER_HAT_STACK;
 				}
 			}
 			MinecraftClient.getInstance().getHeldItemRenderer().renderItem(entity, stack, ModelTransformation.Mode.HEAD, false, matrices, vertexConsumers, light);

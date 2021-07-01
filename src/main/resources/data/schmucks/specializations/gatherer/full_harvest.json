@@ -1,0 +1,15 @@
+{
+  "parents": [
+    "schmucks:gatherer/root"
+  ],
+  "modifier": "schmucks:full_harvest",
+  "max_level": 1,
+  "display": {
+    "title": {
+      "translate": "specialization.gatherer.full_harvest.title"
+    },
+    "description": {
+      "translate": "specialization.gatherer.full_harvest.description"
+    }
+  }
+}

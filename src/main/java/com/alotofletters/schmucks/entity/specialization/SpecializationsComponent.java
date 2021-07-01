@@ -9,6 +9,7 @@ import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface SpecializationsComponent extends AutoSyncedComponent, ServerTickingComponent {
 
@@ -57,7 +58,17 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	void apply(SchmuckEntity schmuck);
 
 	default boolean hasModifier(Modifier modifier) {
-		return this.getLevels().keySet().stream().anyMatch(spec -> modifier.getId() == spec.getModifierId() && this.getLevels().get(spec) > 0);
+		return this.getLevels().entrySet().stream().anyMatch((entry) -> entry.getKey().getModifier() == modifier && entry.getValue() > 0);
+	}
+
+	default int getModifierLevel(Modifier modifier) {
+		AtomicInteger out = new AtomicInteger();
+		this.getLevels().forEach((specialization, integer) -> {
+			if (specialization.getModifierId() == modifier.getId()) {
+				out.addAndGet(integer);
+			}
+		});
+		return out.get();
 	}
 
 	/**
