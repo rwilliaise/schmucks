@@ -4,7 +4,11 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandButtonWidget;
 import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandDropdown;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
+import com.alotofletters.schmucks.entity.specialization.SpecializationsComponent;
 import com.alotofletters.schmucks.item.ControlWandItem;
+import com.alotofletters.schmucks.specialization.Specialization;
+import com.alotofletters.schmucks.specialization.SpecializationManager;
+import com.alotofletters.schmucks.specialization.client.SpecializationIcon;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -32,16 +36,20 @@ import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
 /**
  * The Schmuck Staff GUI
  */
-public class ControlWandScreen extends Screen {
+public class ControlWandScreen extends Screen implements SpecializationManager.Listener {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	public final SchmuckEntity schmuck;
 	protected final int backgroundWidth = 176;
 	protected final int backgroundHeight = 88;
+	private final SpecializationsComponent component;
 	private ControlWandDropdown dropdown;
 
 	public ControlWandScreen(SchmuckEntity schmuck) {
 		super(new TranslatableText("gui.schmucks.control_wand.title"));
 		this.schmuck = schmuck;
+		assert MinecraftClient.getInstance().player != null;
+		this.component = Schmucks.SPECIALIZATIONS.get(MinecraftClient.getInstance().player);
+		this.component.startListening(this);
 	}
 
 	@Override
@@ -238,5 +246,30 @@ public class ControlWandScreen extends Screen {
 
 	public void addButton(ClickableWidget child) {
 		super.addDrawableChild(child);
+	}
+
+	@Override
+	public void onTabRemoved(Specialization specialization) {
+
+	}
+
+	@Override
+	public void onChildRemoved(Specialization specialization) {
+
+	}
+
+	@Override
+	public void onTabAdded(Specialization specialization) {
+
+	}
+
+	@Override
+	public void onChildAdded(Specialization specialization) {
+
+	}
+
+	@Override
+	public void onClear() {
+
 	}
 }

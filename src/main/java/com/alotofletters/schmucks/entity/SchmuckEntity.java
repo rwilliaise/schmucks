@@ -17,6 +17,7 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -105,7 +106,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	 * Used for mid-elytra flight, more specifically how the Schmuck will path.
 	 */
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
-	private final SimpleInventory inventory = new SimpleInventory(3);
+	private final SimpleInventory inventory = new SimpleInventory(5);
 	private UUID targetUuid;
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
@@ -127,6 +128,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		this.lookControl = new SchmuckLookControl(this);
 		this.setCanPickUpLoot(true);
 		((MobNavigation) this.getNavigation()).setCanPathThroughDoors(true);
+		this.getNavigation().setCanSwim(true);
 	}
 
 	public static DefaultAttributeContainer.Builder createSchmuckAttributes() {
@@ -431,7 +433,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	}
 
 	public boolean canGather(ItemStack stack) {
-		if (stack.getItem() instanceof ArmorItem) {
+		if (stack.getItem() instanceof Wearable) {
 			return this.getEquippedStack(getPreferredEquipmentSlot(stack)).isEmpty();
 		}
 		if (!this.hasJob()) {

@@ -18,37 +18,37 @@ Adds little people that look vaguely like you.
           - [ ] Smelt ore/food - 3 points
           - [ ] Harvest crop - 1 points
           - [ ] Brainstorm more
-- [ ] Import the gladiator specialization hat
-    - [ ] Find way to make blockbench model an entity model instead of block/item
-    - [ ] Create a future process for importing hats
-    - [ ] If possible, forge -> fabric
-    - [ ] Also could manually take the model and just write it up as a .java
+- [x] Import the gladiator specialization hat
+    - [x] Find way to make blockbench model an entity model instead of block/item
+    - [x] Create a future process for importing hats
+    - [x] If possible, forge -> fabric
+    - [x] Also could manually take the model and just write it up as a .java
 - [x] Read levels from nbt and load the specializations for them. SpecializationsImpl.java - 6/24
     - [x] Sync after reading, or something along those lines
     - [x] Also make sure that the client is up to date with the level info
     - [x] Find a way to sync data similar to PlayerAdvancementTracker but with components
         - [x] This is already half done, but I would like it to be fleshed out
 - [ ] Start on the first few modifiers/specializations(20 specializations)
-    - [ ] First spec: snug boots
-        - [ ] Create a way to modify the speed of an entity
-        - [ ] Look at the speed status effect
-    - [ ] Second spec: mollify
-        - [ ] Find a way for creepers to ignore Schmucks
-        - [ ] Also make a way for the creepers to know if the Schmucks actually have the specialization
-            - [ ] Possibly create a specific method in SchmuckEntity.java that gets if a given modifier has been applied
-    - [ ] Third spec: Constitution
-        - [ ] Look at the status effect that gives you extra health
-    - [ ] Find a way to bind custom events to their AI, for example a speed spec increases the speed on given goals
-        - [ ] Modifiers already have a .apply(), however this does not really interface with any goals or attributes.
-        - [ ] As well, modifiers aren't loaded from anywhere.
+    - [x] First spec: snug boots
+        - [x] Create a way to modify the speed of an entity
+        - [x] Look at the speed status effect
+    - [x] Second spec: mollify
+        - [x] Find a way for creepers to ignore Schmucks
+        - [x] Also make a way for the creepers to know if the Schmucks actually have the specialization
+            - [x] Possibly create a specific method in SchmuckEntity.java that gets if a given modifier has been applied
+    - [x] Third spec: Constitution
+        - [x] Look at the status effect that gives you extra health
+    - [x] Find a way to bind custom events to their AI, for example a speed spec increases the speed on given goals
+        - [x] Modifiers already have a .apply(), however this does not really interface with any goals or attributes.
+        - [x] As well, modifiers aren't loaded from anywhere.
 - [x] Import the rest of the icons, add them to atlas - 6/24
     - [x] Also add them to the datapack specialization files
 - [ ] ~~Find a way to make atlas code not use mixins to load (low priority)~~
     - [ ] ~~CLIENT_DATA does not work, have to use mixins to load atlas~~
     - [ ] ~~Primary reason being that the atlas loader will need the gl context before the context is even created, which causes a crash~~
-- [ ] Age loader
-    - [ ] Add an ages set to the specialization manager
-    - [ ] Seperate method in the ServerSpecializationLoader
+- [ ] ~~Age loader~~
+    - [ ] ~~Add an ages set to the specialization manager~~
+    - [ ] ~~Seperate method in the ServerSpecializationLoader~~
 - [x] Send sync packets automatically, detect if the specialization component is dirty
     - [x] Utilize .serverTick() to sync when dirty
     - [x] Also could add .putLevel() to manually set dirtiness

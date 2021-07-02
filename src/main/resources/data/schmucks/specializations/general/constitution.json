@@ -3,7 +3,7 @@
     "schmucks:general/root"
   ],
   "modifier": "schmucks:health",
-  "max_level": 1,
+  "max_level": 3,
   "display": {
     "title": {
       "translate": "specialization.general.constitution.title"

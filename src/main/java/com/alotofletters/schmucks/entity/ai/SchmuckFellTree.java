@@ -35,6 +35,7 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 	public void tick() {
 		super.tick();
 		if (limitedAmount >= max) {
+			this.cascading = false;
 			return;
 		}
 		if (this.cascading) {
@@ -119,6 +120,7 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 										   int max) {
 		for (Direction direction : Direction.values()) {
 			if (limitedAmount >= max) {
+				this.cascading = false;
 				return;
 			}
 			BlockPos newPosition = pos.offset(direction);
@@ -136,6 +138,7 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 			this.limitedAmount += 1;
 			this.addNeighbors(cascadingOut, this.schmuck.world, pos, max);
 			if (limitedAmount >= max) {
+				this.cascading = false;
 				break;
 			}
 		}

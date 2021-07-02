@@ -43,6 +43,11 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	}
 
 	@Override
+	public void startListening(SpecializationManager.Listener listener) {
+		this.manager.setListener(listener);
+	}
+
+	@Override
 	public void readFromNbt(NbtCompound tag) {
 		tag.getList("Levels", 10).forEach(element -> {
 			if (element instanceof NbtCompound compound) {
@@ -74,24 +79,23 @@ public class SpecializationsImpl implements SpecializationsComponent {
 		}
 		ImmutableMap.Builder<Identifier, Specialization.Raw> builder = ImmutableMap.builder();
 		ImmutableMap.Builder<Identifier, Integer> levelsBuilder = ImmutableMap.builder();
-		Set<Identifier> toRemove = this.levelUpdates.stream().filter(spec -> !this.visible.contains(spec)).map(Specialization::getId).collect(Collectors.toUnmodifiableSet());
 
-		this.levelUpdates.forEach(spec -> builder.put(spec.getId(), spec.toRaw()));
+		Schmucks.LOADER.popReplicationQueue().forEach(builder::put);
 		this.levels.forEach((specialization, level) -> levelsBuilder.put(specialization.getId(), level));
 
 		buf.writeMap(builder.build(), PacketByteBuf::writeIdentifier, (byteBuf, raw) -> raw.toPacket(byteBuf));
 		buf.writeMap(levelsBuilder.build(), PacketByteBuf::writeIdentifier, PacketByteBuf::writeVarInt);
-		buf.writeCollection(toRemove, PacketByteBuf::writeIdentifier);
 	}
 
 	@Override
 	public void applySyncPacket(PacketByteBuf buf) {
-		Map<Identifier, Specialization.Raw> levelUpdates = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
+		Map<Identifier, Specialization.Raw> toLoad = buf.readMap(PacketByteBuf::readIdentifier, Specialization.Raw::fromPacket);
 		Map<Identifier, Integer> levels = buf.readMap(PacketByteBuf::readIdentifier, PacketByteBuf::readVarInt);
-		Set<Identifier> toRemove = buf.readCollection(Sets::newLinkedHashSetWithExpectedSize, PacketByteBuf::readIdentifier);
-//		manager.removeAll(toRemove);
-//		manager.load(levelUpdates); // FIXME: this should load newly visible upgrades
-//		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
+		if (toLoad.size() > 0) {
+			manager.removeAll(toLoad.keySet());
+			manager.load(toLoad);
+		}
+		levels.forEach((id, level) -> this.levels.put(manager.get(id), level));
 	}
 
 	public void upgradeLevel(Specialization spec) {

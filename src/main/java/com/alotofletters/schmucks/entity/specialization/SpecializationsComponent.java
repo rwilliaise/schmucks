@@ -3,9 +3,12 @@ package com.alotofletters.schmucks.entity.specialization;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.Specialization;
+import com.alotofletters.schmucks.specialization.SpecializationManager;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +51,9 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 * @param loader Loader that reloaded
 	 */
 	void reload(ServerSpecializationLoader loader);
+
+	@Environment(EnvType.CLIENT)
+	void startListening(SpecializationManager.Listener listener);
 
 	void setLevel(Specialization spec, int level);
 

@@ -1,5 +1,6 @@
 package com.alotofletters.schmucks;
 
+import com.alotofletters.schmucks.access.SpecializationIconLoaderHolder;
 import com.alotofletters.schmucks.config.SchmucksConfig;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.entity.WhitelistComponent;
@@ -10,9 +11,12 @@ import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
 import com.alotofletters.schmucks.server.command.SpecializationCommand;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
+import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
 import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -21,6 +25,7 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -97,6 +102,11 @@ public class Schmucks implements ModInitializer {
 			return new ArrayList<>();
 		}
 		return Schmucks.WHITELIST.maybeGet(provider).map(WhitelistComponent::getWhitelist).orElse(new ArrayList<>());
+	}
+
+	@Environment(EnvType.CLIENT)
+	public static SpecializationIconLoader getIconLoader() {
+		return ((SpecializationIconLoaderHolder) MinecraftClient.getInstance()).getSpecializationIconHolder();
 	}
 
 	public static WhitelistComponent getWhitelistComponent(PlayerEntity provider) {
