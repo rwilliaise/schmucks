@@ -1,6 +1,6 @@
 {
   "parents": [
-    "schmucks:gatherer/root"
+    "schmucks:gatherer/nurture"
   ],
   "modifier": "schmucks:thrifty",
   "max_level": 5,

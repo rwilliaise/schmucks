@@ -30,16 +30,25 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 		if (itemStack.isEmpty()) {
 			return false;
 		}
-		Item item = this.schmuck.getMainHandStack().getItem();
-		return this.schmuck.isTamed() && this.isUsable(item) && super.canStart();
+		return this.schmuck.isTamed() && this.hasUsable() && super.canStart();
 	}
 
-	public boolean isUsable(Item item) {
-		return this.hasFuel() || Schmucks.RAW_MINERAL_TAG.contains(item) || Schmucks.RAW_MEAT_TAG.contains(item);
+	public static boolean canUse(ItemStack stack) {
+		return AbstractFurnaceBlockEntity.canUseAsFuel(stack)
+				|| stack.isIn(Schmucks.RAW_MINERAL_TAG)
+				|| stack.isIn(Schmucks.RAW_MEAT_TAG);
+	}
+
+	public boolean hasUsable() {
+		return this.hasItem(SchmuckSmeltGoal::canUse);
+	}
+
+	public ItemStack getUsable() {
+		return this.getItem(SchmuckSmeltGoal::canUse);
 	}
 
 	public boolean isGoodSmelter(BlockState state) {
-		ItemStack itemStack = this.schmuck.getMainHandStack();
+		ItemStack itemStack = this.getUsable();
 		Item item = itemStack.getItem();
 		if (state.getBlock() instanceof AbstractFurnaceBlock && AbstractFurnaceBlockEntity.canUseAsFuel(itemStack)) {
 			return true;
@@ -71,9 +80,8 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 		if (this.isGoodSmelter(blockState)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) this.schmuck.world.getBlockEntity(this.targetPos);
 			if (blockEntity != null) {
-				ItemStack itemStack = this.schmuck.getMainHandStack();
-				HopperBlockEntity.transfer(null, blockEntity, itemStack, this.hasFuel() ? Direction.WEST : Direction.UP);
-				this.schmuck.equipNoUpdate(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+				ItemStack itemStack = this.getUsable();
+				HopperBlockEntity.transfer(null, blockEntity, itemStack, AbstractFurnaceBlockEntity.canUseAsFuel(itemStack) ? Direction.WEST : Direction.UP);
 			}
 		}
 	}
@@ -95,7 +103,7 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 	}
 
 	public boolean hasFuel() {
-		return AbstractFurnaceBlockEntity.canUseAsFuel(this.schmuck.getMainHandStack());
+		return this.hasItem(AbstractFurnaceBlockEntity::canUseAsFuel);
 	}
 
 	@Override
@@ -104,8 +112,9 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 		if (this.isGoodSmelter(blockState) && schmuck.getWhitelist().contains(pos)) {
 			AbstractFurnaceBlockEntity blockEntity = (AbstractFurnaceBlockEntity) world.getBlockEntity(pos);
 			if (blockEntity != null) {
-				ItemStack currentStack = blockEntity.getStack(this.hasFuel() ? 1 : 0);
-				return (currentStack.isEmpty() || currentStack.isItemEqual(this.schmuck.getMainHandStack()));
+				ItemStack mainHandStack = this.getUsable();
+				ItemStack currentStack = blockEntity.getStack(AbstractFurnaceBlockEntity.canUseAsFuel(mainHandStack) ? 1 : 0);
+				return (currentStack.isEmpty() || currentStack.isItemEqual(mainHandStack));
 			}
 		}
 		return false;

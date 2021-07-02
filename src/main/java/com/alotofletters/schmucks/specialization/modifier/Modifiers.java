@@ -17,6 +17,8 @@ public class Modifiers {
 	public static Modifier DAMAGE;
 	public static Modifier MOLLIFY;
 	public static Modifier FULL_HARVEST;
+	public static Modifier NURTURE;
+	public static Modifier EXPANDABLE_QUIVER;
 	public static Modifier DRIFTLESS_MINING;
 	public static Modifier THRIFTY;
 	public static Modifier TREE_FELL;
@@ -27,6 +29,8 @@ public class Modifiers {
 		HEALTH = register("health", new HealthModifier());
 		DAMAGE = register("damage", new DamageModifier());
 		MOLLIFY = register("mollify", new GenericModifier());
+		NURTURE = register("nurture", new GenericModifier());
+		EXPANDABLE_QUIVER = register("expandable_quiver", new GenericModifier());
 		FULL_HARVEST = register("full_harvest", new GenericModifier());
 		DRIFTLESS_MINING = register("driftless_mining", new GenericModifier());
 		THRIFTY = register("thrifty", new GenericModifier());

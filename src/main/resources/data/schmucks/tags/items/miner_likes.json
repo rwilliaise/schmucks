@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "#c:raw_mineral"
+    "#c:raw_mineral",
+    "minecraft:diamond",
+    "minecraft:redstone",
+    "minecraft:emerald",
+    "minecraft:lapis_lazuli"
   ]
 }

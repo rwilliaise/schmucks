@@ -35,7 +35,7 @@ public class SchmuckPickUpItemGoal extends Goal {
 				List<ItemEntity> list = schmuck.world.getEntitiesByClass(ItemEntity.class,
 						schmuck.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
 						PICKABLE_DROP_FILTER);
-				return !list.isEmpty() && schmuck.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty();
+				return !list.isEmpty();
 			}
 		}
 		return false;
@@ -45,8 +45,7 @@ public class SchmuckPickUpItemGoal extends Goal {
 		List<ItemEntity> list = schmuck.world.getEntitiesByClass(ItemEntity.class,
 				schmuck.getBoundingBox().expand(8.0D, 8.0D, 8.0D),
 				PICKABLE_DROP_FILTER);
-		ItemStack itemStack = schmuck.getEquippedStack(EquipmentSlot.MAINHAND);
-		if (itemStack.isEmpty() && !list.isEmpty()) {
+		if (!list.isEmpty()) {
 			schmuck.getNavigation().startMovingTo(list.get(0), 1.2D);
 		}
 	}

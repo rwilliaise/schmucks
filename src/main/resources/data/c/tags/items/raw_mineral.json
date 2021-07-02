@@ -6,6 +6,8 @@
     "minecraft:copper_ore",
     "minecraft:raw_iron",
     "minecraft:raw_gold",
-    "minecraft:raw_copper"
+    "minecraft:raw_copper",
+    "minecraft:coal",
+    "minecraft:charcoal"
   ]
 }

@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "#c:raw_food"
+    "#c:raw_food",
+    "minecraft:gunpowder",
+    "minecraft:rotten_flesh",
+    "minecraft:string",
+    "minecraft:spider_eye"
   ]
 }

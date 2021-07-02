@@ -1,0 +1,15 @@
+{
+  "parents": [
+    "schmucks:hunter/root"
+  ],
+  "modifier": "schmucks:expandable_quiver",
+  "max_level": 3,
+  "display": {
+    "title": {
+      "translate": "specialization.hunter.expandable_quiver.title"
+    },
+    "description": {
+      "translate": "specialization.hunter.expandable_quiver.description"
+    }
+  }
+}

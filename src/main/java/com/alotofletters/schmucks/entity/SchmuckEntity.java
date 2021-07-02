@@ -41,6 +41,7 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.tag.ItemTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -59,7 +60,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class SchmuckEntity extends TameableEntity implements Angerable, RangedAttackMob {
+public class SchmuckEntity extends TameableEntity implements Angerable, InventoryOwner, RangedAttackMob {
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private static final IntProvider ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
@@ -71,7 +72,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		addGoal(2, SchmuckFleeCreeperGoal::new);
 		addGoal(3, SitGoal::new);
 		addGoal(6, schmuck -> new SchmuckFollowOwner(schmuck, 1.0D, 15.0F, 4.0F, false));
-		addGoal(7, schmuck -> new AnimalMateGoal(schmuck, 1));
+//		addGoal(7, schmuck -> new AnimalMateGoal(schmuck, 1));
 		addGoal(8, schmuck -> new SchmuckSmeltGoal(schmuck, 1));
 		addGoal(9, schmuck -> new SchmuckPutUnneeded(schmuck, 1));
 		addGoal(10, SchmuckPickUpItemGoal::new);
@@ -104,11 +105,12 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	 * Used for mid-elytra flight, more specifically how the Schmuck will path.
 	 */
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
-	private final SimpleInventory inventory = new SimpleInventory(8);
+	private final SimpleInventory inventory = new SimpleInventory(3);
 	private UUID targetUuid;
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
 	private boolean canFollow = true;
+	private boolean hasGivenArrows = false;
 	private int eggUsageTime;
 	private int flyCheckCooldown;
 	/**
@@ -139,12 +141,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	public void remove(RemovalReason reason) {
 		super.remove(reason);
 
-		GOALS.forEach((factory, priority) -> {
-			factory.remove(this);
-		});
-		TARGET_SELECTORS.forEach((factory, priority) -> {
-			factory.remove(this);
-		});
+		GOALS.forEach((factory, priority) -> factory.remove(this));
+		TARGET_SELECTORS.forEach((factory, priority) -> factory.remove(this));
+	}
+
+	@Override
+	protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
+		super.dropEquipment(source, lootingMultiplier, allowDrops);
+		this.inventory.clearToList().forEach(this::dropStack);
 	}
 
 	public static void addSelectorPredicate(int priority, Function<SchmuckEntity, Goal> goal, Predicate<SchmuckEntity> predicate) {
@@ -192,6 +196,22 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 
 	public void refreshGoals() {
 		this.initGoals();
+		if (!this.hasGivenArrows) {
+			ItemStack stack = new ItemStack(Items.ARROW, 10 + this.getModifierLevel(Modifiers.EXPANDABLE_QUIVER) * 30);
+			if (this.inventory.canInsert(stack)) {
+				this.inventory.addStack(stack);
+				this.hasGivenArrows = true;
+			}
+		}
+	}
+
+	@Nullable
+	@Override
+	public ItemEntity dropStack(ItemStack stack, float yOffset) {
+		if (stack.isIn(ItemTags.ARROWS)) {
+			return null;
+		}
+		return super.dropStack(stack, yOffset);
 	}
 
 	@Override
@@ -278,6 +298,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		super.writeCustomDataToNbt(tag);
 		tag.putBoolean("ShortTemper", this.shortTempered);
 		tag.putBoolean("CanTeleport", this.canTeleport);
+		tag.putBoolean("HasGivenArrows", this.hasGivenArrows);
 		tag.putBoolean("CanFollow", this.canFollow);
 		tag.put("Inventory", this.inventory.toNbtList());
 		this.writeAngerToNbt(tag);
@@ -289,6 +310,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		this.readAngerFromNbt(this.world, tag);
 		this.shortTempered = tag.getBoolean("ShortTemper");
 		this.canTeleport = tag.getBoolean("CanTeleport");
+		this.hasGivenArrows = tag.getBoolean("HasGivenArrows");
 		this.canFollow = tag.getBoolean("CanFollow");
 		this.inventory.readNbtList(tag.getList("Inventory", 10));
 		if (tag.contains("Whitelisted") && this.getOwner() != null) {
@@ -348,7 +370,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	}
 
 	/**
-	 * Checks if the Schmuck is currently flying with an elytra.
+	 * Checks if the Schmuck is currently flying with an Elytra.
 	 */
 	public void checkFallFlying() {
 		if (this.flyCheckCooldown-- > 0) {
@@ -455,7 +477,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 		}
 	}
 
-	private SimpleInventory getInventory() {
+	public SimpleInventory getInventory() {
 		return this.inventory;
 	}
 
@@ -471,7 +493,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, RangedAt
 	 * Sets the internal flags for the Schmuck to stop doing the fly animation.
 	 */
 	public void stopFallFlying() {
-//		this.setFlag(7, true);
 		this.stopFlightControl();
 		this.setFlag(7, false);
 	}

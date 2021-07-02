@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "#minecraft:logs",
-    "#minecraft:saplings"
+    "#minecraft:saplings",
+    "minecraft:apple",
+    "minecraft:stick"
   ]
 }
