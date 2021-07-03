@@ -1,6 +1,8 @@
 package com.alotofletters.schmucks.entity;
 
 import com.alotofletters.schmucks.Schmucks;
+import com.alotofletters.schmucks.client.render.ControlWandWhitelistRenderer;
+import com.google.common.collect.Sets;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -12,9 +14,10 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public interface WhitelistComponent extends AutoSyncedComponent {
-	List<BlockPos> getWhitelist();
+	Set<BlockPos> getWhitelist();
 
 	boolean containsWhiteList(BlockPos pos);
 
@@ -25,7 +28,7 @@ public interface WhitelistComponent extends AutoSyncedComponent {
 	void removeWhitelist(BlockPos pos);
 
 	class Impl implements WhitelistComponent {
-		private final List<BlockPos> whitelist = new ArrayList<>();
+		private final Set<BlockPos> whitelist = Sets.newHashSet();
 		private final PlayerEntity provider;
 
 		public Impl(PlayerEntity provider) {
@@ -60,7 +63,7 @@ public interface WhitelistComponent extends AutoSyncedComponent {
 		}
 
 		@Override
-		public List<BlockPos> getWhitelist() {
+		public Set<BlockPos> getWhitelist() {
 			return whitelist;
 		}
 

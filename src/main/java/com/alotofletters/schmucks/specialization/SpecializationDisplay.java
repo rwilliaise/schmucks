@@ -163,11 +163,15 @@ public class SpecializationDisplay {
 			if (this.isStack()) {
 				buf.writeBoolean(true);
 				buf.writeItemStack(this.stack);
+			} else {
+				buf.writeBoolean(false);
 			}
 			Identifier id = SpecializationIcon.REGISTRY.getId(this.getSpecIcon());
 			if (this.isSpecIcon() && id != null) {
 				buf.writeBoolean(true);
 				buf.writeIdentifier(id);
+			} else {
+				buf.writeBoolean(false);
 			}
 			if (id == null) {
 				LOGGER.warn("Id is null!");

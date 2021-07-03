@@ -3,7 +3,7 @@
     "schmucks:gatherer/root"
   ],
   "modifier": "schmucks:nurture",
-  "max_level": 5,
+  "max_level": 1,
   "display": {
     "title": {
       "translate": "specialization.gatherer.nurture.title"

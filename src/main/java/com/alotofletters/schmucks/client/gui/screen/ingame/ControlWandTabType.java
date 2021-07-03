@@ -75,7 +75,7 @@ enum ControlWandTabType {
 		SpecializationIconLoader loader = Schmucks.getIconLoader();
 		Sprite sprite = loader.getSprite(icon);
 		RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
-		DrawableHelper.drawSprite(matrices, i + 1, j + 1, this.getZOffset(), 18, 18, sprite);
+//		DrawableHelper.drawSprite(matrices, i + 1, j + 1, this.getZOffset(), 18, 18, sprite);
 	}
 
 	public int getTabX(int index) {

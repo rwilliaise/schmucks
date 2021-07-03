@@ -54,10 +54,7 @@ import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -198,7 +195,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 
 	public void refreshGoals() {
 		this.initGoals();
-		if (!this.hasGivenArrows) {
+		if (!this.hasGivenArrows && this.isRanger()) {
 			ItemStack stack = new ItemStack(Items.ARROW, 10 + this.getModifierLevel(Modifiers.EXPANDABLE_QUIVER) * 30);
 			if (this.inventory.canInsert(stack)) {
 				this.inventory.addStack(stack);
@@ -609,7 +606,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		this.canFollow = canFollow;
 	}
 
-	public List<BlockPos> getWhitelist() {
+	public Set<BlockPos> getWhitelist() {
 		return Schmucks.getWhitelistOrEmpty((PlayerEntity) this.getOwner());
 	}
 

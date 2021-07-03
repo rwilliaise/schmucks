@@ -58,6 +58,12 @@ public class SchmuckTill extends SchmuckUseToolGoal {
 	}
 
 	@Override
+	public void start() {
+		super.start();
+		System.out.println("AAAAAAAAAAAAAAAA");
+	}
+
+	@Override
 	public void stop() {
 		super.stop();
 		this.schmuck.world.setBlockBreakingInfo(this.schmuck.getId(), this.targetPos, -1);
@@ -66,7 +72,7 @@ public class SchmuckTill extends SchmuckUseToolGoal {
 	@Override
 	public boolean canStart() {
 		ItemStack itemStack = this.schmuck.getMainHandStack();
-		return FabricToolTags.HOES.contains(itemStack.getItem()) && !this.schmuck.isSitting() && super.canStart();
+		return this.schmuck.isFarmer() && !this.schmuck.isSitting() && super.canStart();
 	}
 
 	public boolean isFullCrop(BlockPos pos) {

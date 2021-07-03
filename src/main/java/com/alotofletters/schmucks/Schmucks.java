@@ -13,6 +13,7 @@ import com.alotofletters.schmucks.server.command.SpecializationCommand;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
 import com.alotofletters.schmucks.specialization.modifier.Modifiers;
+import com.google.common.collect.Sets;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import net.fabricmc.api.EnvType;
@@ -44,6 +45,7 @@ import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Schmucks implements ModInitializer {
 
@@ -93,15 +95,15 @@ public class Schmucks implements ModInitializer {
 
 	public static ServerSpecializationLoader LOADER = new ServerSpecializationLoader();
 
-	public static List<BlockPos> getWhitelist(PlayerEntity provider) {
+	public static Set<BlockPos> getWhitelist(PlayerEntity provider) {
 		return Schmucks.getWhitelistComponent(provider).getWhitelist();
 	}
 
-	public static List<BlockPos> getWhitelistOrEmpty(PlayerEntity provider) {
+	public static Set<BlockPos> getWhitelistOrEmpty(PlayerEntity provider) {
 		if (provider == null) {
-			return new ArrayList<>();
+			return Sets.newHashSet();
 		}
-		return Schmucks.WHITELIST.maybeGet(provider).map(WhitelistComponent::getWhitelist).orElse(new ArrayList<>());
+		return Schmucks.WHITELIST.maybeGet(provider).map(WhitelistComponent::getWhitelist).orElse(Sets.newHashSet());
 	}
 
 	@Environment(EnvType.CLIENT)
