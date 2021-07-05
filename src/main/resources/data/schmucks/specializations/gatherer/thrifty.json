@@ -5,6 +5,7 @@
   "modifier": "schmucks:thrifty",
   "max_level": 5,
   "display": {
+    "icon": "schmucks:thrifty",
     "title": {
       "translate": "specialization.gatherer.thrifty.title"
     },

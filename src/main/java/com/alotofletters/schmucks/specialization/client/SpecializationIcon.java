@@ -26,25 +26,30 @@ public record SpecializationIcon(Identifier location) {
 	public static SpecializationIcon SPECIALIZATION;
 
 	// specializations
+	public static SpecializationIcon ADVANCED_AXEMANSHIP;
 	public static SpecializationIcon ADVENTURER;
 	public static SpecializationIcon CLEAVE;
 	public static SpecializationIcon CONSTITUTION;
 	public static SpecializationIcon CULTIVATION;
 	public static SpecializationIcon DRIFTLESS_MINING;
+	public static SpecializationIcon EXPANDABLE_QUIVER;
 	public static SpecializationIcon FIRST_AID;
 	public static SpecializationIcon FULL_HARVEST;
 	public static SpecializationIcon MOLLIFY;
 	public static SpecializationIcon NURTURE;
 	public static SpecializationIcon OVERLOADED;
+	public static SpecializationIcon PROTECTOR;
+	public static SpecializationIcon RECLAMATION;
 	public static SpecializationIcon SIXTH_SENSE;
 	public static SpecializationIcon SNUG_BOOTS;
 	public static SpecializationIcon SPECTRAL_MENDING;
-	public static SpecializationIcon PROTECTOR;
-	public static SpecializationIcon RECLAMATION;
 	public static SpecializationIcon THRIFTY;
 	public static SpecializationIcon WHETTED_ARMS;
 	public static SpecializationIcon ZWEIHANDER;
-	public static SpecializationIcon ADVANCED_AXEMANSHIP;
+
+	public static SpecializationIcon get(Identifier id) {
+		return REGISTRY.get(id);
+	}
 
 	public static void register() {
 		MISSING = register("missing");
@@ -58,6 +63,7 @@ public record SpecializationIcon(Identifier location) {
 		CONSTITUTION = register("constitution");
 		CULTIVATION = register("cultivation");
 		DRIFTLESS_MINING = register("driftless_mining");
+		EXPANDABLE_QUIVER = register("expandable_quiver");
 		FIRST_AID = register("first_aid");
 		FULL_HARVEST = register("full_harvest");
 		MOLLIFY = register("mollify");

@@ -5,11 +5,12 @@
   "modifier": "schmucks:speed",
   "max_level": 3,
   "display": {
+    "icon": "schmucks:snug_boots",
     "title": {
-      "translate": "specialization.general.speed.title"
+      "translate": "specialization.general.snug_boots.title"
     },
     "description": {
-      "translate": "specialization.general.speed.description"
+      "translate": "specialization.general.snug_boots.description"
     }
   }
 }

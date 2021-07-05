@@ -5,6 +5,7 @@
   "modifier": "schmucks:expandable_quiver",
   "max_level": 3,
   "display": {
+    "icon": "schmucks:expandable_quiver",
     "title": {
       "translate": "specialization.hunter.expandable_quiver.title"
     },

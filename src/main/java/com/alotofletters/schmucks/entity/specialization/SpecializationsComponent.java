@@ -37,6 +37,9 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	 */
 	Map<Specialization, Integer> getLevels();
 
+	@Environment(EnvType.CLIENT)
+	SpecializationManager getManager();
+
 	/**
 	 * Returns if a spec can be seen in the tree.
 	 *

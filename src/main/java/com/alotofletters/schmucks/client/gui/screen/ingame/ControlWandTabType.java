@@ -7,17 +7,21 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-enum ControlWandTabType {
+public enum ControlWandTabType {
 	ABOVE(0, 0, 28, 32, 8),
 	BELOW(84, 0, 28, 32, 8),
 	LEFT(0, 64, 32, 28, 5),
 	RIGHT(96, 64, 32, 28, 5);
+
+	private static final Identifier TABS_TEXTURE = new Identifier("textures/gui/advancements/tabs.png");
 
 	private final int u;
 	private final int v;
@@ -37,7 +41,9 @@ enum ControlWandTabType {
 		return this.tabCount;
 	}
 
-	public void drawBackground(MatrixStack matrices, DrawableHelper drawableHelper, int i, int j, boolean bl, int k) {
+	public void drawBackground(MatrixStack matrices, DrawableHelper drawableHelper, int x, int y, boolean bl, int k) {
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderTexture(0, TABS_TEXTURE);
 		int l = this.u;
 		if (k > 0) {
 			l += this.width;
@@ -48,64 +54,51 @@ enum ControlWandTabType {
 		}
 
 		int m = bl ? this.v + this.height : this.v;
-		drawableHelper.drawTexture(matrices, i + this.getTabX(k), j + this.getTabY(k), l, m, this.width, this.height);
+		drawableHelper.drawTexture(matrices, x + this.getTabX(k), y + this.getTabY(k), l, m, this.width, this.height);
 	}
 
-	public void drawIcon(int x, int y, int index, ItemRenderer itemRenderer, SpecializationIcon icon) {
+	public void drawIcon(MatrixStack matrices, int x, int y, int index, SpecializationIcon icon) {
 		int i = x + this.getTabX(index);
 		int j = y + this.getTabY(index);
-		switch(this) {
-			case ABOVE:
+		switch (this) {
+			case ABOVE -> {
 				i += 6;
 				j += 9;
-				break;
-			case BELOW:
+			}
+			case BELOW -> {
 				i += 6;
 				j += 6;
-				break;
-			case LEFT:
+			}
+			case LEFT -> {
 				i += 10;
 				j += 5;
-				break;
-			case RIGHT:
+			}
+			case RIGHT -> {
 				i += 6;
 				j += 5;
+			}
 		}
 
 		SpecializationIconLoader loader = Schmucks.getIconLoader();
 		Sprite sprite = loader.getSprite(icon);
 		RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
-//		DrawableHelper.drawSprite(matrices, i + 1, j + 1, this.getZOffset(), 18, 18, sprite);
+		DrawableHelper.drawSprite(matrices, i, j, 1000, 16, 16, sprite);
 	}
 
 	public int getTabX(int index) {
-		switch(this) {
-			case ABOVE:
-				return (this.width + 4) * index;
-			case BELOW:
-				return (this.width + 4) * index;
-			case LEFT:
-				return -this.width + 4;
-			case RIGHT:
-				return 248;
-			default:
-				throw new UnsupportedOperationException("Don't know what this tab type is!" + this);
-		}
+		return switch (this) {
+			case ABOVE, BELOW -> (this.width + 4) * index;
+			case LEFT -> -this.width + 4;
+			case RIGHT -> 248;
+		};
 	}
 
 	public int getTabY(int index) {
-		switch(this) {
-			case ABOVE:
-				return -this.height + 4;
-			case BELOW:
-				return 136;
-			case LEFT:
-				return this.height * index;
-			case RIGHT:
-				return this.height * index;
-			default:
-				throw new UnsupportedOperationException("Don't know what this tab type is!" + this);
-		}
+		return switch (this) {
+			case ABOVE -> -this.height + 4;
+			case BELOW -> 136;
+			case LEFT, RIGHT -> this.height * index;
+		};
 	}
 
 	public boolean isClickOnTab(int screenX, int screenY, int index, double mouseX, double mouseY) {

@@ -5,6 +5,7 @@
   "modifier": "schmucks:tree_fell",
   "max_level": 3,
   "display": {
+    "icon": "schmucks:advanced_axemanship",
     "title": {
       "translate": "specialization.gatherer.advanced_axemanship.title"
     },

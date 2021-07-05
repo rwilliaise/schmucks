@@ -5,6 +5,7 @@
   "modifier": "schmucks:mollify",
   "max_level": 1,
   "display": {
+    "icon": "schmucks:mollify",
     "title": {
       "translate": "specialization.general.mollify.title"
     },

@@ -5,6 +5,7 @@
   "modifier": "schmucks:health",
   "max_level": 3,
   "display": {
+    "icon": "schmucks:constitution",
     "title": {
       "translate": "specialization.general.constitution.title"
     },

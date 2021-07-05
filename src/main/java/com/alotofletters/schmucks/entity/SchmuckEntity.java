@@ -280,7 +280,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 						this.getBoundingBox().expand(10),
 						schmuck -> schmuck.getOwnerUuid() != this.getOwnerUuid());
 				if (entities.size() > 1) {
-					this.setTarget(entities.get(this.random.nextInt(entities.size()) - 1));
+					this.setTarget(entities.get(this.random.nextInt(entities.size() - 1)));
 				}
 			}
 		}

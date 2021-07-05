@@ -5,6 +5,7 @@
   "modifier": "schmucks:nurture",
   "max_level": 1,
   "display": {
+    "icon": "schmucks:nurture",
     "title": {
       "translate": "specialization.gatherer.nurture.title"
     },

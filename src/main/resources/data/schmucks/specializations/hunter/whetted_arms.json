@@ -5,6 +5,7 @@
   "modifier": "schmucks:damage",
   "max_level": 3,
   "display": {
+    "icon": "schmucks:whetted_arms",
     "title": {
       "translate": "specialization.hunter.whetted_arms.title"
     },

@@ -16,6 +16,11 @@ import java.util.function.Consumer;
 public class SpecializationManager {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private final Map<Identifier, Specialization> specializations = Maps.newHashMap();
+
+	public Set<Specialization> getTabs() {
+		return tabs;
+	}
+
 	private final Set<Specialization> tabs = Sets.newLinkedHashSet();
 	private final Set<Specialization> children = Sets.newLinkedHashSet();
 	private Listener listener;

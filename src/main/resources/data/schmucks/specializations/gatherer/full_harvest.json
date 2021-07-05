@@ -5,7 +5,7 @@
   "modifier": "schmucks:full_harvest",
   "max_level": 1,
   "display": {
-    "icon": "",
+    "icon": "schmucks:full_harvest",
     "title": {
       "translate": "specialization.gatherer.full_harvest.title"
     },

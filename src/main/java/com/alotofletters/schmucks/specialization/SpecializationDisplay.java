@@ -18,19 +18,22 @@ import net.minecraft.util.JsonHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Objects;
+
 public class SpecializationDisplay {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private final Text title;
 	private final Text description;
-	private final Icon icon;
+	private final SpecializationIcon icon;
 	private final boolean announceToChat;
 	private float x;
 	private float y;
 
-	public SpecializationDisplay(Text title, Text description, Icon icon, boolean announceToChat) {
+	public SpecializationDisplay(Text title, Text description, SpecializationIcon icon, boolean announceToChat) {
 		this.title = title;
 		this.description = description;
 		this.icon = icon;
+		Objects.requireNonNull(icon, "No icon is present on specialization with title " + title.getString());
 		this.announceToChat = announceToChat;
 	}
 
@@ -38,9 +41,9 @@ public class SpecializationDisplay {
 		Text text = Text.Serializer.fromJson(object.get("title"));
 		Text text2 = Text.Serializer.fromJson(object.get("description"));
 		if (text != null && text2 != null) {
-			Icon icon = object.has("icon") ? Icon.fromJson(object.get("icon")) : null;
+			Identifier icon = object.has("icon") ? new Identifier(JsonHelper.getString(object, "icon")) : null;
 			boolean announce = JsonHelper.getBoolean(object, "announce_to_chat", true);
-			return new SpecializationDisplay(text, text2, icon, announce);
+			return new SpecializationDisplay(text, text2, SpecializationIcon.get(icon), announce);
 		} else {
 			throw new JsonSyntaxException("Both title and description must be set");
 		}
@@ -49,10 +52,7 @@ public class SpecializationDisplay {
 	public static SpecializationDisplay fromPacket(PacketByteBuf buf) {
 		Text title = buf.readText();
 		Text description = buf.readText();
-		Icon icon = new Icon(null, null);
-		if (buf.readBoolean()) {
-			icon = Icon.fromPacket(buf);
-		}
+		SpecializationIcon icon = SpecializationIcon.get(buf.readIdentifier());
 		float x = buf.readFloat();
 		float y = buf.readFloat();
 		SpecializationDisplay out = new SpecializationDisplay(title, description, icon, false);
@@ -63,12 +63,7 @@ public class SpecializationDisplay {
 	public void toPacket(PacketByteBuf buf) {
 		buf.writeText(this.title);
 		buf.writeText(this.description);
-		if (this.icon == null) {
-			buf.writeBoolean(false);
-		} else {
-			buf.writeBoolean(true);
-			this.icon.toPacket(buf);
-		}
+		buf.writeIdentifier(this.icon.location());
 		buf.writeFloat(this.x);
 		buf.writeFloat(this.y);
 	}
@@ -81,7 +76,7 @@ public class SpecializationDisplay {
 		return description;
 	}
 
-	public Icon getIcon() {
+	public SpecializationIcon getIcon() {
 		return icon;
 	}
 
@@ -92,106 +87,5 @@ public class SpecializationDisplay {
 	public void setPos(float x, float y) {
 		this.x = x;
 		this.y = y;
-	}
-
-	public static class Icon {
-		private ItemStack stack;
-		private SpecializationIcon icon;
-
-		public Icon(ItemStack stack) {
-			this.stack = stack;
-		}
-
-		public Icon(Identifier texture) {
-			this.icon = SpecializationIcon.REGISTRY.getOrEmpty(texture)
-					.orElse(SpecializationIcon.MISSING);
-		}
-
-		public Icon(ItemStack stack, Identifier texture) {
-			this.stack = stack;
-			this.icon = SpecializationIcon.REGISTRY.getOrEmpty(texture)
-					.orElse(SpecializationIcon.MISSING);
-		}
-
-		public static Icon fromJson(JsonElement element) {
-			if (JsonHelper.isString(element)) {
-				return new Icon(new Identifier(element.getAsString()));
-			}
-			if (element.isJsonObject()) {
-				ItemStack itemStack = iconFromJson(element.getAsJsonObject());
-				return new Icon(itemStack);
-			}
-			return new Icon(Schmucks.id("missing"));
-		}
-
-		private static ItemStack iconFromJson(JsonObject json) {
-			if (!json.has("item")) {
-				throw new JsonSyntaxException("Unsupported icon type, currently only items are supported (add 'item' key)");
-			} else {
-				Item item = JsonHelper.getItem(json, "item");
-				if (json.has("data")) {
-					throw new JsonParseException("Disallowed data tag found");
-				} else {
-					ItemStack itemStack = new ItemStack(item);
-					if (json.has("nbt")) {
-						try {
-							NbtCompound nbtCompound = StringNbtReader.parse(JsonHelper.asString(json.get("nbt"), "nbt"));
-							itemStack.setTag(nbtCompound);
-						} catch (CommandSyntaxException var4) {
-							throw new JsonSyntaxException("Invalid nbt tag: " + var4.getMessage());
-						}
-					}
-
-					return itemStack;
-				}
-			}
-		}
-
-		public static Icon fromPacket(PacketByteBuf buf) {
-			ItemStack stack = null;
-			Identifier icon = null;
-			if (buf.readBoolean()) {
-				stack = buf.readItemStack();
-			}
-			if (buf.readBoolean()) {
-				icon = buf.readIdentifier();
-			}
-			return new Icon(stack, icon);
-		}
-
-		public void toPacket(PacketByteBuf buf) {
-			if (this.isStack()) {
-				buf.writeBoolean(true);
-				buf.writeItemStack(this.stack);
-			} else {
-				buf.writeBoolean(false);
-			}
-			Identifier id = SpecializationIcon.REGISTRY.getId(this.getSpecIcon());
-			if (this.isSpecIcon() && id != null) {
-				buf.writeBoolean(true);
-				buf.writeIdentifier(id);
-			} else {
-				buf.writeBoolean(false);
-			}
-			if (id == null) {
-				LOGGER.warn("Id is null!");
-			}
-		}
-
-		public boolean isStack() {
-			return this.stack != null;
-		}
-
-		public boolean isSpecIcon() {
-			return this.icon != null;
-		}
-
-		public ItemStack getStack() {
-			return this.stack;
-		}
-
-		public SpecializationIcon getSpecIcon() {
-			return this.icon;
-		}
 	}
 }

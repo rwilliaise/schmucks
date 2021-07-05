@@ -13,11 +13,15 @@ import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.MessageType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.Util;
 
 import java.util.Map;
 import java.util.Set;
@@ -127,6 +131,16 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	public void setLevel(Specialization spec, int level) {
 		if (spec.getMaxLevel() >= level) {
+			if (!this.provider.world.isClient &&
+					level == 1 &&
+					this.levels.get(spec) == 0 &&
+					spec.getDisplay().isAnnounceToChat()) {
+				this.provider.world.getServer().getPlayerManager().broadcastChatMessage(
+						new LiteralText("test"),
+						MessageType.SYSTEM,
+						Util.NIL_UUID
+				);
+			}
 			this.levels.put(spec, level);
 			this.levelUpdates.add(spec);
 		}
@@ -145,6 +159,11 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	@Override
 	public Map<Specialization, Integer> getLevels() {
 		return this.levels;
+	}
+
+	@Override
+	public SpecializationManager getManager() {
+		return this.manager;
 	}
 
 	@Override

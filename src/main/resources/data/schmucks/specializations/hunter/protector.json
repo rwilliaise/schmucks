@@ -5,6 +5,7 @@
   "modifier": "schmucks:protector",
   "max_level": 1,
   "display": {
+    "icon": "schmucks:protector",
     "title": {
       "translate": "specialization.hunter.protector.title"
     },
