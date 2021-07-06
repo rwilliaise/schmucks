@@ -71,7 +71,7 @@ public interface SpecializationsComponent extends AutoSyncedComponent, ServerTic
 	}
 
 	default int getModifierLevel(Modifier modifier) {
-		AtomicInteger out = new AtomicInteger();
+		var out = new AtomicInteger();
 		this.getLevels().forEach((specialization, integer) -> {
 			if (specialization.getModifierId() == modifier.getId()) {
 				out.addAndGet(integer);

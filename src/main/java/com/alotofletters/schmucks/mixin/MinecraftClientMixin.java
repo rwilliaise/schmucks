@@ -26,8 +26,8 @@ public class MinecraftClientMixin implements SpecializationIconLoaderHolder {
 
 	@Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleManager;<init>(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/client/texture/TextureManager;)V"))
 	public void init(RunArgs args, CallbackInfo ci) {
-		this.specializationIconLoader = new SpecializationIconLoader(this.textureManager);
-		this.resourceManager.registerReloader(this.specializationIconLoader);
+//		this.specializationIconLoader = new SpecializationIconLoader(this.textureManager);
+//		this.resourceManager.registerReloader(this.specializationIconLoader);
 	}
 
 	@Override

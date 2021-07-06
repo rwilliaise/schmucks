@@ -226,6 +226,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 			return super.interactMob(player, hand);
 		}
 
+		if (player != this.getOwner()) {
+			return ActionResult.PASS;
+		}
+
 		if (player.getStackInHand(hand).isEmpty()) {
 			player.giveItemStack(this.getMainHandStack());
 			this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
@@ -278,7 +282,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 			if (this.getTarget() != null && this.getTarget().getType() == EntityType.PLAYER) {
 				List<SchmuckEntity> entities = this.world.getEntitiesByClass(SchmuckEntity.class,
 						this.getBoundingBox().expand(10),
-						schmuck -> schmuck.getOwnerUuid() != this.getOwnerUuid());
+						schmuck -> schmuck.getOwner() == this.getTarget());
 				if (entities.size() > 1) {
 					this.setTarget(entities.get(this.random.nextInt(entities.size() - 1)));
 				}
@@ -452,15 +456,15 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 
 	@Override
 	protected void loot(ItemEntity item) {
-		ItemStack itemStack = item.getStack();
+		var itemStack = item.getStack();
 		if (this.canGather(itemStack)) {
-			EquipmentSlot slot = getPreferredEquipmentSlot(itemStack);
+			var slot = getPreferredEquipmentSlot(itemStack);
 			if (this.getEquippedStack(slot).isEmpty()) {
 				super.loot(item);
 				return;
 			}
-			SimpleInventory simpleInventory = this.getInventory();
-			boolean bl = simpleInventory.canInsert(itemStack);
+			var simpleInventory = this.getInventory();
+			var bl = simpleInventory.canInsert(itemStack);
 			if (!bl) {
 				return;
 			}
@@ -499,7 +503,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	@Nullable
 	@Override
 	public SchmuckEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
-		SchmuckEntity child = Schmucks.SCHMUCK.create(serverWorld);
+		var child = Schmucks.SCHMUCK.create(serverWorld);
 		if (child != null) {
 			child.setOwnerUuid(this.getOwnerUuid());
 		}
@@ -625,15 +629,15 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 
 	public void attack(LivingEntity target, float pullProgress) {
 		if (this.isHolding(Items.EGG)) {
-			ItemStack itemStack = this.getMainHandStack();
-			EggEntity eggEntity = new EggEntity(world, this);
+			var itemStack = this.getMainHandStack();
+			var eggEntity = new EggEntity(world, this);
 			eggEntity.setItem(itemStack);
 			shootEntity(target, eggEntity);
 			this.world.spawnEntity(eggEntity);
 			this.playSound(SoundEvents.ENTITY_EGG_THROW, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
 			return;
 		}
-		ItemStack itemStack = this.getArrowType(this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW)));
+		var itemStack = this.getArrowType(this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW)));
 		PersistentProjectileEntity persistentProjectileEntity = this.createArrowProjectile(itemStack, pullProgress);
 		shootEntity(target, persistentProjectileEntity);
 		this.world.spawnEntity(persistentProjectileEntity);
@@ -641,10 +645,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	}
 
 	private void shootEntity(LivingEntity target, ProjectileEntity projectileEntity) {
-		double d = target.getX() - this.getX();
-		double e = target.getBodyY(0.3333333333333333D) - projectileEntity.getY();
-		double f = target.getZ() - this.getZ();
-		double g = MathHelper.sqrt((float) (d * d + f * f));
+		var d = target.getX() - this.getX();
+		var e = target.getBodyY(0.3333333333333333D) - projectileEntity.getY();
+		var f = target.getZ() - this.getZ();
+		var g = MathHelper.sqrt((float) (d * d + f * f));
 		projectileEntity.setVelocity(d, e + g * 0.20000000298023224D, f, 1.6F, 2f);
 	}
 
@@ -696,7 +700,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		}
 
 		public void apply(int priority, SchmuckEntity schmuck, GoalSelector selector) {
-			boolean result = (predicate == null || this.predicate.test(schmuck));
+			var result = (predicate == null || this.predicate.test(schmuck));
 			if (result && !getApplied(schmuck)) {
 				selector.add(priority, this.getGoal(schmuck));
 				applied.put(schmuck.uuid, true);

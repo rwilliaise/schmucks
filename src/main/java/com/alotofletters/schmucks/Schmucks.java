@@ -127,7 +127,7 @@ public class Schmucks implements ModInitializer {
 	public void onInitialize() {
 		Modifiers.register();
 
-		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(Schmucks.LOADER);
+//		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(Schmucks.LOADER);
 
 		SchmucksPackets.init();
 		Registry.register(Registry.ITEM, id("magic"), Schmucks.PURE_MAGIC);
@@ -141,7 +141,7 @@ public class Schmucks implements ModInitializer {
 		Registry.register(Registry.ITEM, id("miners_cap"), Schmucks.MINERS_CAP);
 		Registry.register(Registry.ITEM, id("ranger"), Schmucks.RANGER_HAT);
 
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> SpecializationCommand.register(dispatcher));
+//		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> SpecializationCommand.register(dispatcher));
 
 		FabricDefaultAttributeRegistry.register(SCHMUCK, SchmuckEntity.createSchmuckAttributes());
 	}

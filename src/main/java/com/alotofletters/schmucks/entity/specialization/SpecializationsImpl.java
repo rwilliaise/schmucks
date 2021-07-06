@@ -66,7 +66,7 @@ public class SpecializationsImpl implements SpecializationsComponent {
 
 	@Override
 	public void writeToNbt(NbtCompound tag) {
-		NbtList list = new NbtList();
+		var list = new NbtList();
 		this.levels.forEach((specialization, integer) -> {
 			NbtCompound compound = new NbtCompound();
 			compound.putString("Id", specialization.getId().toString());
@@ -103,7 +103,7 @@ public class SpecializationsImpl implements SpecializationsComponent {
 	}
 
 	public void upgradeLevel(Specialization spec) {
-		Integer level = this.levels.get(spec);
+		var level = this.levels.get(spec);
 		if (level == null) {
 			level = 0;
 		}

@@ -12,6 +12,6 @@ public class PlayerComponents implements EntityComponentInitializer {
 	@Override
 	public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
 		registry.registerForPlayers(WHITELIST, WhitelistComponent.Impl::new, RespawnCopyStrategy.ALWAYS_COPY);
-		registry.registerForPlayers(SPECIALIZATIONS, SpecializationsImpl::new, RespawnCopyStrategy.ALWAYS_COPY);
+//		registry.registerForPlayers(SPECIALIZATIONS, SpecializationsImpl::new, RespawnCopyStrategy.ALWAYS_COPY);
 	}
 }
