@@ -4,8 +4,10 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.entity.WhitelistComponent;
+import com.alotofletters.schmucks.screen.SchmuckScreenHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SaplingBlock;
@@ -13,9 +15,16 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -25,6 +34,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class ControlWandItem extends TooltipItem {
 	public ControlWandItem(Settings settings) {
@@ -33,7 +43,7 @@ public class ControlWandItem extends TooltipItem {
 
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		if (!user.isSneaking()) {
+		if (user.isSneaking()) {
 			return super.use(world, user, hand);
 		}
 		HitResult hitResult = raycast(world, user, RaycastContext.FluidHandling.NONE);
@@ -41,8 +51,24 @@ public class ControlWandItem extends TooltipItem {
 			return TypedActionResult.pass(user.getStackInHand(hand));
 		}
 		user.getItemCooldownManager().set(this, 20);
-		if (world.isClient) {
-			this.openScreen(null);
+		if (!world.isClient) {
+			user.openHandledScreen(new ExtendedScreenHandlerFactory() {
+				@Override
+				public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+					buf.writeBoolean(false);
+				}
+
+				@Override
+				public Text getDisplayName() {
+					return new TranslatableText("gui.schmucks.control_wand.title");
+				}
+
+				@Nullable
+				@Override
+				public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+					return new SchmuckScreenHandler(syncId, inv, new SimpleInventory(5), new SimpleInventory(6), null);
+				}
+			});
 			return TypedActionResult.success(user.getStackInHand(hand));
 		}
 		return super.use(world, user, hand);
@@ -101,18 +127,19 @@ public class ControlWandItem extends TooltipItem {
 
 	@Override
 	public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-		if (entity instanceof SchmuckEntity) {
-			if (entity.world.isClient && ((SchmuckEntity) entity).getOwner() == user) {
-				this.openScreen((SchmuckEntity) entity);
+		if (entity instanceof SchmuckEntity schmuck) {
+			if (schmuck.getOwner() == user) {
+				this.openScreen(schmuck, user);
 				return ActionResult.SUCCESS;
 			}
 		}
 		return super.useOnEntity(stack, user, entity, hand);
 	}
 
-	@Environment(EnvType.CLIENT)
-	private void openScreen(SchmuckEntity entity) {
-		MinecraftClient.getInstance().openScreen(new ControlWandScreen(entity));
+	private void openScreen(SchmuckEntity entity, PlayerEntity player) {
+		if (!entity.world.isClient) {
+			player.openHandledScreen(entity);
+		}
 	}
 
 	public enum ControlAction {

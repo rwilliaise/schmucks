@@ -16,7 +16,7 @@ public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
 	private int lastProgress;
 
 	public SchmuckUseToolGoal(SchmuckEntity schmuck, double speed, int maxProgress) {
-		super(schmuck, speed, Schmucks.CONFIG.jobRange);
+		super(schmuck, speed, Schmucks.CONFIG.jobRange, 3);
 		this.maxProgress = maxProgress;
 		this.schmuck = schmuck;
 	}

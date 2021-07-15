@@ -33,7 +33,7 @@ public class SchmuckPutUnneeded extends SchmuckJobGoal {
 	private boolean placed;
 
 	public SchmuckPutUnneeded(SchmuckEntity mob, double speed) {
-		super(mob, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 2);
+		super(mob, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 3);
 		this.schmuck = mob;
 	}
 

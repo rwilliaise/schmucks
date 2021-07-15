@@ -65,7 +65,7 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 
 	@Override
 	public double getDesiredSquaredDistanceToTarget() {
-		return 2.0D;
+		return 4.0D;
 	}
 
 	public boolean isExposed(WorldView world, BlockPos pos) {

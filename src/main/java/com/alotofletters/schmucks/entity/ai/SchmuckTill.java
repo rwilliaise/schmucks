@@ -60,7 +60,6 @@ public class SchmuckTill extends SchmuckUseToolGoal {
 	@Override
 	public void start() {
 		super.start();
-		System.out.println("AAAAAAAAAAAAAAAA");
 	}
 
 	@Override

@@ -35,7 +35,6 @@ public class DashboardTab extends ControlWandTab {
 
 	@Override
 	public void init(int x, int y) {
-		System.out.println("pee pee");
 		this.addDrawableChild(new CheckboxWidget(x + 7, y + 65, 150, 20, new LiteralText("STOP!!!"), false));
 	}
 

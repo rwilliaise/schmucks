@@ -20,7 +20,7 @@ public class SchmuckSmeltGoal extends SchmuckJobGoal {
 	private int timer;
 
 	public SchmuckSmeltGoal(SchmuckEntity schmuck, double speed) {
-		super(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 2);
+		super(schmuck, speed, AutoConfig.getConfigHolder(SchmucksConfig.class).getConfig().jobRange, 3);
 		this.schmuck = schmuck;
 	}
 

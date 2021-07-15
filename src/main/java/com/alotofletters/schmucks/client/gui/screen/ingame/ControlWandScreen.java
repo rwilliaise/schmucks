@@ -5,11 +5,16 @@ import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandBut
 import com.alotofletters.schmucks.client.gui.screen.ingame.widget.ControlWandDropdown;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.item.ControlWandItem;
+import com.alotofletters.schmucks.screen.SchmuckScreenHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -17,14 +22,17 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import static com.alotofletters.schmucks.item.ControlWandItem.ControlAction.*;
 import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
@@ -32,44 +40,48 @@ import static com.alotofletters.schmucks.item.ControlWandItem.ControlGroup.*;
 /**
  * The Schmuck Staff GUI
  */
-public class ControlWandScreen extends Screen {
+public class ControlWandScreen extends HandledScreen<SchmuckScreenHandler> {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
 	public final SchmuckEntity schmuck;
-	protected final int backgroundWidth = 176;
-	protected final int backgroundHeight = 88;
 	private ControlWandDropdown dropdown;
 
-	public ControlWandScreen(SchmuckEntity schmuck) {
-		super(new TranslatableText("gui.schmucks.control_wand.title"));
-		this.schmuck = schmuck;
+	public ControlWandScreen(SchmuckScreenHandler handler, PlayerInventory inventory, Text title) {
+		super(handler, inventory, title);
+		this.schmuck = handler.getEntity();
+		this.backgroundWidth = 196;
+		this.backgroundHeight = 198;
+		this.titleX = -1000;
+		this.playerInventoryTitleX = -1000;
 	}
 
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		this.renderBackground(matrices);
 		if (this.schmuck != null) {
-			this.drawBackground(matrices, mouseX, mouseY);
+			super.render(matrices, mouseX, mouseY, delta);
+			this.drawMouseoverTooltip(matrices, mouseX, mouseY);
+		} else {
+			super.render(matrices, mouseX, mouseY, delta);
+		}
+		this.children().stream()
+				.filter(element -> element instanceof ControlWandButtonWidget)
+				.filter(element -> ((ControlWandButtonWidget) element).isHovered())
+				.forEach(element -> ((ControlWandButtonWidget) element).renderToolTip(matrices, mouseX, mouseY));
+	}
+
+	@Override
+	protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+		if (this.schmuck != null) {
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			RenderSystem.setShaderTexture(0, TEXTURE);
+			int i = (this.width - this.backgroundWidth) / 2;
+			int j = (this.height - this.backgroundHeight) / 2;
+			this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
+			InventoryScreen.drawEntity(i + 141, j + 55, 52, (float) (i + 141) - mouseX, (float) (j + 5) - mouseY, this.schmuck);
 		} else {
 			drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 40, 16777215);
 		}
-		super.render(matrices, mouseX, mouseY, delta);
-		this.children().forEach(element -> {
-			if (element instanceof ControlWandButtonWidget) {
-				if (((ControlWandButtonWidget) element).isHovered()) {
-					((ControlWandButtonWidget) element).renderToolTip(matrices, mouseX, mouseY);
-				}
-			}
-		});
-	}
-
-	public void drawBackground(MatrixStack matrices, int mouseX, int mouseY) {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, TEXTURE);
-		int i = (this.width - this.backgroundWidth) / 2;
-		int j = (this.height - this.backgroundHeight) / 2;
-		this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
-		InventoryScreen.drawEntity(i + 141, j + 55, 52, (float) (i + 141) - mouseX, (float) (j + 5) - mouseY, this.schmuck);
 	}
 
 	public MinecraftClient getClient() {
@@ -78,6 +90,7 @@ public class ControlWandScreen extends Screen {
 
 	@Override
 	protected void init() {
+		super.init();
 		int x, y;
 		boolean storeFlag = false;
 		ControlWandItem.ControlGroup[] options;
@@ -131,8 +144,8 @@ public class ControlWandScreen extends Screen {
 		} else {
 			int i = (this.width - this.backgroundWidth) / 2;
 			int j = (this.height - this.backgroundHeight) / 2;
-			x = i + 7;
-			y = j + 65;
+			x = i + 6;
+			y = j + 62;
 			options = new ControlWandItem.ControlGroup[]{THIS, ALL_BUT_THIS, SAME_TOOL, ALL_BUT_SAME_TOOL};
 			this.createGraphicalButton(i + 11,
 					j + 7,
@@ -228,7 +241,12 @@ public class ControlWandScreen extends Screen {
 			buf.writeInt(this.schmuck.getId());
 		}
 		ClientPlayNetworking.send(Schmucks.CONTROL_WAND_PACKET_ID, buf);
-		this.client.player.closeScreen();
+//		this.client.player.closeScreen();
+	}
+
+	@Override
+	public void onClose() {
+		super.onClose();
 	}
 
 	@Override

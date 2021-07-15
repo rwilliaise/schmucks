@@ -21,6 +21,7 @@ import net.minecraft.util.math.MathHelper;
  */
 public class ControlWandDropdown extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
+	private static final Identifier WIDGETS_TEXTURE = Schmucks.id("textures/gui/widgets.png");
 	private final boolean storeFlag;
 	private final StringIdentifiable[] options;
 	private final DropdownListEntry[] buttons;
@@ -81,11 +82,11 @@ public class ControlWandDropdown extends PressableWidget {
 			TextRenderer textRenderer = minecraftClient.textRenderer;
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderColor(1, 1, 1, this.alpha);
-			RenderSystem.setShaderTexture(0, TEXTURE);
+			RenderSystem.setShaderTexture(0, ControlWandDropdown.WIDGETS_TEXTURE);
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-			drawTexture(matrices, this.x, this.y, 0, this.isHovered() ? 112 : 92, this.width, this.height);
+			drawTexture(matrices, this.x, this.y, 0, this.isHovered() ? 130 : 110, this.width, this.height);
 			int j = this.active ? 16777215 : 10526880;
 			if (this.options.length > this.selected) {
 				drawCenteredText(matrices,
@@ -95,6 +96,7 @@ public class ControlWandDropdown extends PressableWidget {
 						this.y + (this.height - 8) / 2,
 						j | MathHelper.ceil(this.alpha * 255.0F) << 24);
 			}
+			RenderSystem.setShaderTexture(0, TEXTURE);
 		}
 	}
 
@@ -118,22 +120,22 @@ public class ControlWandDropdown extends PressableWidget {
 				boolean isBottom = selected != this.index && this.index == buttons.length - 1 || selected == buttons.length - 1 && this.index == buttons.length - 2;
 
 				MinecraftClient minecraftClient = MinecraftClient.getInstance();
-				minecraftClient.getTextureManager().bindTexture(TEXTURE);
 				RenderSystem.enableDepthTest();
 				TextRenderer textRenderer = minecraftClient.textRenderer;
 				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 				RenderSystem.setShaderColor(1, 1, 1, this.alpha);
-				RenderSystem.setShaderTexture(0, TEXTURE);
+				RenderSystem.setShaderTexture(0, ControlWandDropdown.WIDGETS_TEXTURE);
 				RenderSystem.enableBlend();
 				RenderSystem.defaultBlendFunc();
 				RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-				drawTexture(matrices, x, y, 0, hovered ? 172 : (isBottom ? 152 : 132), this.width, this.height);
+				drawTexture(matrices, x, y, 0, hovered ? 190 : (isBottom ? 170 : 150), this.width, this.height);
 				drawCenteredText(matrices,
 						textRenderer,
 						this.getMessage(),
 						x + this.width / 2,
 						y + (this.height - 8) / 2,
 						16777215 | MathHelper.ceil(255.0F) << 24);
+				RenderSystem.setShaderTexture(0, TEXTURE);
 			}
 		}
 

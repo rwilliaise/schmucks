@@ -9,6 +9,7 @@ import com.alotofletters.schmucks.item.ControlWandItem;
 import com.alotofletters.schmucks.item.SchmuckItem;
 import com.alotofletters.schmucks.item.TooltipItem;
 import com.alotofletters.schmucks.net.SchmucksPackets;
+import com.alotofletters.schmucks.screen.SchmuckScreenHandler;
 import com.alotofletters.schmucks.server.command.SpecializationCommand;
 import com.alotofletters.schmucks.specialization.ServerSpecializationLoader;
 import com.alotofletters.schmucks.specialization.client.SpecializationIconLoader;
@@ -24,6 +25,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -37,6 +39,7 @@ import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -81,6 +84,8 @@ public class Schmucks implements ModInitializer {
 	public final static Tag<Block> FOOD_SMELTERS_TAG = TagRegistry.block(commonId("food_smelters"));
 	public final static Tag<Block> ORE_SMELTERS_TAG = TagRegistry.block(commonId("ore_smelters"));
 	public final static Tag<Block> TILLABLE_TAG = TagRegistry.block(commonId("tillable"));
+
+	public static final ScreenHandlerType<SchmuckScreenHandler> SCHMUCK_SCREEN_HANDLER = ScreenHandlerRegistry.registerExtended(id("schmuck"), SchmuckScreenHandler::new);
 
 	public static final ComponentKey<WhitelistComponent> WHITELIST =
 			ComponentRegistry.getOrCreate(id("whitelist"), WhitelistComponent.class);

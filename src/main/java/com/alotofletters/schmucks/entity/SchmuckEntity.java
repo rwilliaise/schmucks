@@ -3,10 +3,13 @@ package com.alotofletters.schmucks.entity;
 import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.ai.*;
 import com.alotofletters.schmucks.entity.ai.control.SchmuckLookControl;
+import com.alotofletters.schmucks.screen.SchmuckScreenHandler;
 import com.alotofletters.schmucks.specialization.modifier.Modifier;
 import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import com.google.common.collect.Maps;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.Durations;
@@ -27,10 +30,12 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.Angerable;
 import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -40,6 +45,10 @@ import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.ItemTags;
@@ -58,7 +67,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class SchmuckEntity extends TameableEntity implements Angerable, InventoryOwner, RangedAttackMob {
+public class SchmuckEntity extends TameableEntity implements
+		Angerable, InventoryOwner, RangedAttackMob, ExtendedScreenHandlerFactory {
 	private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(SchmuckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private static final IntProvider ANGER_TIME_RANGE = Durations.betweenSeconds(20, 39);
@@ -82,6 +92,10 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		addGoal(14, LookAroundGoal::new);
 		addSelector(1, TrackOwnerAttackerGoal::new);
 		addSelector(2, AttackWithOwnerGoal::new);
+		addSelectorPredicate(
+				2,
+				schmuck -> new FollowTargetGoal<>(schmuck, HostileEntity.class, true),
+				schmuck -> !schmuck.hasJob() || schmuck.isGladiator() || schmuck.isRanger());
 		addSelectorPredicate(3, SchmuckRevengeGoal::new, schmuck -> schmuck.shortTempered);
 		addSelectorPredicate(3, schmuck -> new SchmuckRevengeGoal(schmuck, SchmuckEntity.class), schmuck -> !schmuck.shortTempered);
 		addSelector(4, schmuck -> new UniversalAngerGoal<>(schmuck, true));
@@ -104,10 +118,11 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	 */
 	private final BirdNavigation flightNavigation = this.createFlightNavigation();
 	private final SimpleInventory inventory = new SimpleInventory(5);
+	private final SchmuckEquipmentInventory equipmentInventory;
 	private UUID targetUuid;
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
-	private boolean canFollow = false;
+	private boolean canFollow = true;
 	private boolean hasGivenArrows = false;
 	private int eggUsageTime;
 	private int flyCheckCooldown;
@@ -123,6 +138,7 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	public SchmuckEntity(EntityType<? extends SchmuckEntity> entityType, World world) {
 		super(entityType, world);
 		this.lookControl = new SchmuckLookControl(this);
+		this.equipmentInventory = new SchmuckEquipmentInventory(this);
 		this.setCanPickUpLoot(true);
 		((MobNavigation) this.getNavigation()).setCanPathThroughDoors(true);
 		this.getNavigation().setCanSwim(true);
@@ -148,6 +164,13 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 	protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
 		super.dropEquipment(source, lootingMultiplier, allowDrops);
 		this.inventory.clearToList().forEach(this::dropStack);
+	}
+
+	public PlayerInventory getOwnerInventory() {
+		if (this.getOwner() != null) {
+			return ((PlayerEntity) this.getOwner()).getInventory();
+		}
+		return null;
 	}
 
 	public static void addSelectorPredicate(int priority, Function<SchmuckEntity, Goal> goal, Predicate<SchmuckEntity> predicate) {
@@ -204,6 +227,14 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 				this.hasGivenArrows = true;
 			}
 		}
+	}
+
+	@Override
+	public boolean damage(DamageSource source, float amount) {
+		if (source.getAttacker() instanceof SchmuckEntity schmuck && schmuck.getOwner() == this.getOwner()) {
+			return false;
+		}
+		return super.damage(source, amount);
 	}
 
 	@Nullable
@@ -683,6 +714,22 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		return this.getMainHandStack().getItem() == Items.EGG || super.isUsingItem();
 	}
 
+	@Override
+	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+		buf.writeBoolean(true);
+		buf.writeVarInt(this.getId());
+	}
+
+	@Nullable
+	@Override
+	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+		return new SchmuckScreenHandler(syncId, inv, this.getInventory(), this.getEquipmentInventory(), this);
+	}
+
+	public SchmuckEquipmentInventory getEquipmentInventory() {
+		return equipmentInventory;
+	}
+
 	static class PredicatedGoalFactory {
 		private final Predicate<SchmuckEntity> predicate;
 		private final Function<SchmuckEntity, Goal> goal;
@@ -697,7 +744,6 @@ public class SchmuckEntity extends TameableEntity implements Angerable, Inventor
 		public void apply(int priority, SchmuckEntity schmuck, GoalSelector selector) {
 			var result = this.predicate.test(schmuck);
 			if (result && !getApplied(schmuck)) {
-				System.out.println("HAHAHA IM APPLYING SCREW YOU! !!");
 				selector.add(priority, this.getGoal(schmuck));
 				applied.put(schmuck.uuid, true);
 			} else if (!result && getApplied(schmuck)) {

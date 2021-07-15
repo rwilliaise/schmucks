@@ -7,6 +7,7 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.Items;
+import net.minecraft.tag.ItemTags;
 import net.minecraft.util.Hand;
 
 import java.util.EnumSet;
@@ -38,7 +39,7 @@ public class SchmuckBowAttackGoal extends Goal {
 	}
 
 	public boolean canStart() {
-		return !this.actor.isSitting() && this.actor.getTarget() != null && this.isHoldingRangedWeapon();
+		return !this.actor.isSitting() && this.hasArrows() && this.actor.getTarget() != null && this.isHoldingRangedWeapon();
 	}
 
 	protected boolean isHoldingRangedWeapon() {
@@ -46,7 +47,7 @@ public class SchmuckBowAttackGoal extends Goal {
 	}
 
 	public boolean shouldContinue() {
-		return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingRangedWeapon();
+		return (this.canStart() || !this.actor.getNavigation().isIdle()) && this.isHoldingRangedWeapon() && this.hasArrows();
 	}
 
 	public void start() {
@@ -60,6 +61,14 @@ public class SchmuckBowAttackGoal extends Goal {
 		this.targetSeeingTicker = 0;
 		this.cooldown = -1;
 		this.actor.clearActiveItem();
+	}
+
+	public boolean hasArrows() {
+		return SchmuckJobGoal.hasItem(this.actor, itemStack -> itemStack.isIn(ItemTags.ARROWS));
+	}
+
+	public void depleteArrows() {
+		SchmuckJobGoal.getItem(this.actor, itemStack -> itemStack.isIn(ItemTags.ARROWS)).decrement(1);
 	}
 
 	public void tick() {
@@ -119,6 +128,7 @@ public class SchmuckBowAttackGoal extends Goal {
 					if (i >= 20) {
 						this.actor.clearActiveItem();
 						((RangedAttackMob) this.actor).attack(livingEntity, BowItem.getPullProgress(i));
+						this.depleteArrows();
 						this.cooldown = this.attackInterval;
 					}
 				}

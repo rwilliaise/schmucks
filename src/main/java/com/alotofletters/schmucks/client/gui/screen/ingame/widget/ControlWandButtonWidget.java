@@ -26,6 +26,7 @@ import java.util.function.Consumer;
  */
 public abstract class ControlWandButtonWidget extends PressableWidget {
 	private static final Identifier TEXTURE = Schmucks.id("textures/gui/schmuck.png");
+	private static final Identifier WIDGETS_TEXTURE = Schmucks.id("textures/gui/widgets.png");
 	protected final ControlWandScreen screen;
 
 	protected ControlWandButtonWidget(int x, int y, ControlWandScreen screen) {
@@ -36,7 +37,7 @@ public abstract class ControlWandButtonWidget extends PressableWidget {
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, TEXTURE);
+		RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
 		int j = 0;
 		if (!this.active) {
 			j += this.width * 2;
@@ -46,6 +47,7 @@ public abstract class ControlWandButtonWidget extends PressableWidget {
 
 		this.drawTexture(matrices, this.x, this.y, j, 219, this.width, this.height);
 		this.renderExtra(matrices);
+		RenderSystem.setShaderTexture(0, TEXTURE);
 	}
 
 	@Override
@@ -78,8 +80,9 @@ public abstract class ControlWandButtonWidget extends PressableWidget {
 			Sprite sprite = statusEffectSpriteManager.getSprite(this.icon);
 			RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
 			drawSprite(matrices, this.x + 1, this.y + 1, this.getZOffset(), 18, 18, sprite);
-			RenderSystem.setShaderTexture(0, TEXTURE);
+			RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
 			super.renderExtra(matrices);
+			RenderSystem.setShaderTexture(0, TEXTURE);
 		}
 
 		@Override
@@ -113,14 +116,17 @@ public abstract class ControlWandButtonWidget extends PressableWidget {
 		@Override
 		protected void renderExtra(MatrixStack matrices) {
 			MatrixStack matrixStack = RenderSystem.getModelViewStack();
+			matrixStack.push();
 			matrixStack.translate(0.5f, 0.5f, 0);
 			screen.getClient().getItemRenderer().renderInGuiWithOverrides(this.item, this.x + 3, this.y + 2);
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-			RenderSystem.setShaderTexture(0, TEXTURE);
+			RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
 			RenderSystem.disableDepthTest();
 			super.renderExtra(matrices);
 			RenderSystem.enableDepthTest();
+			RenderSystem.setShaderTexture(0, TEXTURE);
+			matrixStack.pop();
 		}
 
 		@Override
