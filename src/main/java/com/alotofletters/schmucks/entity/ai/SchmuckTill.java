@@ -4,10 +4,8 @@ import com.alotofletters.schmucks.Schmucks;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
+import net.minecraft.block.*;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContext;
@@ -15,6 +13,7 @@ import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldView;
 
@@ -27,7 +26,7 @@ public class SchmuckTill extends SchmuckUseToolGoal {
 	public void tick() {
 		super.tick();
 		if (this.hasReached() && this.use()) {
-			if (this.isFullCrop(this.targetPos)) {
+			if (this.isFullCrop(this.targetPos) || this.isFullGourdBlock(this.targetPos)) {
 				if (this.schmuck.hasModifier(Modifiers.FULL_HARVEST)
 						&& this.schmuck.getRandom().nextFloat() < 0.1) {
 					BlockState state = this.schmuck.world.getBlockState(this.targetPos);
@@ -74,16 +73,33 @@ public class SchmuckTill extends SchmuckUseToolGoal {
 		return this.schmuck.isFarmer() && !this.schmuck.isSitting() && super.canStart();
 	}
 
+	public boolean isFullGourdBlock(BlockPos pos) {
+		BlockState state = this.schmuck.world.getBlockState(pos);
+		return state.getBlock() instanceof GourdBlock && this.checkNeighbors(pos);
+	}
+
 	public boolean isFullCrop(BlockPos pos) {
 		BlockState state = this.schmuck.world.getBlockState(pos);
-		return state.getBlock() instanceof CropBlock &&
-				state.get(((CropBlock) state.getBlock()).getAgeProperty()) == ((CropBlock) state.getBlock()).getMaxAge() &&
+		return state.getBlock() instanceof CropBlock cropBlock &&
+				state.get(cropBlock.getAgeProperty()) == cropBlock.getMaxAge() &&
 				this.schmuck.getWhitelist().contains(pos.down());
+	}
+
+	private boolean checkNeighbors(BlockPos pos) {
+		Direction[] sides = new Direction[] {Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH};
+		for (Direction side : sides) {
+			BlockPos check = pos.offset(side, 1);
+			BlockState state = this.schmuck.world.getBlockState(check);
+			if (this.schmuck.getWhitelist().contains(check.down()) && state.getBlock() instanceof AttachedStemBlock) {
+				return true; // TODO: check the direction that the attached stem faces
+			}
+		}
+		return false;
 	}
 
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
-		return this.isFullCrop(pos) || (world.isAir(pos.up()) &&
+		return this.isFullCrop(pos) || this.isFullGourdBlock(pos) || (world.isAir(pos.up()) &&
 				world.getBlockState(pos).isIn(Schmucks.TILLABLE_TAG) &&
 				this.schmuck.getWhitelist().contains(pos));
 	}

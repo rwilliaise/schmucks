@@ -32,6 +32,7 @@
       "com.alotofletters.schmucks.entity.LambDynamicLightsCompat"
     ]
   },
+  "accessWidener" : "schmucks.accesswidener",
   "custom": {
     "cardinal-components": [
       "schmucks:whitelist",

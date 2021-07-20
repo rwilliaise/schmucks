@@ -5,18 +5,19 @@ import com.alotofletters.schmucks.client.gui.screen.ingame.ControlWandScreen;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.entity.WhitelistComponent;
 import com.alotofletters.schmucks.screen.SchmuckScreenHandler;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SaplingBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.network.PacketByteBuf;
@@ -32,11 +33,15 @@ import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class ControlWandItem extends TooltipItem {
+import java.util.List;
+import java.util.Set;
+
+public class ControlWandItem extends Item {
 	public ControlWandItem(Settings settings) {
 		super(settings.maxCount(1));
 	}
@@ -63,7 +68,6 @@ public class ControlWandItem extends TooltipItem {
 					return new TranslatableText("gui.schmucks.control_wand.title");
 				}
 
-				@Nullable
 				@Override
 				public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
 					return new SchmuckScreenHandler(syncId, inv, new SimpleInventory(5), new SimpleInventory(6), null);
@@ -93,7 +97,35 @@ public class ControlWandItem extends TooltipItem {
 			if (blockState.isOf(Blocks.FARMLAND) || blockState.isIn(Schmucks.TILLABLE_TAG)) {
 				return updateFromContext(context, "%s_farmland");
 			} else if (blockState.isIn(BlockTags.LOGS) || blockState.getBlock() instanceof SaplingBlock) {
-				return updateFromContext(context, "%s_lumber");
+				if (this.cascade(world, (ServerPlayerEntity) player, blockPos)) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.added_lumber", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+				} else {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_lumber", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+				}
+				return ActionResult.SUCCESS;
+			} else if (blockState.getBlock() instanceof PlantBlock plant && plant.canPlantOnTop(Blocks.FARMLAND.getDefaultState(), world, blockPos)) {
+				WhitelistComponent component = Schmucks.getWhitelistComponent(player);
+				if (component.containsWhiteList(blockPos.down())) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+					component.removeWhitelist(blockPos.down());
+				} else {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.added_farmland", blockPos.getX(), blockPos.getY(), blockPos.getZ()), true);
+					component.addWhitelist(blockPos.down());
+				}
+				component.sync();
+				return ActionResult.SUCCESS;
+			} else if (blockState.getBlock() instanceof GourdBlock && checkNeighbors(world, (ServerPlayerEntity) player, blockPos)) {
+				WhitelistComponent component = Schmucks.getWhitelistComponent(player);
+				BlockPos pos = getNeighbor(world, (ServerPlayerEntity) player, blockPos);
+				if (component.containsWhiteList(pos)) {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.removed_farmland", pos.getX(), pos.getY(), pos.getZ()), true);
+					component.removeWhitelist(pos);
+				} else {
+					player.sendMessage(new TranslatableText("item.schmucks.control_wand.added_farmland", pos.getX(), pos.getY(), pos.getZ()), true);
+					component.addWhitelist(pos);
+				}
+				component.sync();
+				return ActionResult.SUCCESS;
 			} else {
 				WhitelistComponent component = Schmucks.getWhitelistComponent(player);
 				if (component.containsWhiteList(blockPos)) {
@@ -106,6 +138,53 @@ public class ControlWandItem extends TooltipItem {
 		}
 		return super.useOnBlock(context);
 	}
+
+	private boolean cascade(World world, ServerPlayerEntity player, BlockPos start) {
+		Set<BlockPos> cascading = Sets.newConcurrentHashSet();
+		Set<BlockPos> visited = Sets.newConcurrentHashSet();
+		cascading.add(start);
+		visited.add(start);
+		WhitelistComponent component = Schmucks.getWhitelistComponent(player);
+		boolean newState = !component.containsWhiteList(start);
+		while (cascading.size() > 0) {
+			cascading.forEach(pos -> {
+				if (newState && !component.containsWhiteList(pos)) {
+					component.addWhitelist(pos);
+				} else if (!newState && component.containsWhiteList(pos)) {
+					component.removeWhitelist(pos);
+				}
+				cascading.remove(pos);
+				Direction[] sides = new Direction[] {Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH, Direction.UP, Direction.DOWN};
+				for (Direction side : sides) {
+					BlockPos check = pos.offset(side, 1);
+					BlockState state = world.getBlockState(check);
+					if (state.isIn(BlockTags.LOGS) && !visited.contains(check)) {
+						cascading.add(check);
+						visited.add(check);
+					}
+				}
+			});
+		}
+		component.sync();
+		return newState;
+	}
+
+	private boolean checkNeighbors(World world, ServerPlayerEntity player, BlockPos pos) {
+		return getNeighbor(world, player, pos) != null;
+	}
+
+	private BlockPos getNeighbor(World world, ServerPlayerEntity player, BlockPos pos) {
+		Direction[] sides = new Direction[] {Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH};
+		for (Direction side : sides) {
+			BlockPos check = pos.offset(side, 1);
+			BlockState state = world.getBlockState(check);
+			if (state.getBlock() instanceof AttachedStemBlock && state.get(AttachedStemBlock.FACING) == side.getOpposite()) {
+				return check.down();
+			}
+		}
+		return null;
+	}
+
 
 	private ActionResult updateFromContext(ItemUsageContext context, String fmt) {
 		PlayerEntity player = context.getPlayer();

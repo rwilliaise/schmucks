@@ -257,7 +257,9 @@ public class SchmuckEntity extends TameableEntity implements
 		}
 
 		if (player.getStackInHand(hand).isEmpty()) {
-			player.giveItemStack(this.getMainHandStack());
+			if (!player.giveItemStack(this.getMainHandStack())) {
+				this.dropStack(this.getMainHandStack());
+			}
 			this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
 			return ActionResult.SUCCESS;
 		}
@@ -488,6 +490,11 @@ public class SchmuckEntity extends TameableEntity implements
 			if (this.getEquippedStack(slot).isEmpty()) {
 				super.loot(item);
 				return;
+			} else if (!this.hasJob() && !this.canGather(this.getEquippedStack(slot))) { // doesn't want non-job item
+				this.dropStack(this.getEquippedStack(slot));
+				this.equipNoUpdate(slot, ItemStack.EMPTY);
+				super.loot(item);
+				return;
 			}
 			var simpleInventory = this.getInventory();
 			var bl = simpleInventory.canInsert(itemStack);
@@ -574,6 +581,11 @@ public class SchmuckEntity extends TameableEntity implements
 
 			this.setPose(entityPose9);
 		}
+	}
+
+	@Override
+	public void applyDamageEffects(LivingEntity attacker, Entity target) {
+		super.applyDamageEffects(attacker, target);
 	}
 
 	@Override
