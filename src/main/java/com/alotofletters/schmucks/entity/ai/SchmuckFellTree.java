@@ -77,7 +77,7 @@ public class SchmuckFellTree extends SchmuckUseToolGoal {
 		this.cascading = false;
 		this.cascadingPos = null;
 		this.limitedAmount = 0;
-		max = 1;
+		max = 60;
 		if (this.schmuck.hasModifier(Modifiers.TREE_FELL)) {
 			max += Math.pow(30, this.schmuck.getModifierLevel(Modifiers.TREE_FELL));
 		}

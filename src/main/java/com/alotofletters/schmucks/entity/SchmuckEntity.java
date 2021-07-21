@@ -120,6 +120,7 @@ public class SchmuckEntity extends TameableEntity implements
 	private final SimpleInventory inventory = new SimpleInventory(5);
 	private final SchmuckEquipmentInventory equipmentInventory;
 	private UUID targetUuid;
+	private PlayerEntity targetPlayer;
 	private boolean shortTempered = false;
 	private boolean canTeleport = true;
 	private boolean canFollow = true;
@@ -307,11 +308,19 @@ public class SchmuckEntity extends TameableEntity implements
 		if (!this.world.isClient) {
 			this.tickAngerLogic((ServerWorld) this.world, true);
 
+			if (this.targetPlayer != null && this.targetPlayer.isDead()) {
+				this.targetPlayer = null;
+			} else if (this.targetPlayer != null && this.getTarget() == null) {
+				this.setTarget(this.targetPlayer);
+			}
+
 			if (this.getTarget() != null && this.getTarget().getType() == EntityType.PLAYER) {
 				List<SchmuckEntity> entities = this.world.getEntitiesByClass(SchmuckEntity.class,
 						this.getBoundingBox().expand(10),
 						schmuck -> schmuck.getOwner() == this.getTarget());
+
 				if (entities.size() > 1) {
+					this.targetPlayer = (PlayerEntity) this.getTarget();
 					this.setTarget(entities.get(this.random.nextInt(entities.size() - 1)));
 				}
 			}

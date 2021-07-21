@@ -3,6 +3,8 @@
   "values": [
     "#c:plantable",
     "minecraft:wheat",
-    "minecraft:beetroot"
+    "minecraft:beetroot",
+    "minecraft:melon_slice",
+    "minecraft:pumpkin"
   ]
 }

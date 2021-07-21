@@ -27,16 +27,16 @@ public abstract class SchmuckUseToolGoal extends MoveToTargetPosGoal {
 
 	public static BlockPos getStandablePosition(SchmuckEntity entity, BlockPos pos) {
 		World world = entity.world;
-		if (isStandable(world, entity, pos.up())) {
-			return pos.up();
-		} else if (isStandable(world, entity, pos.down())) {
-			return pos.down();
+		if (isStandable(world, entity, pos.west())) {
+			return pos.west();
 		} else if (isStandable(world, entity, pos.north())) {
 			return pos.north();
 		} else if (isStandable(world, entity, pos.south())) {
 			return pos.south();
-		} else if (isStandable(world, entity, pos.west())) {
-			return pos.west();
+		} else if (isStandable(world, entity, pos.up())) {
+			return pos.up();
+		} else if (isStandable(world, entity, pos.down())) {
+			return pos.down();
 		} else {
 			return pos.east();
 		}

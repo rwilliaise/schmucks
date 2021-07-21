@@ -3,17 +3,27 @@ package com.alotofletters.schmucks.entity.ai;
 import com.alotofletters.schmucks.entity.SchmuckEntity;
 import com.alotofletters.schmucks.specialization.modifier.Modifiers;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
+import net.fabricmc.loader.util.sat4j.core.Vec;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.block.RedstoneOreBlock;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.ai.NoPenaltyTargeting;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.WorldView;
 
+import java.util.EnumSet;
+
 public class SchmuckMine extends SchmuckUseToolGoal {
+	private BlockPos cachedPos;
+
 	public SchmuckMine(SchmuckEntity schmuck, double speed, int maxProgress) {
 		super(schmuck, speed, maxProgress);
+		this.setControls(EnumSet.of(Control.MOVE, Control.JUMP, Control.LOOK));
 	}
 
 	@Override
@@ -56,7 +66,15 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 
 	@Override
 	protected BlockPos getTargetPos() {
-		return SchmuckUseToolGoal.getStandablePosition(this.schmuck, this.targetPos);
+		if (this.cachedPos != null) {
+			return this.cachedPos;
+		}
+		Vec3d newPos = NoPenaltyTargeting.find(this.schmuck, 1, 2, new Vec3d(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ()));
+		if (newPos == null) {
+			return super.getTargetPos();
+		}
+		this.cachedPos = new BlockPos(newPos);
+		return this.cachedPos;
 	}
 
 	public boolean isOrePresent() {
@@ -77,14 +95,34 @@ public class SchmuckMine extends SchmuckUseToolGoal {
 				world.isAir(pos.east());
 	}
 
+	@Override
+	public void start() {
+		super.start();
+		this.cachedPos = null;
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		this.targetPos = BlockPos.ORIGIN;
+	}
+
 	public boolean isOre(BlockState state) {
 		return state.getBlock() instanceof OreBlock || state.getBlock() instanceof RedstoneOreBlock;
+	}
+
+	public boolean raycast(BlockPos pos) {
+		var context = new RaycastContext(this.schmuck.getEyePos(), new Vec3d(pos.getX(),
+				pos.getY(),
+				pos.getZ()), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this.schmuck);
+		var result = this.schmuck.world.raycast(context);
+		return pos.equals(result.getBlockPos());
 	}
 
 	@Override
 	protected boolean isTargetPos(WorldView world, BlockPos pos) {
 		BlockState state = world.getBlockState(pos);
 		ItemStack pickaxe = this.schmuck.getMainHandStack();
-		return this.isExposed(world, pos) && this.isOre(state) && pickaxe.isSuitableFor(state);
+		return this.isExposed(world, pos) && this.isOre(state) && pickaxe.isSuitableFor(state) && (this.targetPos != BlockPos.ORIGIN || this.raycast(pos));
 	}
 }
