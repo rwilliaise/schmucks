@@ -95,7 +95,7 @@ public class SchmuckEntity extends TameableEntity implements
 		addSelectorPredicate(
 				2,
 				schmuck -> new FollowTargetGoal<>(schmuck, HostileEntity.class, true),
-				schmuck -> !schmuck.hasJob() || schmuck.isGladiator() || schmuck.isRanger());
+				schmuck -> schmuck.isGladiator() || schmuck.isRanger());
 		addSelectorPredicate(3, SchmuckRevengeGoal::new, schmuck -> schmuck.shortTempered);
 		addSelectorPredicate(3, schmuck -> new SchmuckRevengeGoal(schmuck, SchmuckEntity.class), schmuck -> !schmuck.shortTempered);
 		addSelector(4, schmuck -> new UniversalAngerGoal<>(schmuck, true));
